@@ -77,17 +77,17 @@ const ContentOverview = () => {
 
         function openCards() {
             ['card-info', 'card-produksi', 'card-fasilitas'].forEach(id => {
-                const el = document.getElementById(id)!;
-                el.classList.remove(...CARD_HIDDEN);
-                el.classList.add(...CARD_SHOWN);
+                const el = document.getElementById(id);
+                el?.classList.remove(...CARD_HIDDEN);
+                el?.classList.add(...CARD_SHOWN);
             });
         }
 
         function closeCards() {
             ['card-info', 'card-produksi', 'card-fasilitas'].forEach(id => {
-                const el = document.getElementById(id)!;
-                el.classList.remove(...CARD_SHOWN);
-                el.classList.add(...CARD_HIDDEN);
+                const el = document.getElementById(id);
+                el?.classList.remove(...CARD_SHOWN);
+                el?.classList.add(...CARD_HIDDEN);
             });
         }
 
@@ -613,7 +613,7 @@ const ContentOverview = () => {
         // ============================================================
         // KLIK DI LUAR PETA & CARD -> TUTUP KETIGA CARD (+ LABEL AKTIF)
         // ============================================================
-        document.addEventListener('click', (e) => {
+        function handleDocumentClick(e: MouseEvent) {
             const clickedInsideCard = (e.target as HTMLElement)?.closest('#card-info, #card-produksi, #card-fasilitas');
             const clickedInsideStaticCard = (e.target as HTMLElement)?.closest('#card-geografis');
             const clickedInsideModal = (e.target as HTMLElement)?.closest('#modal-overlay');
@@ -621,7 +621,12 @@ const ContentOverview = () => {
             if (!clickedInsideCard && !clickedInsideStaticCard && !clickedInsideModal) {
                 closePanel();
             }
-        });
+        }
+        document.addEventListener('click', handleDocumentClick);
+
+        return () => {
+            document.removeEventListener('click', handleDocumentClick);
+        };
 
     }, []);
 
@@ -640,7 +645,7 @@ const ContentOverview = () => {
 
 
             <div className="flex h-screen flex-col overflow-hidden bg-slate-100 p-6">
-                <h1 className="mb-2 shrink-0 text-2xl text-center font-bold text-blue-900">Pertamina Hulu Rokan Zona 1</h1>
+                <h1 className="mb-2 shrink-0 text-3xl text-center font-bold text-blue-900">Pertamina Hulu Rokan Zona 1</h1>
                 <span className="mb-4 shrink-0 text-md text-center text-blue-900">Peta Wilayah Kerja</span>
 
                 {/* Wrapper peta: mengisi penuh sisa ruang (lebar & tinggi) */}
