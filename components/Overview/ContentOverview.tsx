@@ -47,11 +47,14 @@ const ContentOverview = () => {
         const CARD_SHOWN = ['opacity-100', 'translate-y-0', 'pointer-events-auto'];
 
         function openCards() {
-            ['card-info', 'card-produksi', 'card-fasilitas'].forEach(id => {
-                const el = document.getElementById(id);
-                el?.classList.remove(...CARD_HIDDEN);
-                el?.classList.add(...CARD_SHOWN);
-            });
+        ['card-info', 'card-produksi', 'card-fasilitas'].forEach(id => {
+            const el = document.getElementById(id);
+            el?.classList.remove(...CARD_HIDDEN);
+            el?.classList.add(...CARD_SHOWN);
+        });
+            const overview = document.getElementById('card-geografis');
+            overview?.classList.remove('opacity-100', 'pointer-events-auto');
+            overview?.classList.add('opacity-0', 'pointer-events-none');
         }
 
         function closeCards() {
@@ -60,6 +63,10 @@ const ContentOverview = () => {
                 el?.classList.remove(...CARD_SHOWN);
                 el?.classList.add(...CARD_HIDDEN);
             });
+
+            const overview = document.getElementById('card-geografis');
+            overview?.classList.remove('opacity-0', 'pointer-events-none');
+            overview?.classList.add('opacity-100', 'pointer-events-auto');
         }
 
         let activeProvinsi: string | null = null;
@@ -656,25 +663,25 @@ const ContentOverview = () => {
                  ============================================================ */}
                         <line
                             className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100"
-                            data-line="nso" x1="97" y1="43" x2="150" y2="10" />
+                            data-line="nso" x1="93" y1="25" x2="150" y2="10" />
                         <line
                             className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100"
-                            data-line="p-susu" x1="125" y1="85" x2="215" y2="68" />
+                            data-line="p-susu" x1="125" y1="85" x2="215" y2="85" />
                         <line
                             className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100"
-                            data-line="rantau" x1="110" y1="73" x2="158" y2="38" />
+                            data-line="rantau" x1="110" y1="73" x2="158" y2="50" />
                         <line
                             className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100"
                             data-line="lirik" x1="250" y1="210" x2="315" y2="170" />
                         <line
                             className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100"
-                            data-line="jambi" x1="282" y1="250" x2="345" y2="215" />
+                            data-line="jambi" x1="282" y1="250" x2="345" y2="210" />
                         <line
                             className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100"
-                            data-line="jambi-merang" x1="299" y1="277" x2="395" y2="250" />
+                            data-line="jambi-merang" x1="299" y1="277" x2="395" y2="245" />
 
                         <circle className="pointer-events-none fill-amber-500" data-dot="nso" data-nama="NSO" data-provinsi="ID-AC"
-                            cx="97" cy="43" r="2.8" />
+                            cx="93" cy="25" r="2.8" />
                         <circle className="pointer-events-none fill-amber-500" data-dot="p-susu" data-nama="Pangkalan Susu"
                             data-provinsi="ID-SU" cx="125" cy="85" r="2.8" />
                         <circle className="pointer-events-none fill-amber-500" data-dot="rantau" data-nama="Rantau"
@@ -697,7 +704,7 @@ const ContentOverview = () => {
                         </foreignObject>
                         <foreignObject
                             className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out"
-                            data-badge="p-susu" x="167" y="57" width="96" height="24">
+                            data-badge="p-susu" x="170" y="71" width="96" height="24">
                             <div className="text-center">
                                 <span
                                     className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-blue-900 px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md hover:bg-blue-800"
@@ -707,7 +714,7 @@ const ContentOverview = () => {
                         </foreignObject>
                         <foreignObject
                             className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out"
-                            data-badge="rantau" x="110" y="27" width="96" height="24">
+                            data-badge="rantau" x="130" y="35" width="96" height="24">
                             <div className="text-center">
                                 <span
                                     className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-blue-900 px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md hover:bg-blue-800"
@@ -746,7 +753,7 @@ const ContentOverview = () => {
 
                     {/* CARD GEOGRAFIS: statis di kiri, selalu tampil, tanpa tombol tutup */}
                     <div id="card-geografis"
-                        className="absolute bottom-6 left-6 top-6 w-70 overflow-y-auto rounded-xl border border-slate-200 bg-white px-5 py-4.5 shadow-lg">
+                        className="absolute bottom-6 left-6 top-6 w-70 overflow-y-auto rounded-xl border border-slate-200 bg-white px-5 py-4.5 shadow-lg opacity-100 pointer-events-auto transition-opacity duration-200 ease-in-out">
                         <h2 className="mb-3 text-base font-bold text-blue-900">Overview Zona 1</h2>
                         <div className="space-y-2 text-xs text-slate-700">
                             <p><span className="font-bold underline">Cakupan Lokasi</span></p>
