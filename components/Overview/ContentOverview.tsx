@@ -647,8 +647,16 @@ const ContentOverview = () => {
 
 
             <div className="flex h-screen flex-col overflow-hidden bg-slate-100 p-6">
-                <h1 className="mb-2 shrink-0 text-3xl text-center font-bold text-blue-900">Pertamina Hulu Rokan Zona 1</h1>
-                <span className="mb-4 shrink-0 text-md text-center text-blue-900">Peta Wilayah Kerja</span>
+                 <h1 className="group relative z-10 mb-2 shrink-0 w-fit mx-auto cursor-default bg-linear-to-b from-blue-900 to-blue-500 bg-clip-text text-3xl text-center font-bold text-transparent transition-transform duration-300 ease-out hover:-translate-y-1">
+                    Pertamina Hulu Rokan Zona 1
+                 <span
+                    aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-blue-900 to-blue-500 bg-clip-text text-transparent opacity-0 blur-sm transition-all duration-300 ease-out group-hover:opacity-30 group-hover:translate-y-2">
+                    Pertamina Hulu Rokan Zona 1
+                </span>
+            </h1>
+           
+<span className="mb-4 shrink-0 text-md text-center text-blue-900">Peta Wilayah Kerja</span>
 
                 {/* Wrapper peta: mengisi penuh sisa ruang (lebar & tinggi) */}
                 <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-slate-300 bg-white p-4 shadow-lg">
