@@ -75,7 +75,7 @@ const ContentOverview = () => {
                 mapPane.classList.add(...MAP_PANE_HALF);
                 detailPane.classList.remove(...DETAIL_PANE_HIDDEN);
                 detailPane.classList.add(...DETAIL_PANE_SHOWN);
-                
+
                 quickCards?.classList.add('hidden');
                 zoneOverview?.classList.add('hidden');
             } else {
@@ -83,7 +83,7 @@ const ContentOverview = () => {
                 mapPane.classList.add(...MAP_PANE_FULL);
                 detailPane.classList.remove(...DETAIL_PANE_SHOWN);
                 detailPane.classList.add(...DETAIL_PANE_HIDDEN);
-                
+
                 quickCards?.classList.remove('hidden');
             }
         }
@@ -102,9 +102,9 @@ const ContentOverview = () => {
                 el?.classList.remove(...CARD_HIDDEN);
                 el?.classList.add(...CARD_SHOWN);
             });
-            
+
             toggleSplitView(false);
-            
+
             const overview = document.getElementById('card-geografis');
             overview?.classList.remove('opacity-100', 'pointer-events-auto');
             overview?.classList.add('opacity-0', 'pointer-events-none');
@@ -116,7 +116,7 @@ const ContentOverview = () => {
                 el?.classList.remove(...CARD_SHOWN);
                 el?.classList.add(...CARD_HIDDEN);
             });
-            
+
             toggleSplitView(false);
 
             const quickCards = document.getElementById('quick-cards-container');
@@ -616,34 +616,111 @@ const ContentOverview = () => {
                         </div>
 
                         {/* KANAN: KONDISI LAPANGAN AKTIF (3 QUICK CARDS) */}
-                        <div id="quick-cards-container" className="absolute right-6 top-6 flex max-h-[calc(100%-48px)] w-75 flex-col gap-2 overflow-y-auto hidden">
+                        <div id="quick-cards-container" className="absolute right-6 top-6 hidden max-h-[calc(100%-48px)] w-72 flex-col gap-3 overflow-y-auto pb-4">
+
                             {/* CARD 1: Info Umum Lapangan */}
-                            <div id="card-info" className="relative -translate-y-2 rounded-xl border border-slate-200 bg-white p-4 opacity-0 pointer-events-none transition-all duration-200 ease-in-out shadow-lg">
-                                <button type="button" className="absolute right-3 top-2 cursor-pointer border-none bg-transparent text-[17px] leading-none text-slate-400 hover:text-slate-600" id="closeCardInfo">×</button>
-                                <h2 id="cardInfoTitle" className="mb-2 pr-4 text-base font-bold text-blue-900">-</h2>
-                                <div id="cardInfoBody" className="space-y-1 text-xs text-slate-700"></div>
-                                <button type="button" className="ml-auto mt-2.5 block cursor-pointer rounded-full border-none bg-blue-900 px-3.5 py-1.25 text-xs font-semibold text-white hover:bg-blue-800" data-detail="all">Detail</button>
+                            <div id="card-info" className="relative -translate-y-2 pointer-events-none rounded-xl border border-slate-200 bg-white p-4 opacity-0 shadow-lg transition-all duration-200 ease-in-out">
+                                {/* Header */}
+                                <div className="mb-3 flex items-start justify-between border-b border-slate-100 pb-2.5">
+                                    <div>
+                                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Info Umum</p>
+                                        <h2 id="cardInfoTitle" className="mt-0.5 text-sm font-bold text-blue-900">-</h2>
+                                    </div>
+                                    <button type="button" id="closeCardInfo" className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md bg-slate-50 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500" aria-label="Tutup">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {/* Body (Data dari JS) */}
+                                <div id="cardInfoBody" className="text-[11.5px] leading-relaxed text-slate-600 [&>p>span]:text-slate-800 [&>p]:mb-1.5 last:[&>p]:mb-0"></div>
+
+                                {/* Action */}
+                                <button type="button" data-detail="all" className="mt-4 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-blue-800 hover:shadow active:scale-[0.98]">
+                                    Lihat Detail Lengkap
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
                             </div>
 
                             {/* CARD 2: Produksi Lapangan */}
-                            <div id="card-produksi" className="relative -translate-y-2 rounded-xl border border-slate-200 bg-white p-4 opacity-0 pointer-events-none transition-all duration-200 ease-in-out shadow-lg">
-                                <h2 className="mb-2 pr-4 text-base font-bold text-blue-900">Produksi Lapangan</h2>
-                                <div id="cardProduksiBody" className="space-y-1 text-xs text-slate-700"></div>
+                            <div id="card-produksi" className="relative -translate-y-2 pointer-events-none rounded-xl border border-slate-200 bg-white p-4 opacity-0 shadow-lg transition-all duration-200 ease-in-out">
+                                {/* Header */}
+                                <div className="mb-3 flex items-center gap-2.5 border-b border-slate-100 pb-2.5">
+                                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-50">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-blue-700" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <h2 className="text-sm font-bold uppercase tracking-wide text-blue-900">Produksi Lapangan</h2>
+                                </div>
+
+                                {/* Body (Data dari JS) */}
+                                <div id="cardProduksiBody" className="text-[11.5px] leading-relaxed text-slate-600 [&>p>span]:text-slate-800 [&>p]:mb-1.5 last:[&>p]:mb-0"></div>
                             </div>
+
                         </div>
 
                     </div>
 
                     {/* DETAIL PANE: Pane splitview detail lengkap */}
-                    <div id="detail-pane" className="absolute bottom-6 right-6 top-6 flex w-0 items-center justify-center overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-in-out">
-                        <div id="card-detail" className="max-h-full w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
-                            <div className="mb-2 flex items-center justify-end">
-                                <button type="button" className="cursor-pointer border-none bg-transparent text-[17px] leading-none text-slate-400 hover:text-slate-600" id="closeCardDetail" aria-label="Tutup">×</button>
-                            </div>
-                            <h2 id="cardDetailTitle" className="mb-3 pr-4 text-base font-bold text-blue-900">-</h2>
-                            <div id="cardDetailBody" className="space-y-1 text-xs text-slate-700"></div>
-                        </div>
-                    </div>
+<div 
+    id="detail-pane" 
+    className="absolute bottom-6 right-6 top-6 z-50 flex w-0 items-center justify-end overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-in-out pl-4"
+>
+    <div 
+        id="card-detail" 
+        className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+    >
+        {/* HEADER: Sticky di atas, tidak ikut ter-scroll */}
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-4 backdrop-blur-sm">
+            <div>
+                <div className="mb-1 flex items-center gap-2">
+                    <span className="flex h-2 w-2 rounded-full bg-blue-600"></span>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Detail Operasional</p>
+                </div>
+                <h2 id="cardDetailTitle" className="text-xl font-bold tracking-tight text-blue-950">-</h2>
+            </div>
+            
+            {/* Tombol Close Modern */}
+            <button 
+                type="button" 
+                id="closeCardDetail" 
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 transition-all hover:border-red-200 hover:bg-red-50 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-100" 
+                aria-label="Tutup"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        {/* BODY: Area Scrollable dengan styling "Sihir" Tailwind */}
+        <div className="flex-1 overflow-y-auto bg-white px-6 py-5 custom-scrollbar">
+            <div 
+                id="cardDetailBody" 
+                className="
+                    text-sm text-slate-700
+                    
+                    /* 1. Styling untuk Judul Section (Info Umum, Produksi, dll) */
+                    [&>p.text-blue-900]:mt-5 [&>p.text-blue-900]:text-base [&>p.text-blue-900]:font-bold [&>p.text-blue-900]:text-slate-900 first:[&>p.text-blue-900]:mt-0
+                    
+                    /* 2. Styling ajaib untuk Label (Nama Wilayah, Provinsi, dll) agar lebarnya rata (tabular alignment) */
+                    [&>p>span.font-semibold]:inline-block [&>p>span.font-semibold]:w-40 [&>p>span.font-semibold]:text-slate-500 [&>p>span.font-semibold]:font-medium
+                    [&>p]:mb-2 last:[&>p]:mb-0
+                    
+                    /* 3. Styling Garis Pemisah (HR) menjadi lebih elegan */
+                    [&>hr]:my-6 [&>hr]:border-dashed [&>hr]:border-slate-200
+                    
+                    /* 4. Menghaluskan tampilan Tabel bawaan JS */
+                    [&_table]:shadow-sm [&_th]:bg-slate-800 [&_th]:text-slate-100 [&_td]:text-slate-600 [&_tr:hover]:bg-slate-50
+                "
+            ></div>
+        </div>
+    </div>
+</div>
 
                 </div>
             </div>
