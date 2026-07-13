@@ -57,6 +57,7 @@ const ContentOverview = () => {
         function toggleSplitView(active: boolean) {
             const mapPane = document.getElementById('map-pane');
             const detailPane = document.getElementById('detail-pane');
+            const quickCards = document.getElementById('quick-cards-container');
             if (!mapPane || !detailPane) return;
 
             if (active) {
@@ -64,11 +65,15 @@ const ContentOverview = () => {
                 mapPane.classList.add(...MAP_PANE_HALF);
                 detailPane.classList.remove(...DETAIL_PANE_HIDDEN);
                 detailPane.classList.add(...DETAIL_PANE_SHOWN);
+                // Sembunyikan total container 3 card ringkas agar tidak lagi memakan ruang
+                // (mencegah overflow/scrollbar bawaan muncul saat detail terbuka)
+                quickCards?.classList.add('hidden');
             } else {
                 mapPane.classList.remove(...MAP_PANE_HALF);
                 mapPane.classList.add(...MAP_PANE_FULL);
                 detailPane.classList.remove(...DETAIL_PANE_SHOWN);
                 detailPane.classList.add(...DETAIL_PANE_HIDDEN);
+                quickCards?.classList.remove('hidden');
             }
         }
 
@@ -810,7 +815,7 @@ const ContentOverview = () => {
                         </div>
                     </div>
 
-                    <div className="absolute right-6 top-6 flex max-h-[calc(100%-48px)] w-75 flex-col gap-2 overflow-hidden">
+                    <div id="quick-cards-container" className="absolute right-6 top-6 flex max-h-[calc(100%-48px)] w-75 flex-col gap-2 overflow-y-auto">
 
                         {/* CARD 1: Informasi umum wilayah kerja */}
                         <div id="card-info"
@@ -846,7 +851,7 @@ const ContentOverview = () => {
                   <div id="detail-pane"
                       className="absolute bottom-6 right-6 top-6 flex w-0 items-center justify-center overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-in-out">
                       <div id="card-detail"
-                          className="max-h-full w-96 overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
+                          className="max-h-full w-full max-w-96 overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
                           <div className="mb-2 flex items-center justify-end">
                               <button type="button"
                                   className="cursor-pointer border-none bg-transparent text-[17px] leading-none text-slate-400 hover:text-slate-600"
