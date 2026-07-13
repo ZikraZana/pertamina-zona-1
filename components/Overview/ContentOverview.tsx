@@ -44,6 +44,15 @@ const ContentOverview = () => {
         // Kunci wilayah kerja yang sedang aktif (panelnya sedang terbuka)
         let activeKey: string | null = null;
         
+        const koordinatWilayah: Record<string, string> = {
+            'nso': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1758828.4833084824!2d96.44592863870214!3d5.222246513227389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3047773ee34bcc15%3A0x96b7cedbe6bb0f8c!2sPT.%20Pertamina%20Hulu%20Energi%20NSO!5e1!3m2!1sen!2sus!4v1783928795832!5m2!1sen!2sus',
+            'p-susu': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13762.458951983883!2d98.20356883627866!3d4.120297531596398!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x303713005aed9639%3A0x97cca8a709c3fa20!2sPERTAMINA%20EP%2C%20PANGKALAN%20SUSU%20FIELD!5e1!3m2!1sen!2sus!4v1783928920370!5m2!1sen!2sus',
+            'rantau': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3439.6707214629782!2d98.1000643!3d4.3330432!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3037750d48cd20cf%3A0x13efbf08c535d29!2sPertamina%20EP%20Field%20Rantau!5e1!3m2!1sen!2sus!4v1783929114862!5m2!1sen!2sus',
+            'lirik': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3449.480307873737!2d102.3048558!3d-0.3088458!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e2993197e715cbb%3A0xa92c4e90c6203965!2sPT%20Pertamina%20EP%20Aset%201%20Lirik%20Field!5e1!3m2!1sen!2sus!4v1783929183565!5m2!1sen!2sus',
+            'jambi': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13792.382824592802!2d103.60006134957072!3d-1.6525543934590752!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e25864160705b6f%3A0x43c5df5c64bf7eb1!2sKantor%20PT%20Pertamina%20EP%20Asset%201%20Field%20Jambi!5e1!3m2!1sen!2sus!4v1783928615966!5m2!1sen!2sus',
+            'jambi-merang': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d137663.30282475293!2d103.74048923451154!3d-2.0099324989736123!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e2569a3b13978c5%3A0x6fa64a24f0a9976a!2sJetty%20Lalang%20Job%20Pertamina%20Talisman%20Jambi%20Merang!5e1!3m2!1sen!2sus!4v1783929340137!5m2!1sen!2sus',
+        };
+
         const CARD_HIDDEN = ['opacity-0', '-translate-y-2', 'pointer-events-none'];
         const CARD_SHOWN = ['opacity-100', 'translate-y-0', 'pointer-events-auto'];
 
@@ -557,7 +566,28 @@ const ContentOverview = () => {
                     <p>BOPD: Barrels of Oil Per Day</p>
                     <p>MMSCFD: Million Metric Standard Cubic Feet per Day</p>
                   </div>
+
+                  <hr class="my-3">
+                  <p class="mb-2 font-semibold text-blue-900">Open Google Maps</p>
+                  <div id="satelliteMapContainer" class="overflow-hidden rounded-lg border border-slate-200"></div>
                 `;
+
+            const embedSrc = activeKey ? koordinatWilayah[activeKey] : undefined;
+            const mapContainer = document.getElementById('satelliteMapContainer');
+            if (embedSrc && mapContainer) {
+                mapContainer.innerHTML = `
+                    <iframe
+                        width="100%"
+                        height="220"
+                        style="border:0"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        src="${embedSrc}">
+                    </iframe>
+                `;
+            } else if (mapContainer) {
+                mapContainer.innerHTML = '<p class="p-3 text-xs italic text-slate-400">Koordinat belum tersedia untuk wilayah ini.</p>';
+            }
 
             // Sembunyikan 3 card ringkas, aktifkan split-screen (peta kiri, detail kanan)
             ['card-info', 'card-produksi', 'card-fasilitas'].forEach(id => {
