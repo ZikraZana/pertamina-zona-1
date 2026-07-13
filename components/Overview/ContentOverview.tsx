@@ -43,37 +43,8 @@ const ContentOverview = () => {
 
         // Kunci wilayah kerja yang sedang aktif (panelnya sedang terbuka)
         let activeKey: string | null = null;
-        const hideTimers: Record<string, ReturnType<typeof setTimeout>> = {};
-        const HIDE_DELAY = 150;
-
-        const BADGE_HIDDEN = ['opacity-0', 'pointer-events-none'];
-        const BADGE_SHOWN = ['opacity-100', 'pointer-events-auto'];
-        const LINE_HIDDEN = ['opacity-0'];
-        const LINE_SHOWN = ['opacity-100'];
         const CARD_HIDDEN = ['opacity-0', '-translate-y-2', 'pointer-events-none'];
         const CARD_SHOWN = ['opacity-100', 'translate-y-0', 'pointer-events-auto'];
-
-        function showBadge(key: string) {
-            clearTimeout(hideTimers[key]);
-            document.querySelector(`[data-badge="${key}"]`)?.classList.remove(...BADGE_HIDDEN);
-            document.querySelector(`[data-badge="${key}"]`)?.classList.add(...BADGE_SHOWN);
-            document.querySelector(`[data-line="${key}"]`)?.classList.remove(...LINE_HIDDEN);
-            document.querySelector(`[data-line="${key}"]`)?.classList.add(...LINE_SHOWN);
-        }
-
-        function hideBadgeNow(key: string) {
-            clearTimeout(hideTimers[key]);
-            document.querySelector(`[data-badge="${key}"]`)?.classList.remove(...BADGE_SHOWN);
-            document.querySelector(`[data-badge="${key}"]`)?.classList.add(...BADGE_HIDDEN);
-            document.querySelector(`[data-line="${key}"]`)?.classList.remove(...LINE_SHOWN);
-            document.querySelector(`[data-line="${key}"]`)?.classList.add(...LINE_HIDDEN);
-        }
-
-        function scheduleHide(key: string) {
-            if (key === activeKey) return;
-            clearTimeout(hideTimers[key]);
-            hideTimers[key] = setTimeout(() => hideBadgeNow(key), HIDE_DELAY);
-        }
 
         function openCards() {
             ['card-info', 'card-produksi', 'card-fasilitas'].forEach(id => {
@@ -91,7 +62,7 @@ const ContentOverview = () => {
             });
         }
 
-        let activeProvinsi: string | null = null; // kode provinsi yang path-nya sedang disorot hijau
+        let activeProvinsi: string | null = null;
 
         function selectProvinsi(provinsiCode: string) {
             if (activeProvinsi) {
@@ -109,54 +80,19 @@ const ContentOverview = () => {
         }
 
         function setActive(key: string, nama: string, provinsiCode: string) {
-            if (activeKey && activeKey !== key) {
-                hideBadgeNow(activeKey);
-            }
             activeKey = key;
-            showBadge(key);
             openCards();
             selectProvinsi(provinsiCode);
-
             loadWilayahKerja(key, nama);
         }
 
         function closePanel() {
             closeCards();
             clearProvinsiSelection();
-            if (activeKey) {
-                hideBadgeNow(activeKey);
-                activeKey = null;
-            }
+            activeKey = null;
         }
 
-        // Hover di titik/dot wilayah kerja -> munculkan badge lewat area sekitar titik.
-        document.querySelectorAll<SVGCircleElement>('[data-dot]').forEach(dot => {
-            const key = dot.dataset.dot!;
-            const nama = dot.dataset.nama!;
-            const provinsi = dot.dataset.provinsi!;
-
-            const hoverZone = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            hoverZone.setAttribute('cx', dot.getAttribute('cx') ?? '0');
-            hoverZone.setAttribute('cy', dot.getAttribute('cy') ?? '0');
-            hoverZone.setAttribute('r', '8');
-            hoverZone.setAttribute('fill', 'transparent');
-            hoverZone.classList.add('cursor-pointer');
-            dot.parentNode?.appendChild(hoverZone);
-
-            hoverZone.addEventListener('mouseenter', () => showBadge(key));
-            hoverZone.addEventListener('mouseleave', () => scheduleHide(key));
-            hoverZone.addEventListener('click', (e) => {
-                e.stopPropagation();
-                setActive(key, nama, provinsi);
-            });
-        });
-
-        // Hover & klik pada badge
-        document.querySelectorAll<HTMLElement>('[data-badge]').forEach(fo => {
-            const key = fo.dataset.badge!;
-            fo.addEventListener('mouseenter', () => showBadge(key));
-            fo.addEventListener('mouseleave', () => scheduleHide(key));
-        });
+        // Klik pada badge/label -> satu-satunya pemicu 3 card
         document.querySelectorAll<HTMLElement>('[data-badge-click]').forEach(span => {
             span.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -719,22 +655,22 @@ const ContentOverview = () => {
                  6 WILAYAH KERJA — titik + garis + badge (muncul saat hover)
                  ============================================================ */}
                         <line
-                            className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-0 transition-opacity duration-150 ease-in-out"
+                            className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100"
                             data-line="nso" x1="97" y1="43" x2="150" y2="10" />
                         <line
-                            className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-0 transition-opacity duration-150 ease-in-out"
+                            className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100"
                             data-line="p-susu" x1="125" y1="85" x2="215" y2="68" />
                         <line
-                            className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-0 transition-opacity duration-150 ease-in-out"
+                            className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100"
                             data-line="rantau" x1="110" y1="73" x2="158" y2="38" />
                         <line
-                            className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-0 transition-opacity duration-150 ease-in-out"
+                            className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100"
                             data-line="lirik" x1="250" y1="210" x2="315" y2="170" />
                         <line
-                            className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-0 transition-opacity duration-150 ease-in-out"
+                            className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100"
                             data-line="jambi" x1="282" y1="250" x2="345" y2="215" />
                         <line
-                            className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-0 transition-opacity duration-150 ease-in-out"
+                            className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100"
                             data-line="jambi-merang" x1="299" y1="277" x2="395" y2="250" />
 
                         <circle className="pointer-events-none fill-amber-500" data-dot="nso" data-nama="NSO" data-provinsi="ID-AC"
@@ -751,7 +687,7 @@ const ContentOverview = () => {
                             data-provinsi="ID-SS" cx="299" cy="277" r="2.8" />
 
                         <foreignObject
-                            className="pointer-events-none overflow-visible opacity-0 transition-opacity duration-150 ease-in-out"
+                            className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out"
                             data-badge="nso" x="102" y="-1" width="96" height="24">
                             <div className="text-center">
                                 <span
@@ -760,7 +696,7 @@ const ContentOverview = () => {
                             </div>
                         </foreignObject>
                         <foreignObject
-                            className="pointer-events-none overflow-visible opacity-0 transition-opacity duration-150 ease-in-out"
+                            className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out"
                             data-badge="p-susu" x="167" y="57" width="96" height="24">
                             <div className="text-center">
                                 <span
@@ -770,7 +706,7 @@ const ContentOverview = () => {
                             </div>
                         </foreignObject>
                         <foreignObject
-                            className="pointer-events-none overflow-visible opacity-0 transition-opacity duration-150 ease-in-out"
+                            className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out"
                             data-badge="rantau" x="110" y="27" width="96" height="24">
                             <div className="text-center">
                                 <span
@@ -779,7 +715,7 @@ const ContentOverview = () => {
                             </div>
                         </foreignObject>
                         <foreignObject
-                            className="pointer-events-none overflow-visible opacity-0 transition-opacity duration-150 ease-in-out"
+                            className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out"
                             data-badge="lirik" x="267" y="159" width="96" height="24">
                             <div className="text-center">
                                 <span
@@ -788,7 +724,7 @@ const ContentOverview = () => {
                             </div>
                         </foreignObject>
                         <foreignObject
-                            className="pointer-events-none overflow-visible opacity-0 transition-opacity duration-150 ease-in-out"
+                            className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out"
                             data-badge="jambi" x="297" y="204" width="96" height="24">
                             <div className="text-center">
                                 <span
@@ -797,7 +733,7 @@ const ContentOverview = () => {
                             </div>
                         </foreignObject>
                         <foreignObject
-                            className="pointer-events-none overflow-visible opacity-0 transition-opacity duration-150 ease-in-out"
+                            className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out"
                             data-badge="jambi-merang" x="347" y="239" width="96" height="24">
                             <div className="text-center">
                                 <span
