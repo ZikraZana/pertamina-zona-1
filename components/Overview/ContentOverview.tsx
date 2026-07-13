@@ -43,34 +43,35 @@ const ContentOverview = () => {
 
         // Kunci wilayah kerja yang sedang aktif (panelnya sedang terbuka)
         let activeKey: string | null = null;
+        
         const CARD_HIDDEN = ['opacity-0', '-translate-y-2', 'pointer-events-none'];
         const CARD_SHOWN = ['opacity-100', 'translate-y-0', 'pointer-events-auto'];
-        // Kelas transform yang menggeser peta sedikit ke kiri saat card detail terbuka
-        const MAP_SHIFT_CLASS = '-translate-x-12';
 
-        // Tampilkan / sembunyikan card detail (di posisi kanan, menggantikan 3 card ringkas)
-        function showDetailCard(show: boolean) {
-            const el = document.getElementById('card-detail');
-            if (!el) return;
-            if (show) {
-                el.classList.remove(...CARD_HIDDEN);
-                el.classList.add(...CARD_SHOWN);
+        // Kelas untuk pane peta (kiri) & pane detail (kanan) saat split-screen aktif
+        const MAP_PANE_FULL = ['w-full'];
+        const MAP_PANE_HALF = ['w-1/2'];
+        const DETAIL_PANE_HIDDEN = ['w-0', 'opacity-0', 'pointer-events-none'];
+        const DETAIL_PANE_SHOWN = ['w-1/2', 'opacity-100', 'pointer-events-auto'];
+
+        // Aktifkan / nonaktifkan tampilan split-screen (peta kiri, card detail kanan)
+        function toggleSplitView(active: boolean) {
+            const mapPane = document.getElementById('map-pane');
+            const detailPane = document.getElementById('detail-pane');
+            if (!mapPane || !detailPane) return;
+
+            if (active) {
+                mapPane.classList.remove(...MAP_PANE_FULL);
+                mapPane.classList.add(...MAP_PANE_HALF);
+                detailPane.classList.remove(...DETAIL_PANE_HIDDEN);
+                detailPane.classList.add(...DETAIL_PANE_SHOWN);
             } else {
-                el.classList.remove(...CARD_SHOWN);
-                el.classList.add(...CARD_HIDDEN);
+                mapPane.classList.remove(...MAP_PANE_HALF);
+                mapPane.classList.add(...MAP_PANE_FULL);
+                detailPane.classList.remove(...DETAIL_PANE_SHOWN);
+                detailPane.classList.add(...DETAIL_PANE_HIDDEN);
             }
         }
 
-        // Geser (atau kembalikan) posisi peta saat card detail terbuka/tertutup
-        function shiftMap(shift: boolean) {
-            const svg = document.getElementById('map-svg');
-            if (!svg) return;
-            if (shift) {
-                svg.classList.add(MAP_SHIFT_CLASS);
-            } else {
-                svg.classList.remove(MAP_SHIFT_CLASS);
-            }
-        }
 
         function openCards() {
         ['card-info', 'card-produksi', 'card-fasilitas'].forEach(id => {
@@ -79,8 +80,7 @@ const ContentOverview = () => {
             el?.classList.add(...CARD_SHOWN);
         });
             // Pastikan setiap kali label baru diklik, kondisi kembali ke card ringkas (bukan detail)
-            showDetailCard(false);
-            shiftMap(false);
+            toggleSplitView(false);
             const overview = document.getElementById('card-geografis');
             overview?.classList.remove('opacity-100', 'pointer-events-auto');
             overview?.classList.add('opacity-0', 'pointer-events-none');
@@ -92,8 +92,7 @@ const ContentOverview = () => {
                 el?.classList.remove(...CARD_SHOWN);
                 el?.classList.add(...CARD_HIDDEN);
             });
-            showDetailCard(false);
-            shiftMap(false);
+            toggleSplitView(false);
 
             const overview = document.getElementById('card-geografis');
             overview?.classList.remove('opacity-0', 'pointer-events-none');
@@ -555,27 +554,16 @@ const ContentOverview = () => {
                   </div>
                 `;
 
-            // Sembunyikan 3 card ringkas, tampilkan card detail di posisi yang sama (kanan)
+            // Sembunyikan 3 card ringkas, aktifkan split-screen (peta kiri, detail kanan)
             ['card-info', 'card-produksi', 'card-fasilitas'].forEach(id => {
                 const el = document.getElementById(id);
                 el?.classList.remove(...CARD_SHOWN);
                 el?.classList.add(...CARD_HIDDEN);
             });
-            showDetailCard(true);
-            // Peta bergeser sedikit ke kiri saat card detail terbuka & melebar
-            shiftMap(true);
+            toggleSplitView(true);
         }
 
-        // Kembali dari card detail ke 3 card ringkas (tanpa menutup seluruh panel)
-        function backToQuickCards() {
-            showDetailCard(false);
-            shiftMap(false);
-            ['card-info', 'card-produksi', 'card-fasilitas'].forEach(id => {
-                const el = document.getElementById(id);
-                el?.classList.remove(...CARD_HIDDEN);
-                el?.classList.add(...CARD_SHOWN);
-            });
-        }
+        
 
         document.querySelectorAll<HTMLElement>('[data-detail]').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -584,10 +572,6 @@ const ContentOverview = () => {
             });
         });
 
-        document.getElementById('backCardDetail')!.addEventListener('click', (e) => {
-            e.stopPropagation();
-            backToQuickCards();
-        });
 
         document.getElementById('closeCardDetail')!.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -632,8 +616,9 @@ const ContentOverview = () => {
                 <span className="mb-4 shrink-0 text-md text-center text-blue-900">Peta Wilayah Kerja</span>
 
                 {/* Wrapper peta: mengisi penuh sisa ruang (lebar & tinggi) */}
-                <div className="relative min-h-0 flex-1 rounded-xl border border-slate-300 bg-white p-4 shadow-lg">
-                    <svg id="map-svg" className="h-full w-full transition-transform duration-300 ease-in-out" viewBox="0 0 460 413" preserveAspectRatio="xMidYMid meet" role="img">
+                <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-slate-300 bg-white p-4 shadow-lg">
+                    <div id="map-pane" className="relative h-full w-full transition-all duration-300 ease-in-out">
+                    <svg id="map-svg" className="h-full w-full" viewBox="0 0 460 413" preserveAspectRatio="xMidYMid meet" role="img">
                         <title>Peta wilayah kerja Regional 1 Sumatra</title>
                         <desc>Enam wilayah kerja: Rantau, NSO, Pangkalan Susu, Lirik, Jambi, dan Jambi Merang</desc>
 
@@ -825,7 +810,7 @@ const ContentOverview = () => {
                         </div>
                     </div>
 
-                    <div className="absolute right-6 top-6 flex max-h-[calc(100%-48px)] w-75 flex-col gap-2 overflow-y-auto">
+                    <div className="absolute right-6 top-6 flex max-h-[calc(100%-48px)] w-75 flex-col gap-2 overflow-hidden">
 
                         {/* CARD 1: Informasi umum wilayah kerja */}
                         <div id="card-info"
@@ -855,23 +840,22 @@ const ContentOverview = () => {
                         </div>
 
                     </div>
-
-                    {/* CARD DETAIL: card biasa di kanan (bukan modal lagi), menggantikan 3 card ringkas.
-                        Ukuran mengikuti card overview (top-6/bottom-6, tinggi penuh) tapi sedikit lebih lebar,
-                        dan tetap berada di sisi kanan. */}
-                    <div id="card-detail"
-                        className="absolute bottom-6 right-6 top-6 w-84 -translate-y-2 overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 opacity-0 shadow-lg pointer-events-none transition-all duration-200 ease-in-out">
-                        <div className="mb-2 flex items-center justify-between">
-                            <button type="button"
-                                className="cursor-pointer rounded-full border-none bg-transparent px-1 text-sm leading-none text-slate-400 hover:text-slate-600"
-                                id="backCardDetail" aria-label="Kembali ke info singkat">&larr; Kembali</button>
-                            <button type="button"
-                                className="cursor-pointer border-none bg-transparent text-[17px] leading-none text-slate-400 hover:text-slate-600"
-                                id="closeCardDetail" aria-label="Tutup">&times;</button>
-                        </div>
-                        <h2 id="cardDetailTitle" className="mb-3 pr-4 text-base font-bold text-blue-900">-</h2>
-                        <div id="cardDetailBody" className="space-y-1 text-xs text-slate-700"></div>
                     </div>
+
+                     {/* DETAIL PANE: separuh kanan layar, card detail diposisikan di tengahnya */}
+                  <div id="detail-pane"
+                      className="absolute bottom-6 right-6 top-6 flex w-0 items-center justify-center overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-in-out">
+                      <div id="card-detail"
+                          className="max-h-full w-96 overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
+                          <div className="mb-2 flex items-center justify-end">
+                              <button type="button"
+                                  className="cursor-pointer border-none bg-transparent text-[17px] leading-none text-slate-400 hover:text-slate-600"
+                                  id="closeCardDetail" aria-label="Tutup">&times;</button>
+                          </div>
+                          <h2 id="cardDetailTitle" className="mb-3 pr-4 text-base font-bold text-blue-900">-</h2>
+                          <div id="cardDetailBody" className="space-y-1 text-xs text-slate-700"></div>
+                      </div>
+                  </div>
 
                 </div>
 
