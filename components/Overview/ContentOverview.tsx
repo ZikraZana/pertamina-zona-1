@@ -45,6 +45,32 @@ const ContentOverview = () => {
         let activeKey: string | null = null;
         const CARD_HIDDEN = ['opacity-0', '-translate-y-2', 'pointer-events-none'];
         const CARD_SHOWN = ['opacity-100', 'translate-y-0', 'pointer-events-auto'];
+        // Kelas transform yang menggeser peta sedikit ke kiri saat card detail terbuka
+        const MAP_SHIFT_CLASS = '-translate-x-12';
+
+        // Tampilkan / sembunyikan card detail (di posisi kanan, menggantikan 3 card ringkas)
+        function showDetailCard(show: boolean) {
+            const el = document.getElementById('card-detail');
+            if (!el) return;
+            if (show) {
+                el.classList.remove(...CARD_HIDDEN);
+                el.classList.add(...CARD_SHOWN);
+            } else {
+                el.classList.remove(...CARD_SHOWN);
+                el.classList.add(...CARD_HIDDEN);
+            }
+        }
+
+        // Geser (atau kembalikan) posisi peta saat card detail terbuka/tertutup
+        function shiftMap(shift: boolean) {
+            const svg = document.getElementById('map-svg');
+            if (!svg) return;
+            if (shift) {
+                svg.classList.add(MAP_SHIFT_CLASS);
+            } else {
+                svg.classList.remove(MAP_SHIFT_CLASS);
+            }
+        }
 
         function openCards() {
         ['card-info', 'card-produksi', 'card-fasilitas'].forEach(id => {
@@ -52,6 +78,9 @@ const ContentOverview = () => {
             el?.classList.remove(...CARD_HIDDEN);
             el?.classList.add(...CARD_SHOWN);
         });
+            // Pastikan setiap kali label baru diklik, kondisi kembali ke card ringkas (bukan detail)
+            showDetailCard(false);
+            shiftMap(false);
             const overview = document.getElementById('card-geografis');
             overview?.classList.remove('opacity-100', 'pointer-events-auto');
             overview?.classList.add('opacity-0', 'pointer-events-none');
@@ -63,6 +92,8 @@ const ContentOverview = () => {
                 el?.classList.remove(...CARD_SHOWN);
                 el?.classList.add(...CARD_HIDDEN);
             });
+            showDetailCard(false);
+            shiftMap(false);
 
             const overview = document.getElementById('card-geografis');
             overview?.classList.remove('opacity-0', 'pointer-events-none');
@@ -402,16 +433,16 @@ const ContentOverview = () => {
         }
 
         // ============================================================
-        // MODAL DETAIL
+        // CARD DETAIL (sebelumnya modal, sekarang card biasa di kanan)
         // ============================================================
         let lastData: WilayahData | null = null;
         let lastNama = '';
 
-        function openDetailModal(type: string) {
+        function openDetailCard(type: string) {
             if (!lastData) return;
             const d = lastData;
-            const titleEl = document.getElementById('modalTitle')!;
-            const bodyEl = document.getElementById('modalBody')!;
+            const titleEl = document.getElementById('cardDetailTitle')!;
+            const bodyEl = document.getElementById('cardDetailBody')!;
 
             titleEl.textContent = `${lastNama} — Detail Lengkap`;
             bodyEl.innerHTML = `
@@ -524,44 +555,53 @@ const ContentOverview = () => {
                   </div>
                 `;
 
-            document.getElementById('modal-overlay')!.classList.remove('hidden');
-            document.getElementById('modal-overlay')!.classList.add('flex');
+            // Sembunyikan 3 card ringkas, tampilkan card detail di posisi yang sama (kanan)
+            ['card-info', 'card-produksi', 'card-fasilitas'].forEach(id => {
+                const el = document.getElementById(id);
+                el?.classList.remove(...CARD_SHOWN);
+                el?.classList.add(...CARD_HIDDEN);
+            });
+            showDetailCard(true);
+            // Peta bergeser sedikit ke kiri saat card detail terbuka & melebar
+            shiftMap(true);
         }
 
-        function closeModalAndAll() {
-            document.getElementById('modal-overlay')!.classList.remove('flex');
-            document.getElementById('modal-overlay')!.classList.add('hidden');
-            closePanel();
+        // Kembali dari card detail ke 3 card ringkas (tanpa menutup seluruh panel)
+        function backToQuickCards() {
+            showDetailCard(false);
+            shiftMap(false);
+            ['card-info', 'card-produksi', 'card-fasilitas'].forEach(id => {
+                const el = document.getElementById(id);
+                el?.classList.remove(...CARD_HIDDEN);
+                el?.classList.add(...CARD_SHOWN);
+            });
         }
 
         document.querySelectorAll<HTMLElement>('[data-detail]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                openDetailModal(btn.dataset.detail!);
+                openDetailCard(btn.dataset.detail!);
             });
         });
 
-        document.getElementById('modalClose')!.addEventListener('click', (e) => {
+        document.getElementById('backCardDetail')!.addEventListener('click', (e) => {
             e.stopPropagation();
-            closeModalAndAll();
+            backToQuickCards();
         });
 
-        document.getElementById('modal-overlay')!.addEventListener('click', () => {
-            closeModalAndAll();
-        });
-        document.getElementById('modal-content')!.addEventListener('click', (e) => {
+        document.getElementById('closeCardDetail')!.addEventListener('click', (e) => {
             e.stopPropagation();
+            closePanel();
         });
 
         // ============================================================
-        // KLIK DI LUAR PETA & CARD -> TUTUP KETIGA CARD (+ LABEL AKTIF)
+        // KLIK DI LUAR PETA & CARD -> TUTUP SEMUA CARD (+ LABEL AKTIF)
         // ============================================================
         function handleDocumentClick(e: MouseEvent) {
-            const clickedInsideCard = (e.target as HTMLElement)?.closest('#card-info, #card-produksi, #card-fasilitas');
+            const clickedInsideCard = (e.target as HTMLElement)?.closest('#card-info, #card-produksi, #card-fasilitas, #card-detail');
             const clickedInsideStaticCard = (e.target as HTMLElement)?.closest('#card-geografis');
-            const clickedInsideModal = (e.target as HTMLElement)?.closest('#modal-overlay');
 
-            if (!clickedInsideCard && !clickedInsideStaticCard && !clickedInsideModal) {
+            if (!clickedInsideCard && !clickedInsideStaticCard) {
                 closePanel();
             }
         }
@@ -593,7 +633,7 @@ const ContentOverview = () => {
 
                 {/* Wrapper peta: mengisi penuh sisa ruang (lebar & tinggi) */}
                 <div className="relative min-h-0 flex-1 rounded-xl border border-slate-300 bg-white p-4 shadow-lg">
-                    <svg className="h-full w-full" viewBox="0 0 460 413" preserveAspectRatio="xMidYMid meet" role="img">
+                    <svg id="map-svg" className="h-full w-full transition-transform duration-300 ease-in-out" viewBox="0 0 460 413" preserveAspectRatio="xMidYMid meet" role="img">
                         <title>Peta wilayah kerja Regional 1 Sumatra</title>
                         <desc>Enam wilayah kerja: Rantau, NSO, Pangkalan Susu, Lirik, Jambi, dan Jambi Merang</desc>
 
@@ -816,18 +856,22 @@ const ContentOverview = () => {
 
                     </div>
 
-                    {/* MODAL DETAIL: muncul di tengah layar */}
-                    <div id="modal-overlay" className="fixed inset-0 z-100 hidden items-center justify-center bg-slate-900/45 p-5">
-                        <div className="relative w-full max-w-120 max-h-[80vh] overflow-y-auto rounded-[14px] bg-white p-6 shadow-2xl"
-                            id="modal-content">
+                    {/* CARD DETAIL: card biasa di kanan (bukan modal lagi), menggantikan 3 card ringkas.
+                        Ukuran mengikuti card overview (top-6/bottom-6, tinggi penuh) tapi sedikit lebih lebar,
+                        dan tetap berada di sisi kanan. */}
+                    <div id="card-detail"
+                        className="absolute bottom-6 right-6 top-6 w-84 -translate-y-2 overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 opacity-0 shadow-lg pointer-events-none transition-all duration-200 ease-in-out">
+                        <div className="mb-2 flex items-center justify-between">
                             <button type="button"
-                                className="absolute right-4 top-3 cursor-pointer border-none bg-transparent text-xl leading-none text-slate-400 hover:text-slate-600"
-                                id="modalClose">&times;</button>
-                            <h2 id="modalTitle" className="mb-4 pr-6 text-lg font-bold text-blue-900">-</h2>
-                            <div id="modalBody" className="space-y-2 text-sm text-slate-700"></div>
+                                className="cursor-pointer rounded-full border-none bg-transparent px-1 text-sm leading-none text-slate-400 hover:text-slate-600"
+                                id="backCardDetail" aria-label="Kembali ke info singkat">&larr; Kembali</button>
+                            <button type="button"
+                                className="cursor-pointer border-none bg-transparent text-[17px] leading-none text-slate-400 hover:text-slate-600"
+                                id="closeCardDetail" aria-label="Tutup">&times;</button>
                         </div>
+                        <h2 id="cardDetailTitle" className="mb-3 pr-4 text-base font-bold text-blue-900">-</h2>
+                        <div id="cardDetailBody" className="space-y-1 text-xs text-slate-700"></div>
                     </div>
-
 
                 </div>
 
