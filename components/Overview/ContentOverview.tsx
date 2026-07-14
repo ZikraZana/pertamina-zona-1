@@ -9,6 +9,8 @@ type WilayahData = {
     jenis_wk: string | null;
     tahun_beroperasi: string | null;
     luas_wilayah: string | null;
+    part_interest: string | null;
+    kkp: string | null;
     produksi_minyak: string | null;
     produksi_gas: string | null;
     tanggal_produksi: string | null;
@@ -168,7 +170,7 @@ const ContentOverview = () => {
             titleEl.textContent = namaWilayah;
 
             let d: WilayahData = {
-                nama_wilayah: null, provinsi: null, kabupaten_kota: null, jenis_wk: null, tahun_beroperasi: null, luas_wilayah: null, produksi_minyak: null, produksi_gas: null, tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah: null, sumur_eksplorasi_active: null, sumur_eksplorasi_total: null, producer_active: null, producer_total: null, injector_active: null, injector_total: null, sumur_total_active: null, sumur_total_total: null, process_facilities_active: null, process_facilities_total: null, offshore_platforms_active: null, offshore_platforms_total: null, swamp_platforms_active: null, swamp_platforms_total: null, gas_compressors_active: null, gas_compressors_total: null, pipeline_active: null, pipeline_total: null, drilling_rigs: null, workover_rigs: null,
+                nama_wilayah: null, provinsi: null, kabupaten_kota: null, jenis_wk: null, tahun_beroperasi: null, luas_wilayah: null, part_interest: null, kkp: null, produksi_minyak: null, produksi_gas: null, tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah: null, sumur_eksplorasi_active: null, sumur_eksplorasi_total: null, producer_active: null, producer_total: null, injector_active: null, injector_total: null, sumur_total_active: null, sumur_total_total: null, process_facilities_active: null, process_facilities_total: null, offshore_platforms_active: null, offshore_platforms_total: null, swamp_platforms_active: null, swamp_platforms_total: null, gas_compressors_active: null, gas_compressors_total: null, pipeline_active: null, pipeline_total: null, drilling_rigs: null, workover_rigs: null,
             };
 
             // DATASET
@@ -183,6 +185,8 @@ const ContentOverview = () => {
                     jenis_wk: "Gross Split",
                     tahun_beroperasi: "2018",
                     luas_wilayah: "6.842,01 km²",
+                    part_interest: "100% - PT Pertamina Hulu Energi NSO (PHE NSO)",
+                    kkp: "Komitmen Pasti Tiga Tahun Pertama: USD 18,500,000. Komitmen Kerja Tiga Tahun Kedua: USD 24,500,000. Realisasi ITD Okt'24 USD 37,955,597 (88%). 100% selesai Komitmen Pasti.",
                     produksi_minyak: null,
                     produksi_gas: "18.42",
                     tanggal_produksi: "2025-10-31",
@@ -218,6 +222,8 @@ const ContentOverview = () => {
                     jenis_wk: "Cost Recovery",
                     tahun_beroperasi: null,
                     luas_wilayah: "474,54 km²",
+                    part_interest: "100% - PT Pertamina EP",
+                    kkp: null,
                     produksi_minyak: "0.23",
                     produksi_gas: "3.00",
                     tanggal_produksi: "2025-10-31",
@@ -253,6 +259,8 @@ const ContentOverview = () => {
                     jenis_wk: "Cost Recovery",
                     tahun_beroperasi: null,
                     luas_wilayah: "58,3 km²",
+                    part_interest: "100% - PT Pertamina EP",
+                    kkp: null,
                     produksi_minyak: "1.93",
                     produksi_gas: "2.47",
                     tanggal_produksi: "2025-10-31",
@@ -288,6 +296,8 @@ const ContentOverview = () => {
                     jenis_wk: "Cost Recovery",
                     tahun_beroperasi: null,
                     luas_wilayah: "433 km²",
+                    part_interest: "100% - PT Pertamina EP",
+                    kkp: null,
                     produksi_minyak: "1.34",
                     produksi_gas: null,
                     tanggal_produksi: "2025-10-31",
@@ -323,6 +333,8 @@ const ContentOverview = () => {
                     jenis_wk: "Cost Recovery",
                     tahun_beroperasi: null,
                     luas_wilayah: "5.751 km²",
+                    part_interest: "100% - PT Pertamina EP",
+                    kkp: null,
                     produksi_minyak: "6.8",
                     produksi_gas: "6.08",
                     tanggal_produksi: "2025-10-31",
@@ -358,6 +370,8 @@ const ContentOverview = () => {
                     jenis_wk: "Gross Split",
                     tahun_beroperasi: "1989",
                     luas_wilayah: "1.028,38 km²",
+                    part_interest: "100% - PT Pertamina Hulu Energi Jambi Merang",
+                    kkp: "Komitmen Kerja Pasti 5 Tahun: USD 239,300,000. Realisasi ITD Okt'24 USD 145,388,726.",
                     produksi_minyak: "5.00",
                     produksi_gas: "126.78",
                     tanggal_produksi: "2025-10-31",
@@ -426,6 +440,8 @@ const ContentOverview = () => {
                   <p><span class="font-semibold">Jenis Wilayah Kerja:</span> ${d.jenis_wk ?? '-'}</p>
                   <p><span class="font-semibold">Tahun Beroperasi:</span> ${d.tahun_beroperasi ?? '-'}</p>
                   <p><span class="font-semibold">Luas Wilayah:</span> ${d.luas_wilayah ?? '-'}</p>
+                  <p><span class="font-semibold">Part. Interest:</span> ${d.part_interest ?? '-'}</p>
+                  <p><span class="font-semibold">KKP:</span> ${d.kkp ?? '-'}</p>
                   <hr class="my-3">
                   <p class="font-semibold text-blue-900">Produksi</p>
                   <p><span class="font-semibold">Tanggal Data:</span> ${d.tanggal_produksi ?? '-'}</p>
@@ -761,13 +777,13 @@ const ContentOverview = () => {
 
                             <div>
                                 <div className="mb-1.5 flex items-end justify-between">
-                                    <h3 className="text-[10.5px] font-bold uppercase tracking-wide text-slate-400">Production</h3>
+                                    <h3 className="text-[10.5px] font-bold uppercase tracking-wide text-slate-400">Produksi</h3>
                                     <span className="text-[9px] font-medium text-slate-400">17 Mei 2026</span>
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-2 text-center">
                                         <p className="text-sm font-extrabold text-blue-900">19,431</p>
-                                        <p className="text-[9.5px] font-semibold text-blue-700">BOPD (Oil)</p>
+                                        <p className="text-[9.5px] font-semibold text-blue-700">BOPD (Minyak)</p>
                                     </div>
                                     <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-2 text-center">
                                         <p className="text-sm font-extrabold text-blue-900">228.010</p>
@@ -777,7 +793,7 @@ const ContentOverview = () => {
                             </div>
 
                             <div>
-                                <h3 className="mb-1.5 text-[10.5px] font-bold uppercase tracking-wide text-slate-400">Production Facilities</h3>
+                                <h3 className="mb-1.5 text-[10.5px] font-bold uppercase tracking-wide text-slate-400">Fasilitas Produksi</h3>
                                 <div className="space-y-1 text-[11px] text-slate-700">
                                     <div className="flex items-center justify-between rounded bg-slate-50 px-2 py-1"><span>Struktur</span><span className="font-bold text-slate-800">49</span></div>
                                     <div className="flex items-center justify-between rounded bg-slate-50 px-2 py-1"><span>Stasiun Pengumpul</span><span className="font-bold text-slate-800">40</span></div>
@@ -810,9 +826,15 @@ const ContentOverview = () => {
                             <div id="card-info" className="relative -translate-y-2 pointer-events-none rounded-xl mb-3 border border-slate-200 bg-white p-4 opacity-0 shadow-lg transition-all duration-200 ease-in-out">
                                 {/* Header */}
                                 <div className="mb-3 flex items-start justify-between border-b border-slate-100 pb-2.5">
-                                    <div>
-                                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Info Umum</p>
-                                        <h2 id="cardInfoTitle" className="mt-0.5 text-sm font-bold text-blue-900">-</h2>
+                                    <div className="flex items-start gap-2.5">
+                                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-blue-50">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-blue-700" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.31 13.31 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h2 id="cardInfoTitle" className="mt-0.5 text-sm font-bold text-blue-900">-</h2>
+                                        </div>
                                     </div>
                                     <button type="button" id="closeCardInfo" className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md bg-slate-50 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500" aria-label="Tutup">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
