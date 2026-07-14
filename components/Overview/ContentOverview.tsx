@@ -721,7 +721,7 @@ const ContentOverview = () => {
                             </foreignObject>
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="meruap" x="120" y="288" width="96" height="24">
                                 <div className="text-center">
-                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md hover:bg-gray-800" data-badge-click="meruap" data-nama-click="SEBWP Meruap" data-provinsi-click="ID-SS">SEBWP Meruap</span>
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md hover:bg-gray-800" data-badge-click="meruap" data-nama-click="SEBWP Meruap" data-provinsi-click="ID-JA">SEBWP Meruap</span>
                                 </div>
                             </foreignObject>
                         </svg>
