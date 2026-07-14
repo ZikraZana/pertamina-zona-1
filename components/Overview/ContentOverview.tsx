@@ -7,7 +7,7 @@ type WilayahData = {
     provinsi: string | null;
     kabupaten_kota: string | null;
     jenis_wk: string | null;
-    tahun_beroperasi: string | null;
+    tahun_berdiri: string | null;
     luas_wilayah: string | null;
     part_interest: string | null;
     kkp: string | null;
@@ -170,7 +170,7 @@ const ContentOverview = () => {
             titleEl.textContent = namaWilayah;
 
             let d: WilayahData = {
-                nama_wilayah: null, provinsi: null, kabupaten_kota: null, jenis_wk: null, tahun_beroperasi: null, luas_wilayah: null, part_interest: null, kkp: null, produksi_minyak: null, produksi_gas: null, tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah: null, sumur_eksplorasi_active: null, sumur_eksplorasi_total: null, producer_active: null, producer_total: null, injector_active: null, injector_total: null, sumur_total_active: null, sumur_total_total: null, process_facilities_active: null, process_facilities_total: null, offshore_platforms_active: null, offshore_platforms_total: null, swamp_platforms_active: null, swamp_platforms_total: null, gas_compressors_active: null, gas_compressors_total: null, pipeline_active: null, pipeline_total: null, drilling_rigs: null, workover_rigs: null,
+                nama_wilayah: null, provinsi: null, kabupaten_kota: null, jenis_wk: null, tahun_berdiri: null, luas_wilayah: null, part_interest: null, kkp: null, produksi_minyak: null, produksi_gas: null, tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah: null, sumur_eksplorasi_active: null, sumur_eksplorasi_total: null, producer_active: null, producer_total: null, injector_active: null, injector_total: null, sumur_total_active: null, sumur_total_total: null, process_facilities_active: null, process_facilities_total: null, offshore_platforms_active: null, offshore_platforms_total: null, swamp_platforms_active: null, swamp_platforms_total: null, gas_compressors_active: null, gas_compressors_total: null, pipeline_active: null, pipeline_total: null, drilling_rigs: null, workover_rigs: null,
             };
 
             // DATASET
@@ -183,7 +183,7 @@ const ContentOverview = () => {
                     provinsi: "Aceh",
                     kabupaten_kota: null,
                     jenis_wk: "Gross Split",
-                    tahun_beroperasi: "2018",
+                    tahun_berdiri: "1998",
                     luas_wilayah: "6.842,01 km²",
                     part_interest: "100% - PT Pertamina Hulu Energi NSO (PHE NSO)",
                     kkp: "Komitmen Pasti Tiga Tahun Pertama: USD 18,500,000. Komitmen Kerja Tiga Tahun Kedua: USD 24,500,000. Realisasi ITD Okt'24 USD 37,955,597 (88%). 100% selesai Komitmen Pasti.",
@@ -220,7 +220,7 @@ const ContentOverview = () => {
                     provinsi: "Sumatera Utara",
                     kabupaten_kota: null,
                     jenis_wk: "Cost Recovery",
-                    tahun_beroperasi: null,
+                    tahun_berdiri: "1885",
                     luas_wilayah: "474,54 km²",
                     part_interest: "100% - PT Pertamina EP",
                     kkp: null,
@@ -257,7 +257,7 @@ const ContentOverview = () => {
                     provinsi: "Aceh",
                     kabupaten_kota: null,
                     jenis_wk: "Cost Recovery",
-                    tahun_beroperasi: null,
+                    tahun_berdiri: "1929",
                     luas_wilayah: "58,3 km²",
                     part_interest: "100% - PT Pertamina EP",
                     kkp: null,
@@ -294,7 +294,7 @@ const ContentOverview = () => {
                     provinsi: "Riau",
                     kabupaten_kota: null,
                     jenis_wk: "Cost Recovery",
-                    tahun_beroperasi: null,
+                    tahun_berdiri: "1940",
                     luas_wilayah: "433 km²",
                     part_interest: "100% - PT Pertamina EP",
                     kkp: null,
@@ -331,7 +331,7 @@ const ContentOverview = () => {
                     provinsi: "Jambi",
                     kabupaten_kota: null,
                     jenis_wk: "Cost Recovery",
-                    tahun_beroperasi: null,
+                    tahun_berdiri: "1922",
                     luas_wilayah: "5.751 km²",
                     part_interest: "100% - PT Pertamina EP",
                     kkp: null,
@@ -368,7 +368,7 @@ const ContentOverview = () => {
                     provinsi: "Sumatera Selatan",
                     kabupaten_kota: null,
                     jenis_wk: "Gross Split",
-                    tahun_beroperasi: "1989",
+                    tahun_berdiri: "2011",
                     luas_wilayah: "1.028,38 km²",
                     part_interest: "100% - PT Pertamina Hulu Energi Jambi Merang",
                     kkp: "Komitmen Kerja Pasti 5 Tahun: USD 239,300,000. Realisasi ITD Okt'24 USD 145,388,726.",
@@ -410,7 +410,7 @@ const ContentOverview = () => {
                 <p><span class="font-semibold">Provinsi:</span> ${d.provinsi ?? '-'}</p>
                 <p><span class="font-semibold">Kabupaten/Kota:</span> ${d.kabupaten_kota ?? '-'}</p>
                 <p><span class="font-semibold">Jenis Wilayah Kerja:</span> ${d.jenis_wk ?? '-'}</p>
-                <p><span class="font-semibold">Tahun Beroperasi:</span> ${d.tahun_beroperasi ?? '-'}</p>
+                <p><span class="font-semibold">Tahun Berdiri:</span> ${d.tahun_berdiri ?? '-'}</p>
                 <p><span class="font-semibold">Luas Wilayah:</span> ${d.luas_wilayah ?? '-'}</p>
             `;
 
@@ -438,7 +438,7 @@ const ContentOverview = () => {
                   <p><span class="font-semibold">Provinsi:</span> ${d.provinsi ?? '-'}</p>
                   <p><span class="font-semibold">Kabupaten/Kota:</span> ${d.kabupaten_kota ?? '-'}</p>
                   <p><span class="font-semibold">Jenis Wilayah Kerja:</span> ${d.jenis_wk ?? '-'}</p>
-                  <p><span class="font-semibold">Tahun Beroperasi:</span> ${d.tahun_beroperasi ?? '-'}</p>
+                  <p><span class="font-semibold">Tahun Berdiri:</span> ${d.tahun_berdiri ?? '-'}</p>
                   <p><span class="font-semibold">Luas Wilayah:</span> ${d.luas_wilayah ?? '-'}</p>
                   <p><span class="font-semibold">Part. Interest:</span> ${d.part_interest ?? '-'}</p>
                   <p><span class="font-semibold">KKP:</span> ${d.kkp ?? '-'}</p>
@@ -672,6 +672,8 @@ const ContentOverview = () => {
                             <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="lirik" x1="250" y1="210" x2="315" y2="170" />
                             <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="jambi" x1="282" y1="250" x2="345" y2="210" />
                             <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="jambi-merang" x1="299" y1="277" x2="395" y2="245" />
+                            <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="tamiang" x1="105" y1="60" x2="65" y2="120" />
+                            <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="meruap" x1="255" y1="265" x2="200" y2="295" />
 
                             <circle className="pointer-events-none fill-amber-500" data-dot="nso" data-nama="NSO" data-provinsi="ID-AC" cx="93" cy="25" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="p-susu" data-nama="Pangkalan Susu" data-provinsi="ID-SU" cx="125" cy="85" r="2.8" />
@@ -679,6 +681,8 @@ const ContentOverview = () => {
                             <circle className="pointer-events-none fill-amber-500" data-dot="lirik" data-nama="Lirik" data-provinsi="ID-RI" cx="250" cy="210" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="jambi" data-nama="Jambi" data-provinsi="ID-JA" cx="282" cy="250" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="jambi-merang" data-nama="Jambi Merang" data-provinsi="ID-SS" cx="299" cy="277" r="2.8" />
+                            <circle className="pointer-events-none fill-amber-500" data-dot="tamiang" data-nama="Tamiang Raya Energy" data-provinsi="ID-AC" cx="105" cy="60" r="2.8" />
+                            <circle className="pointer-events-none fill-amber-500" data-dot="meruap" data-nama="SEBWP Meruap" data-provinsi="ID-SS" cx="255" cy="265" r="2.8" />
 
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="nso" x="102" y="-1" width="96" height="24">
                                 <div className="text-center">
@@ -708,6 +712,16 @@ const ContentOverview = () => {
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="jambi-merang" x="347" y="239" width="96" height="24">
                                 <div className="text-center">
                                     <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-blue-900 px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md hover:bg-blue-800" data-badge-click="jambi-merang" data-nama-click="Jambi Merang" data-provinsi-click="ID-SS">Jambi Merang</span>
+                                </div>
+                            </foreignObject>
+                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="tamiang" x="0" y="105" width="110" height="24">
+                                <div className="text-center">
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md hover:bg-gray-800" data-badge-click="tamiang" data-nama-click="Tamiang Raya Energy" data-provinsi-click="ID-AC">Tamiang Raya</span>
+                                </div>
+                            </foreignObject>
+                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="meruap" x="120" y="288" width="96" height="24">
+                                <div className="text-center">
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md hover:bg-gray-800" data-badge-click="meruap" data-nama-click="SEBWP Meruap" data-provinsi-click="ID-SS">SEBWP Meruap</span>
                                 </div>
                             </foreignObject>
                         </svg>
