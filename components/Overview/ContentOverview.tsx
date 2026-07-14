@@ -416,8 +416,8 @@ const ContentOverview = () => {
 
             // Card 2: produksi saja
             produksiBody.innerHTML = `
-                <p><span class="font-semibold">Produksi Minyak:</span> ${d.produksi_minyak ?? '-'}</p>
-                <p><span class="font-semibold">Produksi Gas:</span> ${d.produksi_gas ?? '-'}</p>
+                <p><span class="font-semibold">Produksi Minyak:</span> ${d.produksi_minyak ?? '-'} Mbopd</p>
+                <p><span class="font-semibold">Produksi Gas:</span> ${d.produksi_gas ?? '-'} MMscfd</p>
                 <p><span class="font-semibold">Tanggal Produksi:</span> ${d.tanggal_produksi ?? '-'}</p>
             `
         }
@@ -445,8 +445,8 @@ const ContentOverview = () => {
                   <hr class="my-3">
                   <p class="font-semibold text-blue-900">Produksi</p>
                   <p><span class="font-semibold">Tanggal Data:</span> ${d.tanggal_produksi ?? '-'}</p>
-                  <p><span class="font-semibold">Produksi Minyak:</span> ${d.produksi_minyak ?? '-'} BOPD</p>
-                  <p><span class="font-semibold">Produksi Gas:</span> ${d.produksi_gas ?? '-'} MMSCFD</p>
+                  <p><span class="font-semibold">Produksi Minyak:</span> ${d.produksi_minyak ?? '-'} Mbopd</p>
+                  <p><span class="font-semibold">Produksi Gas:</span> ${d.produksi_gas ?? '-'} MMscfd</p>
                   <hr class="my-3">
                   <p class="font-semibold text-blue-900">Fasilitas</p>
                   <p><span class="font-semibold">Nama Fasilitas:</span> ${d.nama_fasilitas ?? '-'}</p>
