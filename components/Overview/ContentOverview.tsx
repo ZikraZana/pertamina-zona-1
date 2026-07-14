@@ -9,7 +9,6 @@ type WilayahData = {
     jenis_wk: string | null;
     tahun_beroperasi: string | null;
     luas_wilayah: string | null;
-    deskripsi: string | null;
     produksi_minyak: string | null;
     produksi_gas: string | null;
     tanggal_produksi: string | null;
@@ -169,33 +168,222 @@ const ContentOverview = () => {
             titleEl.textContent = namaWilayah;
 
             let d: WilayahData = {
-                nama_wilayah: null, provinsi: null, kabupaten_kota: null, jenis_wk: null, tahun_beroperasi: null, luas_wilayah: null, deskripsi: null, produksi_minyak: null, produksi_gas: null, tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah: null, sumur_eksplorasi_active: null, sumur_eksplorasi_total: null, producer_active: null, producer_total: null, injector_active: null, injector_total: null, sumur_total_active: null, sumur_total_total: null, process_facilities_active: null, process_facilities_total: null, offshore_platforms_active: null, offshore_platforms_total: null, swamp_platforms_active: null, swamp_platforms_total: null, gas_compressors_active: null, gas_compressors_total: null, pipeline_active: null, pipeline_total: null, drilling_rigs: null, workover_rigs: null,
+                nama_wilayah: null, provinsi: null, kabupaten_kota: null, jenis_wk: null, tahun_beroperasi: null, luas_wilayah: null, produksi_minyak: null, produksi_gas: null, tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah: null, sumur_eksplorasi_active: null, sumur_eksplorasi_total: null, producer_active: null, producer_total: null, injector_active: null, injector_total: null, sumur_total_active: null, sumur_total_total: null, process_facilities_active: null, process_facilities_total: null, offshore_platforms_active: null, offshore_platforms_total: null, swamp_platforms_active: null, swamp_platforms_total: null, gas_compressors_active: null, gas_compressors_total: null, pipeline_active: null, pipeline_total: null, drilling_rigs: null, workover_rigs: null,
             };
 
             // DATASET
+            // DATASET
+            // Sumber: Materi Kunjungan Kerja Komisi XII DPR RI, GMZ1, 25 Mei 2026 (slide 7-12)
+            // Field null = tidak disebutkan di ppt untuk wilayah kerja tsb.
             if (kode === 'nso') {
                 d = {
-                    nama_wilayah: "North Sumatra Offshore (NSO)", provinsi: "Aceh", kabupaten_kota: "Aceh Utara", jenis_wk: "GS", tahun_beroperasi: "1999", luas_wilayah: "1000 km²", deskripsi: "Wilayah kerja di Aceh Utara, fokus pada produksi gas.", produksi_minyak: "5000", produksi_gas: "100", tanggal_produksi: "2023-10-26", nama_fasilitas: "Fasilitas NSO Utama", jenis_fasilitas: "Produksi Gas", jumlah: "1", sumur_eksplorasi_active: "2", sumur_eksplorasi_total: "5", producer_active: "15", producer_total: "20", injector_active: "3", injector_total: "5", sumur_total_active: "20", sumur_total_total: "30", process_facilities_active: "1", process_facilities_total: "1", offshore_platforms_active: "2", offshore_platforms_total: "3", swamp_platforms_active: "0", swamp_platforms_total: "0", gas_compressors_active: "1", gas_compressors_total: "1", pipeline_active: "50", pipeline_total: "60", drilling_rigs: "1", workover_rigs: "0",
+                    nama_wilayah: "North Sumatra Offshore (NSO)",
+                    provinsi: "Aceh",
+                    kabupaten_kota: null,
+                    jenis_wk: "Gross Split",
+                    tahun_beroperasi: "2018",
+                    luas_wilayah: "6.842,01 km²",
+                    produksi_minyak: null,
+                    produksi_gas: "18.42",
+                    tanggal_produksi: "2025-10-31",
+                    nama_fasilitas: null,
+                    jenis_fasilitas: null,
+                    jumlah: null,
+                    sumur_eksplorasi_active: "3",
+                    sumur_eksplorasi_total: "32",
+                    producer_active: "5",
+                    producer_total: "9",
+                    injector_active: null,
+                    injector_total: null,
+                    sumur_total_active: "8",
+                    sumur_total_total: "41",
+                    process_facilities_active: "2",
+                    process_facilities_total: "2",
+                    offshore_platforms_active: "1",
+                    offshore_platforms_total: "1",
+                    swamp_platforms_active: null,
+                    swamp_platforms_total: null,
+                    gas_compressors_active: "2",
+                    gas_compressors_total: "2",
+                    pipeline_active: "1",
+                    pipeline_total: "1",
+                    drilling_rigs: null,
+                    workover_rigs: null,
                 };
             } else if (kode === 'p-susu') {
                 d = {
-                    nama_wilayah: "Pangkalan Susu", provinsi: "Sumatera Utara", kabupaten_kota: "Langkat", jenis_wk: "CR", tahun_beroperasi: "1970", luas_wilayah: "800 km²", deskripsi: "Wilayah kerja di Langkat, Sumatera Utara, dengan fokus minyak.", produksi_minyak: "3000", produksi_gas: "50", tanggal_produksi: "2023-10-26", nama_fasilitas: "Pangkalan Susu Plant", jenis_fasilitas: "Produksi Minyak", jumlah: "1", sumur_eksplorasi_active: "1", sumur_eksplorasi_total: "3", producer_active: "10", producer_total: "18", injector_active: "2", injector_total: "4", sumur_total_active: "13", sumur_total_total: "25", process_facilities_active: "1", process_facilities_total: "1", offshore_platforms_active: "0", offshore_platforms_total: "0", swamp_platforms_active: "1", swamp_platforms_total: "1", gas_compressors_active: "0", gas_compressors_total: "0", pipeline_active: "30", pipeline_total: "40", drilling_rigs: "0", workover_rigs: "1",
+                    nama_wilayah: "Pangkalan Susu",
+                    provinsi: "Sumatera Utara",
+                    kabupaten_kota: null,
+                    jenis_wk: "Cost Recovery",
+                    tahun_beroperasi: null,
+                    luas_wilayah: "474,54 km²",
+                    produksi_minyak: "0.23",
+                    produksi_gas: "3.00",
+                    tanggal_produksi: "2025-10-31",
+                    nama_fasilitas: null,
+                    jenis_fasilitas: null,
+                    jumlah: null,
+                    sumur_eksplorasi_active: null,
+                    sumur_eksplorasi_total: null,
+                    producer_active: "26",
+                    producer_total: "484",
+                    injector_active: "5",
+                    injector_total: "9",
+                    sumur_total_active: "31",
+                    sumur_total_total: "493",
+                    process_facilities_active: "11",
+                    process_facilities_total: "14",
+                    offshore_platforms_active: null,
+                    offshore_platforms_total: null,
+                    swamp_platforms_active: null,
+                    swamp_platforms_total: null,
+                    gas_compressors_active: "6",
+                    gas_compressors_total: "6",
+                    pipeline_active: ">1700 km",
+                    pipeline_total: ">1700 km",
+                    drilling_rigs: null,
+                    workover_rigs: null,
                 };
             } else if (kode === 'rantau') {
                 d = {
-                    nama_wilayah: "Rantau", provinsi: "Sumatera Utara", kabupaten_kota: "Aceh Tamiang", jenis_wk: "CR", tahun_beroperasi: "1928", luas_wilayah: "1200 km²", deskripsi: "Salah satu wilayah kerja tertua di Sumatera, produksi minyak dan gas.", produksi_minyak: "7000", produksi_gas: "80", tanggal_produksi: "2023-10-26", nama_fasilitas: "Rantau Field Station", jenis_fasilitas: "Produksi Minyak & Gas", jumlah: "2", sumur_eksplorasi_active: "0", sumur_eksplorasi_total: "2", producer_active: "25", producer_total: "35", injector_active: "5", injector_total: "7", sumur_total_active: "30", sumur_total_total: "44", process_facilities_active: "2", process_facilities_total: "2", offshore_platforms_active: "0", offshore_platforms_total: "0", swamp_platforms_active: "0", swamp_platforms_total: "0", gas_compressors_active: "1", gas_compressors_total: "1", pipeline_active: "70", pipeline_total: "85", drilling_rigs: "1", workover_rigs: "1",
+                    nama_wilayah: "Rantau",
+                    provinsi: "Aceh",
+                    kabupaten_kota: null,
+                    jenis_wk: "Cost Recovery",
+                    tahun_beroperasi: null,
+                    luas_wilayah: "58,3 km²",
+                    produksi_minyak: "1.93",
+                    produksi_gas: "2.47",
+                    tanggal_produksi: "2025-10-31",
+                    nama_fasilitas: null,
+                    jenis_fasilitas: null,
+                    jumlah: null,
+                    sumur_eksplorasi_active: null,
+                    sumur_eksplorasi_total: null,
+                    producer_active: "110",
+                    producer_total: "942",
+                    injector_active: "21",
+                    injector_total: "58",
+                    sumur_total_active: "131",
+                    sumur_total_total: "1000",
+                    process_facilities_active: "1",
+                    process_facilities_total: "1",
+                    offshore_platforms_active: null,
+                    offshore_platforms_total: null,
+                    swamp_platforms_active: null,
+                    swamp_platforms_total: null,
+                    gas_compressors_active: null,
+                    gas_compressors_total: null,
+                    pipeline_active: null,
+                    pipeline_total: null,
+                    drilling_rigs: null,
+                    workover_rigs: null,
                 };
             } else if (kode === 'lirik') {
                 d = {
-                    nama_wilayah: "Lirik", provinsi: "Riau", kabupaten_kota: "Indragiri Hulu", jenis_wk: "CR", tahun_beroperasi: "1952", luas_wilayah: "950 km²", deskripsi: "Wilayah kerja di Indragiri Hulu, Riau, penghasil minyak.", produksi_minyak: "4500", produksi_gas: "60", tanggal_produksi: "2023-10-26", nama_fasilitas: "Lirik Central Processing Plant", jenis_fasilitas: "Produksi Minyak", jumlah: "1", sumur_eksplorasi_active: "1", sumur_eksplorasi_total: "4", producer_active: "18", producer_total: "25", injector_active: "4", injector_total: "6", sumur_total_active: "23", sumur_total_total: "35", process_facilities_active: "1", process_facilities_total: "1", offshore_platforms_active: "0", offshore_platforms_total: "0", swamp_platforms_active: "0", swamp_platforms_total: "0", gas_compressors_active: "0", gas_compressors_total: "0", pipeline_active: "40", pipeline_total: "55", drilling_rigs: "0", workover_rigs: "1",
+                    nama_wilayah: "Lirik",
+                    provinsi: "Riau",
+                    kabupaten_kota: null,
+                    jenis_wk: "Cost Recovery",
+                    tahun_beroperasi: null,
+                    luas_wilayah: "433 km²",
+                    produksi_minyak: "1.34",
+                    produksi_gas: null,
+                    tanggal_produksi: "2025-10-31",
+                    nama_fasilitas: null,
+                    jenis_fasilitas: null,
+                    jumlah: null,
+                    sumur_eksplorasi_active: null,
+                    sumur_eksplorasi_total: null,
+                    producer_active: "96",
+                    producer_total: "304",
+                    injector_active: "56",
+                    injector_total: "64",
+                    sumur_total_active: "152",
+                    sumur_total_total: "368",
+                    process_facilities_active: "16",
+                    process_facilities_total: "16",
+                    offshore_platforms_active: null,
+                    offshore_platforms_total: null,
+                    swamp_platforms_active: null,
+                    swamp_platforms_total: null,
+                    gas_compressors_active: null,
+                    gas_compressors_total: null,
+                    pipeline_active: ">1700 km",
+                    pipeline_total: ">1700 km",
+                    drilling_rigs: "0 Swamp, 0 Offshore",
+                    workover_rigs: "2 Swamp, 0 Offshore",
                 };
             } else if (kode === 'jambi') {
                 d = {
-                    nama_wilayah: "Jambi", provinsi: "Jambi", kabupaten_kota: "Muaro Jambi", jenis_wk: "CR", tahun_beroperasi: "1980", luas_wilayah: "1100 km²", deskripsi: "Wilayah kerja di Muaro Jambi, fokus pada gas.", produksi_minyak: "2000", produksi_gas: "120", tanggal_produksi: "2023-10-26", nama_fasilitas: "Jambi Gas Plant", jenis_fasilitas: "Produksi Gas", jumlah: "1", sumur_eksplorasi_active: "3", sumur_eksplorasi_total: "6", producer_active: "12", producer_total: "20", injector_active: "1", injector_total: "2", sumur_total_active: "16", sumur_total_total: "28", process_facilities_active: "1", process_facilities_total: "1", offshore_platforms_active: "0", offshore_platforms_total: "0", swamp_platforms_active: "0", swamp_platforms_total: "0", gas_compressors_active: "1", gas_compressors_total: "1", pipeline_active: "60", pipeline_total: "75", drilling_rigs: "1", workover_rigs: "0",
+                    nama_wilayah: "Jambi",
+                    provinsi: "Jambi",
+                    kabupaten_kota: null,
+                    jenis_wk: "Cost Recovery",
+                    tahun_beroperasi: null,
+                    luas_wilayah: "5.751 km²",
+                    produksi_minyak: "6.8",
+                    produksi_gas: "6.08",
+                    tanggal_produksi: "2025-10-31",
+                    nama_fasilitas: null,
+                    jenis_fasilitas: null,
+                    jumlah: null,
+                    sumur_eksplorasi_active: null,
+                    sumur_eksplorasi_total: null,
+                    producer_active: "176",
+                    producer_total: "626",
+                    injector_active: "63",
+                    injector_total: "103",
+                    sumur_total_active: "239",
+                    sumur_total_total: "729",
+                    process_facilities_active: "9",
+                    process_facilities_total: "9",
+                    offshore_platforms_active: null,
+                    offshore_platforms_total: null,
+                    swamp_platforms_active: null,
+                    swamp_platforms_total: null,
+                    gas_compressors_active: null,
+                    gas_compressors_total: "5",
+                    pipeline_active: ">375 km",
+                    pipeline_total: ">375 km",
+                    drilling_rigs: "3 Rig",
+                    workover_rigs: "1 Rig WO, 3 Well Service",
                 };
             } else if (kode === 'jambi-merang') {
                 d = {
-                    nama_wilayah: "Jambi Merang", provinsi: "Sumatera Selatan", kabupaten_kota: "Musi Banyuasin", jenis_wk: "GS", tahun_beroperasi: "2008", luas_wilayah: "1500 km²", deskripsi: "Wilayah kerja di Musi Banyuasin, Sumatera Selatan, produksi gas dan kondensat.", produksi_minyak: "1500", produksi_gas: "150", tanggal_produksi: "2023-10-26", nama_fasilitas: "Jambi Merang CPF", jenis_fasilitas: "Produksi Gas & Kondensat", jumlah: "1", sumur_eksplorasi_active: "2", sumur_eksplorasi_total: "4", producer_active: "8", producer_total: "15", injector_active: "0", injector_total: "0", sumur_total_active: "10", sumur_total_total: "19", process_facilities_active: "1", process_facilities_total: "1", offshore_platforms_active: "0", offshore_platforms_total: "0", swamp_platforms_active: "0", swamp_platforms_total: "0", gas_compressors_active: "1", gas_compressors_total: "1", pipeline_active: "80", pipeline_total: "90", drilling_rigs: "0", workover_rigs: "0",
+                    nama_wilayah: "Jambi Merang",
+                    provinsi: "Sumatera Selatan",
+                    kabupaten_kota: null,
+                    jenis_wk: "Gross Split",
+                    tahun_beroperasi: "1989",
+                    luas_wilayah: "1.028,38 km²",
+                    produksi_minyak: "5.00",
+                    produksi_gas: "126.78",
+                    tanggal_produksi: "2025-10-31",
+                    nama_fasilitas: "Sungai Kenawang Central Gas Processing Plant",
+                    jenis_fasilitas: "Central Gas Processing Plant (kapasitas 155 MMSCFD, design lifetime 25 tahun)",
+                    jumlah: "3",
+                    sumur_eksplorasi_active: null,
+                    sumur_eksplorasi_total: null,
+                    producer_active: "9 (5 SKN + 4 PGD)",
+                    producer_total: null,
+                    injector_active: "2 (water disposal)",
+                    injector_total: null,
+                    sumur_total_active: null,
+                    sumur_total_total: null,
+                    process_facilities_active: null,
+                    process_facilities_total: null,
+                    offshore_platforms_active: null,
+                    offshore_platforms_total: null,
+                    swamp_platforms_active: null,
+                    swamp_platforms_total: null,
+                    gas_compressors_active: null,
+                    gas_compressors_total: null,
+                    pipeline_active: null,
+                    pipeline_total: null,
+                    drilling_rigs: null,
+                    workover_rigs: null,
                 };
             }
 
@@ -210,7 +398,6 @@ const ContentOverview = () => {
                 <p><span class="font-semibold">Jenis Wilayah Kerja:</span> ${d.jenis_wk ?? '-'}</p>
                 <p><span class="font-semibold">Tahun Beroperasi:</span> ${d.tahun_beroperasi ?? '-'}</p>
                 <p><span class="font-semibold">Luas Wilayah:</span> ${d.luas_wilayah ?? '-'}</p>
-                <p><span class="font-semibold">Deskripsi:</span> ${d.deskripsi ?? '-'}</p>
             `;
 
             // Card 2: produksi saja
@@ -239,7 +426,6 @@ const ContentOverview = () => {
                   <p><span class="font-semibold">Jenis Wilayah Kerja:</span> ${d.jenis_wk ?? '-'}</p>
                   <p><span class="font-semibold">Tahun Beroperasi:</span> ${d.tahun_beroperasi ?? '-'}</p>
                   <p><span class="font-semibold">Luas Wilayah:</span> ${d.luas_wilayah ?? '-'}</p>
-                  <p><span class="font-semibold">Deskripsi:</span> ${d.deskripsi ?? '-'}</p>
                   <hr class="my-3">
                   <p class="font-semibold text-blue-900">Produksi</p>
                   <p><span class="font-semibold">Tanggal Data:</span> ${d.tanggal_produksi ?? '-'}</p>
@@ -568,8 +754,10 @@ const ContentOverview = () => {
 
                         {/* KANAN: KONDISI AWAL (OVERVIEW OPERASIONAL ZONA) */}
                         <div id="zone-overview-container" className="absolute right-6 top-6 flex max-h-[calc(100%-48px)] w-75 flex-col gap-3 overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 shadow-lg transition-all duration-200">
-                            <h2 className="text-base font-bold text-blue-900">Operasional Zona 1</h2>
-                            <p className="mb-1 text-[11px] text-slate-400">Data produksi dan fasilitas kumulatif Regional 1</p>
+                            <div>
+                                <h2 className="text-base font-bold text-blue-900">Operasional Zona 1</h2>
+                                <p className="mb-1 text-[11px] text-slate-400">Data produksi dan fasilitas kumulatif Regional 1</p>
+                            </div>
 
                             <div>
                                 <div className="mb-1.5 flex items-end justify-between">
@@ -610,16 +798,16 @@ const ContentOverview = () => {
                                         <li>~500 program WO/WI/WS per tahun</li>
                                     </ul>
                                     <p className="mb-1 font-semibold text-slate-800">Rig Availability:</p>
-                                    <p className="text-[10.5px]">3 Rig Pemboran + 15 Rig WOWS untuk mendukung program development.</p>
+                                    <p className="text-[10.5px]">3 Rig Pemboran + 15 Rig WOWS untuk mendukung program development dan base business.</p>
                                 </div>
                             </details>
                         </div>
 
                         {/* KANAN: KONDISI LAPANGAN AKTIF (3 QUICK CARDS) */}
-                        <div id="quick-cards-container" className="absolute right-6 top-6 hidden max-h-[calc(100%-48px)] w-72 flex-col gap-3 overflow-y-auto pb-4">
+                        <div id="quick-cards-container" className="absolute right-6 top-6 hidden max-h-[calc(100%-48px)] w-72 flex-col overflow-y-auto pb-4">
 
                             {/* CARD 1: Info Umum Lapangan */}
-                            <div id="card-info" className="relative -translate-y-2 pointer-events-none rounded-xl border border-slate-200 bg-white p-4 opacity-0 shadow-lg transition-all duration-200 ease-in-out">
+                            <div id="card-info" className="relative -translate-y-2 pointer-events-none rounded-xl mb-3 border border-slate-200 bg-white p-4 opacity-0 shadow-lg transition-all duration-200 ease-in-out">
                                 {/* Header */}
                                 <div className="mb-3 flex items-start justify-between border-b border-slate-100 pb-2.5">
                                     <div>
@@ -666,42 +854,42 @@ const ContentOverview = () => {
                     </div>
 
                     {/* DETAIL PANE: Pane splitview detail lengkap */}
-<div 
-    id="detail-pane" 
-    className="absolute bottom-6 right-6 top-6 z-50 flex w-0 items-center justify-end overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-in-out pl-4"
->
-    <div 
-        id="card-detail" 
-        className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
-    >
-        {/* HEADER: Sticky di atas, tidak ikut ter-scroll */}
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-4 backdrop-blur-sm">
-            <div>
-                <div className="mb-1 flex items-center gap-2">
-                    <span className="flex h-2 w-2 rounded-full bg-blue-600"></span>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Detail Operasional</p>
-                </div>
-                <h2 id="cardDetailTitle" className="text-xl font-bold tracking-tight text-blue-950">-</h2>
-            </div>
-            
-            {/* Tombol Close Modern */}
-            <button 
-                type="button" 
-                id="closeCardDetail" 
-                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 transition-all hover:border-red-200 hover:bg-red-50 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-100" 
-                aria-label="Tutup"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+                    <div
+                        id="detail-pane"
+                        className="absolute bottom-6 right-6 top-6 z-50 flex w-0 items-center justify-end overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-in-out pl-4"
+                    >
+                        <div
+                            id="card-detail"
+                            className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+                        >
+                            {/* HEADER: Sticky di atas, tidak ikut ter-scroll */}
+                            <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-4 backdrop-blur-sm">
+                                <div>
+                                    <div className="mb-1 flex items-center gap-2">
+                                        <span className="flex h-2 w-2 rounded-full bg-blue-600"></span>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Detail Operasional</p>
+                                    </div>
+                                    <h2 id="cardDetailTitle" className="text-xl font-bold tracking-tight text-blue-950">-</h2>
+                                </div>
 
-        {/* BODY: Area Scrollable dengan styling "Sihir" Tailwind */}
-        <div className="flex-1 overflow-y-auto bg-white px-6 py-5 custom-scrollbar">
-            <div 
-                id="cardDetailBody" 
-                className="
+                                {/* Tombol Close Modern */}
+                                <button
+                                    type="button"
+                                    id="closeCardDetail"
+                                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 transition-all hover:border-red-200 hover:bg-red-50 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-100"
+                                    aria-label="Tutup"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* BODY: Area Scrollable dengan styling "Sihir" Tailwind */}
+                            <div className="flex-1 overflow-y-auto bg-white px-6 py-5 custom-scrollbar">
+                                <div
+                                    id="cardDetailBody"
+                                    className="
                     text-sm text-slate-700
                     
                     /* 1. Styling untuk Judul Section (Info Umum, Produksi, dll) */
@@ -717,10 +905,10 @@ const ContentOverview = () => {
                     /* 4. Menghaluskan tampilan Tabel bawaan JS */
                     [&_table]:shadow-sm [&_th]:bg-slate-800 [&_th]:text-slate-100 [&_td]:text-slate-600 [&_tr:hover]:bg-slate-50
                 "
-            ></div>
-        </div>
-    </div>
-</div>
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
             </div>
