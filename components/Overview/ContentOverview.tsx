@@ -58,10 +58,10 @@ const ContentOverview = () => {
         const CARD_SHOWN = ['opacity-100', 'translate-y-0', 'pointer-events-auto'];
 
         // Kelas untuk pane peta (kiri) & pane detail (kanan) saat split-screen aktif
-        const MAP_PANE_FULL = ['w-full'];
-        const MAP_PANE_HALF = ['w-1/2'];
-        const DETAIL_PANE_HIDDEN = ['w-0', 'opacity-0', 'pointer-events-none'];
-        const DETAIL_PANE_SHOWN = ['w-1/2', 'opacity-100', 'pointer-events-auto'];
+        const MAP_PANE_FULL = ['lg:w-full'];
+        const MAP_PANE_HALF = ['lg:w-1/2'];
+        const DETAIL_PANE_HIDDEN = ['opacity-0', 'pointer-events-none', 'lg:w-0'];
+        const DETAIL_PANE_SHOWN = ['opacity-100', 'pointer-events-auto', 'lg:w-1/2'];
 
         // Aktifkan / nonaktifkan tampilan split-screen (peta kiri, card detail kanan)
         function toggleSplitView(active: boolean) {
@@ -109,6 +109,7 @@ const ContentOverview = () => {
             const overview = document.getElementById('card-geografis');
             overview?.classList.remove('opacity-100', 'pointer-events-auto');
             overview?.classList.add('opacity-0', 'pointer-events-none');
+            overview?.classList.add('max-lg:hidden');
         }
 
         function closeCards() {
@@ -128,7 +129,7 @@ const ContentOverview = () => {
             zoneOverview?.classList.remove('hidden');
 
             const overview = document.getElementById('card-geografis');
-            overview?.classList.remove('opacity-0', 'pointer-events-none');
+            overview?.classList.remove('opacity-0', 'pointer-events-none', 'max-lg:hidden');
             overview?.classList.add('opacity-100', 'pointer-events-auto');
         }
 
@@ -642,8 +643,8 @@ const ContentOverview = () => {
 
     return (
         <>
-            <div className="flex h-screen flex-col overflow-hidden bg-slate-100 p-6">
-                <h1 className="group relative z-10 mb-2 shrink-0 w-fit mx-auto cursor-default bg-linear-to-b from-blue-900 to-blue-500 bg-clip-text text-3xl text-center font-bold text-transparent transition-transform duration-300 ease-out hover:-translate-y-1">
+            <div className="flex min-h-screen flex-col overflow-visible bg-slate-100 p-3 sm:p-4 lg:h-screen lg:overflow-hidden lg:p-6">
+                <h1 className="group relative z-10 mb-2 shrink-0 w-fit mx-auto cursor-default bg-linear-to-b from-blue-900 to-blue-500 bg-clip-text text-xl sm:text-2xl lg:text-3xl text-center font-bold text-transparent transition-transform duration-300 ease-out hover:-translate-y-1">
                     Pertamina Hulu Rokan Zona 1
                     <span
                         aria-hidden="true"
@@ -652,12 +653,12 @@ const ContentOverview = () => {
                     </span>
                 </h1>
 
-                <span className="mb-4 shrink-0 text-md text-center text-blue-900">Peta Wilayah Kerja</span>
+                <span className="mb-3 shrink-0 text-sm text-center text-blue-900 sm:text-md lg:mb-4">Peta Wilayah Kerja</span>
 
                 {/* Wrapper peta: mengisi penuh sisa ruang (lebar & tinggi) */}
-                <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-slate-300 bg-white p-4 shadow-lg">
-                    <div id="map-pane" className="relative h-full w-full transition-all duration-300 ease-in-out">
-                        <svg id="map-svg" className="h-full w-full" viewBox="0 0 460 413" preserveAspectRatio="xMidYMid meet" role="img">
+                <div className="relative min-h-0 overflow-hidden rounded-xl border border-slate-300 bg-white p-3 shadow-lg sm:p-4 lg:flex-1">
+                    <div id="map-pane" className="relative h-auto w-full transition-all duration-300 ease-in-out lg:h-full">
+                        <svg id="map-svg" className="h-[42vh] min-h-60 w-full md:h-[52vh] lg:h-full" viewBox="0 0 460 413" preserveAspectRatio="xMidYMid meet" role="img">
 
                             <path className="prov cursor-pointer stroke-white stroke-[1px] transition-opacity duration-150 hover:opacity-[.85]" fill="#003399" data-p="ID-RI" data-nama="Riau" d="M 183.9,120.5 L 184.9,125.1 L 191.4,132.4 L 198.8,135.5 L 201.6,136.3 L 197.9,130.3 L 199.1,128.9 L 207.3,128.5 L 210.7,133.2 L 215.7,137.8 L 217.0,143.3 L 217.1,145.3 L 220.8,147.8 L 224.9,149.2 L 229.8,148.5 L 239.1,156.0 L 242.3,157.6 L 242.7,162.3 L 243.6,166.5 L 247.9,172.5 L 253.5,177.7 L 259.9,177.7 L 262.3,178.5 L 266.8,179.0 L 271.4,185.0 L 275.5,187.1 L 279.2,185.6 L 280.3,184.4 L 285.7,187.5 L 289.2,190.8 L 293.1,193.0 L 294.6,198.5 L 295.6,202.1 L 288.9,202.7 L 288.7,205.2 L 285.9,208.0 L 289.8,209.4 L 294.7,213.0 L 292.1,213.3 L 289.0,216.1 L 283.5,218.8 L 282.7,225.5 L 285.3,226.8 L 280.8,227.3 L 270.1,226.3 L 263.6,233.1 L 259.7,236.7 L 257.5,237.2 L 253.5,236.9 L 250.3,235.2 L 248.0,232.9 L 245.8,231.7 L 242.8,230.9 L 241.4,231.7 L 237.1,230.3 L 232.6,233.6 L 229.5,233.2 L 224.6,229.4 L 218.5,225.7 L 217.0,223.2 L 211.3,219.7 L 206.2,214.8 L 205.3,212.1 L 202.5,213.9 L 200.1,212.3 L 198.4,209.4 L 198.0,203.1 L 198.7,198.1 L 196.7,195.8 L 195.4,196.3 L 188.2,194.9 L 186.0,191.1 L 182.3,191.3 L 180.3,185.1 L 181.5,179.2 L 179.2,177.5 L 177.5,173.3 L 177.7,171.5 L 176.8,167.5 L 177.5,164.2 L 177.2,161.6 L 175.8,157.4 L 182.1,156.3 L 186.4,154.7 L 186.6,152.6 L 187.9,149.6 L 182.7,144.0 L 183.6,140.3 L 184.8,130.6 L 183.0,124.4 L 183.9,120.5 Z" />
                             <path className="prov cursor-pointer stroke-white stroke-[1px] transition-opacity duration-150 hover:opacity-[.85]" fill="#003399" data-p="ID-SU" data-nama="Sumatera Utara" d="M 117.1,64.0 L 117.0,66.8 L 114.4,69.8 L 117.7,69.5 L 118.8,71.0 L 122.9,72.1 L 126.9,75.3 L 130.6,76.3 L 131.4,77.4 L 134.3,82.4 L 143.5,85.8 L 147.7,88.3 L 149.9,90.3 L 156.7,94.3 L 158.7,97.6 L 164.8,100.0 L 167.7,103.4 L 173.2,107.5 L 173.3,111.9 L 173.5,114.4 L 175.2,114.1 L 177.7,116.0 L 180.4,115.0 L 183.9,120.5 L 183.0,124.4 L 184.8,130.6 L 183.6,140.3 L 182.7,144.0 L 186.4,144.8 L 186.6,152.6 L 186.4,154.7 L 182.1,156.3 L 181.1,157.2 L 176.0,159.0 L 177.5,164.2 L 176.8,167.5 L 178.4,169.9 L 176.2,172.6 L 177.8,176.4 L 175.9,176.5 L 171.9,173.9 L 168.0,173.4 L 168.3,179.9 L 170.7,182.5 L 172.1,184.2 L 167.6,187.2 L 164.1,187.4 L 162.7,186.5 L 160.0,185.4 L 154.2,186.1 L 150.6,191.2 L 148.7,191.5 L 146.0,192.1 L 145.4,188.0 L 143.4,181.8 L 142.9,178.6 L 140.8,175.5 L 138.7,168.5 L 135.9,160.6 L 136.1,159.1 L 133.4,152.8 L 136.0,149.6 L 134.6,147.8 L 133.7,145.4 L 130.8,146.0 L 125.0,139.6 L 121.4,137.4 L 121.4,137.4 L 119.8,136.2 L 116.1,134.6 L 114.9,127.4 L 112.5,124.0 L 112.4,122.5 L 111.3,119.2 L 112.9,116.6 L 111.7,111.2 L 110.3,111.0 L 107.4,108.7 L 107.0,103.2 L 108.2,101.4 L 107.1,100.2 L 104.8,97.5 L 109.9,94.9 L 107.3,92.9 L 105.9,87.7 L 103.9,84.2 L 106.0,79.1 L 107.1,76.6 L 107.6,75.6 L 110.8,67.2 L 113.6,64.1 L 117.1,64.0 Z" />
@@ -745,7 +746,7 @@ const ContentOverview = () => {
                         </svg>
 
                         {/* CARD GEOGRAFIS: statis di kiri, selalu tampil awal */}
-                        <div id="card-geografis" className="absolute bottom-6 left-6 top-6 w-72 overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 shadow-lg opacity-100 pointer-events-auto transition-opacity duration-200 ease-in-out">
+                        <div id="card-geografis" className="static mb-4 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 shadow-lg opacity-100 pointer-events-auto transition-opacity duration-200 ease-in-out lg:absolute lg:bottom-6 lg:left-6 lg:top-6 lg:mb-0 lg:w-72">
                             <h2 className="text-base font-bold text-blue-900">Overview Zona 1</h2>
                             <p className="mb-4 text-[11px] text-slate-400">Ringkasan cakupan wilayah kerja Regional 1 Sumatra</p>
 
@@ -801,7 +802,7 @@ const ContentOverview = () => {
                         </div>
 
                         {/* KANAN: KONDISI AWAL (OVERVIEW OPERASIONAL ZONA) */}
-                        <div id="zone-overview-container" className="absolute right-6 top-6 flex max-h-[calc(100%-48px)] w-75 flex-col gap-3 overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 shadow-lg transition-all duration-200">
+                        <div id="zone-overview-container" className="static mt-0 flex max-h-none w-full flex-col gap-3 overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 shadow-lg transition-all duration-200 lg:absolute lg:right-6 lg:top-6 lg:max-h-[calc(100%-48px)] lg:w-75">
                             <div>
                                 <h2 className="text-base font-bold text-blue-900">Operasional Zona 1</h2>
                                 <p className="mb-1 text-[11px] text-slate-400">Data produksi dan fasilitas kumulatif Regional 1</p>
@@ -852,7 +853,7 @@ const ContentOverview = () => {
                         </div>
 
                         {/* KANAN: KONDISI LAPANGAN AKTIF (3 QUICK CARDS) */}
-                        <div id="quick-cards-container" className="absolute right-6 top-6 hidden max-h-[calc(100%-48px)] w-72 flex-col overflow-y-auto pb-4">
+                        <div id="quick-cards-container" className="static mt-4 hidden max-h-none w-full flex-col overflow-y-auto pb-4 lg:absolute lg:right-6 lg:top-6 lg:mt-0 lg:max-h-[calc(100%-48px)] lg:w-72">
 
                             {/* CARD 1: Info Umum Lapangan */}
                             <div id="card-info" className="relative -translate-y-2 pointer-events-none rounded-xl mb-3 border border-slate-200 bg-white p-4 opacity-0 shadow-lg transition-all duration-200 ease-in-out">
@@ -910,7 +911,7 @@ const ContentOverview = () => {
                     {/* DETAIL PANE: Pane splitview detail lengkap */}
                     <div
                         id="detail-pane"
-                        className="absolute bottom-6 right-6 top-6 z-50 flex w-0 items-center justify-end overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-in-out pl-4"
+                        className="fixed inset-3 z-50 flex w-full items-center justify-end overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-in-out sm:inset-4 lg:absolute lg:inset-auto lg:bottom-6 lg:right-6 lg:top-6 lg:w-0 lg:pl-4"
                     >
                         <div
                             id="card-detail"
