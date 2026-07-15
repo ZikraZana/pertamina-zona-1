@@ -674,6 +674,7 @@ const ContentOverview = () => {
                             <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="jambi-merang" x1="299" y1="277" x2="395" y2="245" />
                             <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="tamiang" x1="105" y1="60" x2="65" y2="120" />
                             <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="meruap" x1="255" y1="265" x2="200" y2="295" />
+                            <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="Jabung" x1="285" y1="240" x2="170" y2="267" />
 
                             <circle className="pointer-events-none fill-amber-500" data-dot="nso" data-nama="NSO" data-provinsi="ID-AC" cx="93" cy="25" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="p-susu" data-nama="Pangkalan Susu" data-provinsi="ID-SU" cx="125" cy="85" r="2.8" />
@@ -683,6 +684,7 @@ const ContentOverview = () => {
                             <circle className="pointer-events-none fill-amber-500" data-dot="jambi-merang" data-nama="Jambi Merang" data-provinsi="ID-SS" cx="299" cy="277" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="tamiang" data-nama="Tamiang Raya Energy" data-provinsi="ID-AC" cx="105" cy="60" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="meruap" data-nama="SEBWP Meruap" data-provinsi="ID-SS" cx="255" cy="265" r="2.8" />
+                            <circle className="pointer-events-none fill-amber-500" data-dot="jabung" data-nama="Jabung" data-provinsi="ID-JA" cx="285" cy="240" r="2.8" />
 
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="nso" x="102" y="-1" width="96" height="24">
                                 <div className="text-center">
@@ -722,6 +724,11 @@ const ContentOverview = () => {
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="meruap" x="120" y="288" width="96" height="24">
                                 <div className="text-center">
                                     <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md hover:bg-gray-800" data-badge-click="meruap" data-nama-click="SEBWP Meruap" data-provinsi-click="ID-JA">SEBWP Meruap</span>
+                                </div>
+                            </foreignObject>
+                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="jabung" x="115" y="250" width="96" height="24">
+                                <div className="text-center">
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md hover:bg-gray-800" data-badge-click="jabung" data-nama-click="Jabung" data-provinsi-click="ID-JA">Jabung</span>
                                 </div>
                             </foreignObject>
                         </svg>
