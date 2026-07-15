@@ -162,6 +162,18 @@ const ContentOverview = () => {
             activeKey = null;
         }
 
+        // 3 "sel" grid: Label | : | Value. Karena semua baris berbagi grid container
+        // yang sama, lebar kolom label & posisi titik dua otomatis rata di semua baris,
+        // dan value yang panjang akan turun baris tetap sejajar di kolomnya sendiri.
+        function row(label: string, value: string | number | null | undefined) {
+            const safeValue = (value === null || value === undefined || value === '') ? '-' : value;
+            return `
+                <span class="font-medium text-slate-500">${label}</span>
+                <span class="text-slate-400">:</span>
+                <span class="min-w-0 wrap-break-word text-slate-800">${safeValue}</span>
+            `;
+        }
+
         function loadWilayahKerja(kode: string, namaWilayah: string) {
             const titleEl = document.getElementById('cardInfoTitle')!;
             const infoBody = document.getElementById('cardInfoBody')!;
@@ -177,11 +189,12 @@ const ContentOverview = () => {
             // DATASET
             // Sumber: Materi Kunjungan Kerja Komisi XII DPR RI, GMZ1, 25 Mei 2026 (slide 7-12)
             // Field null = tidak disebutkan di ppt untuk wilayah kerja tsb.
+            // Kabupaten/Kota ditambahkan dari sumber terpisah (berita & dokumen resmi Pertamina/Pemda terkait wilayah kerja masing-masing field).
             if (kode === 'nso') {
                 d = {
                     nama_wilayah: "North Sumatra Offshore (NSO)",
                     provinsi: "Aceh",
-                    kabupaten_kota: null,
+                    kabupaten_kota: "Lepas pantai Kab. Aceh Timur, Kab. Aceh Utara & Kota Lhokseumawe",
                     jenis_wk: "Gross Split",
                     tahun_berdiri: "1998",
                     luas_wilayah: "6.842,01 km²",
@@ -218,7 +231,7 @@ const ContentOverview = () => {
                 d = {
                     nama_wilayah: "Pangkalan Susu",
                     provinsi: "Sumatera Utara",
-                    kabupaten_kota: null,
+                    kabupaten_kota: "Kab. Langkat & Kab. Deli Serdang",
                     jenis_wk: "Cost Recovery",
                     tahun_berdiri: "1885",
                     luas_wilayah: "474,54 km²",
@@ -255,7 +268,7 @@ const ContentOverview = () => {
                 d = {
                     nama_wilayah: "Rantau",
                     provinsi: "Aceh",
-                    kabupaten_kota: null,
+                    kabupaten_kota: "Kab. Aceh Tamiang (Aceh) & Kab. Langkat (Sumatera Utara)",
                     jenis_wk: "Cost Recovery",
                     tahun_berdiri: "1929",
                     luas_wilayah: "58,3 km²",
@@ -292,7 +305,7 @@ const ContentOverview = () => {
                 d = {
                     nama_wilayah: "Lirik",
                     provinsi: "Riau",
-                    kabupaten_kota: null,
+                    kabupaten_kota: "Kab. Indragiri Hulu, Kab. Pelalawan & Kab. Siak",
                     jenis_wk: "Cost Recovery",
                     tahun_berdiri: "1940",
                     luas_wilayah: "433 km²",
@@ -329,7 +342,7 @@ const ContentOverview = () => {
                 d = {
                     nama_wilayah: "Jambi",
                     provinsi: "Jambi",
-                    kabupaten_kota: null,
+                    kabupaten_kota: "Kota Jambi, Kab. Muaro Jambi & Kab. Batanghari",
                     jenis_wk: "Cost Recovery",
                     tahun_berdiri: "1922",
                     luas_wilayah: "5.751 km²",
@@ -366,7 +379,7 @@ const ContentOverview = () => {
                 d = {
                     nama_wilayah: "Jambi Merang",
                     provinsi: "Sumatera Selatan",
-                    kabupaten_kota: null,
+                    kabupaten_kota: "Kab. Musi Banyuasin",
                     jenis_wk: "Gross Split",
                     tahun_berdiri: "2011",
                     luas_wilayah: "1.028,38 km²",
@@ -406,19 +419,19 @@ const ContentOverview = () => {
 
             // Card 1: info umum
             infoBody.innerHTML = `
-                <p><span class="font-semibold">Nama Wilayah:</span> ${d.nama_wilayah ?? '-'}</p>
-                <p><span class="font-semibold">Provinsi:</span> ${d.provinsi ?? '-'}</p>
-                <p><span class="font-semibold">Kabupaten/Kota:</span> ${d.kabupaten_kota ?? '-'}</p>
-                <p><span class="font-semibold">Jenis Wilayah Kerja:</span> ${d.jenis_wk ?? '-'}</p>
-                <p><span class="font-semibold">Tahun Berdiri:</span> ${d.tahun_berdiri ?? '-'}</p>
-                <p><span class="font-semibold">Luas Wilayah:</span> ${d.luas_wilayah ?? '-'}</p>
+                ${row('Nama Wilayah', d.nama_wilayah)}
+                ${row('Provinsi', d.provinsi)}
+                ${row('Kabupaten/Kota', d.kabupaten_kota)}
+                ${row('Jenis Wilayah Kerja', d.jenis_wk)}
+                ${row('Tahun Berdiri', d.tahun_berdiri)}
+                ${row('Luas Wilayah', d.luas_wilayah)}
             `;
 
             // Card 2: produksi saja
             produksiBody.innerHTML = `
-                <p><span class="font-semibold">Produksi Minyak:</span> ${d.produksi_minyak ?? '-'} Mbopd</p>
-                <p><span class="font-semibold">Produksi Gas:</span> ${d.produksi_gas ?? '-'} MMscfd</p>
-                <p><span class="font-semibold">Tanggal Produksi:</span> ${d.tanggal_produksi ?? '-'}</p>
+                ${row('Produksi Minyak', `${d.produksi_minyak ?? '-'} Mbopd`)}
+                ${row('Produksi Gas', `${d.produksi_gas ?? '-'} MMscfd`)}
+                ${row('Tanggal Produksi', d.tanggal_produksi)}
             `
         }
 
@@ -433,30 +446,30 @@ const ContentOverview = () => {
 
             titleEl.textContent = `${lastNama} — Detail Lengkap`;
             bodyEl.innerHTML = `
-                  <p class="font-semibold text-blue-900">Info Umum</p>
-                  <p><span class="font-semibold">Nama Wilayah:</span> ${d.nama_wilayah ?? '-'}</p>
-                  <p><span class="font-semibold">Provinsi:</span> ${d.provinsi ?? '-'}</p>
-                  <p><span class="font-semibold">Kabupaten/Kota:</span> ${d.kabupaten_kota ?? '-'}</p>
-                  <p><span class="font-semibold">Jenis Wilayah Kerja:</span> ${d.jenis_wk ?? '-'}</p>
-                  <p><span class="font-semibold">Tahun Berdiri:</span> ${d.tahun_berdiri ?? '-'}</p>
-                  <p><span class="font-semibold">Luas Wilayah:</span> ${d.luas_wilayah ?? '-'}</p>
-                  <p><span class="font-semibold">Part. Interest:</span> ${d.part_interest ?? '-'}</p>
-                  <p><span class="font-semibold">KKP:</span> ${d.kkp ?? '-'}</p>
-                  <hr class="my-3">
-                  <p class="font-semibold text-blue-900">Produksi</p>
-                  <p><span class="font-semibold">Tanggal Data:</span> ${d.tanggal_produksi ?? '-'}</p>
-                  <p><span class="font-semibold">Produksi Minyak:</span> ${d.produksi_minyak ?? '-'} Mbopd</p>
-                  <p><span class="font-semibold">Produksi Gas:</span> ${d.produksi_gas ?? '-'} MMscfd</p>
-                  <hr class="my-3">
-                  <p class="font-semibold text-blue-900">Fasilitas</p>
-                  <p><span class="font-semibold">Nama Fasilitas:</span> ${d.nama_fasilitas ?? '-'}</p>
-                  <p><span class="font-semibold">Jenis Fasilitas:</span> ${d.jenis_fasilitas ?? '-'}</p>
-                  <p><span class="font-semibold">Jumlah:</span> ${d.jumlah ?? '-'}</p>
-                  <hr class="my-3">
+                  <p class="col-span-3 font-semibold text-blue-900">Info Umum</p>
+                  ${row('Nama Wilayah', d.nama_wilayah)}
+                  ${row('Provinsi', d.provinsi)}
+                  ${row('Kabupaten/Kota', d.kabupaten_kota)}
+                  ${row('Jenis Wilayah Kerja', d.jenis_wk)}
+                  ${row('Tahun Berdiri', d.tahun_berdiri)}
+                  ${row('Luas Wilayah', d.luas_wilayah)}
+                  ${row('Part. Interest', d.part_interest)}
+                  ${row('KKP', d.kkp)}
+                  <hr class="col-span-3 my-3">
+                  <p class="col-span-3 font-semibold text-blue-900">Produksi</p>
+                  ${row('Tanggal Data', d.tanggal_produksi)}
+                  ${row('Produksi Minyak', `${d.produksi_minyak ?? '-'} Mbopd`)}
+                  ${row('Produksi Gas', `${d.produksi_gas ?? '-'} MMscfd`)}
+                  <hr class="col-span-3 my-3">
+                  <p class="col-span-3 font-semibold text-blue-900">Fasilitas</p>
+                  ${row('Nama Fasilitas', d.nama_fasilitas)}
+                  ${row('Jenis Fasilitas', d.jenis_fasilitas)}
+                  ${row('Jumlah', d.jumlah)}
+                  <hr class="col-span-3 my-3">
 
-                  <p class="mb-2 font-semibold text-blue-900">Number of Assets</p>
+                  <p class="col-span-3 mb-2 font-semibold text-blue-900">Number of Assets</p>
 
-                  <table class="mb-3 w-full overflow-hidden rounded-lg border border-slate-200 text-xs">
+                  <table class="col-span-3 mb-3 w-full overflow-hidden rounded-lg border border-slate-200 text-xs">
                     <thead>
                       <tr class="bg-blue-900 text-white">
                         <th class="px-2 py-1.5 text-left font-semibold">Wells</th>
@@ -488,7 +501,7 @@ const ContentOverview = () => {
                     </tbody>
                   </table>
 
-                  <table class="mb-3 w-full overflow-hidden rounded-lg border border-slate-200 text-xs">
+                  <table class="col-span-3 mb-3 w-full overflow-hidden rounded-lg border border-slate-200 text-xs">
                     <thead>
                       <tr class="bg-blue-900 text-white">
                         <th class="px-2 py-1.5 text-left font-semibold">Surface Facilities</th>
@@ -525,7 +538,7 @@ const ContentOverview = () => {
                     </tbody>
                   </table>
 
-                  <div class="mb-3 grid grid-cols-2 gap-2">
+                  <div class="col-span-3 mb-3 grid grid-cols-2 gap-2">
                     <div class="rounded-lg border border-lime-200 bg-lime-50 p-2 text-xs">
                       <p class="font-semibold text-lime-800">Drilling Rigs</p>
                       <p>${d.drilling_rigs ?? '-'}</p>
@@ -536,15 +549,15 @@ const ContentOverview = () => {
                     </div>
                   </div>
 
-                  <div class="mt-4 text-xs italic text-slate-400">
+                  <div class="col-span-3 mt-4 text-xs italic text-slate-400">
                     <p>Keterangan:</p>
                     <p>BOPD: Barrels of Oil Per Day</p>
                     <p>MMSCFD: Million Metric Standard Cubic Feet per Day</p>
                   </div>
 
-                  <hr class="my-3">
-                  <p class="mb-2 font-semibold text-blue-900">Open Google Maps</p>
-                  <div id="satelliteMapContainer" class="overflow-hidden rounded-lg border border-slate-200"></div>
+                  <hr class="col-span-3 my-3">
+                  <p class="col-span-3 mb-2 font-semibold text-blue-900">Open Google Maps</p>
+                  <div id="satelliteMapContainer" class="col-span-3 overflow-hidden rounded-lg border border-slate-200"></div>
                 `;
 
             const embedSrc = activeKey ? koordinatWilayah[activeKey] : undefined;
@@ -645,8 +658,6 @@ const ContentOverview = () => {
                 <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-slate-300 bg-white p-4 shadow-lg">
                     <div id="map-pane" className="relative h-full w-full transition-all duration-300 ease-in-out">
                         <svg id="map-svg" className="h-full w-full" viewBox="0 0 460 413" preserveAspectRatio="xMidYMid meet" role="img">
-                            <title>Peta wilayah kerja Regional 1 Sumatra</title>
-                            <desc>Enam wilayah kerja: Rantau, NSO, Pangkalan Susu, Lirik, Jambi, dan Jambi Merang</desc>
 
                             <path className="prov cursor-pointer stroke-white stroke-[1px] transition-opacity duration-150 hover:opacity-[.85]" fill="#003399" data-p="ID-RI" data-nama="Riau" d="M 183.9,120.5 L 184.9,125.1 L 191.4,132.4 L 198.8,135.5 L 201.6,136.3 L 197.9,130.3 L 199.1,128.9 L 207.3,128.5 L 210.7,133.2 L 215.7,137.8 L 217.0,143.3 L 217.1,145.3 L 220.8,147.8 L 224.9,149.2 L 229.8,148.5 L 239.1,156.0 L 242.3,157.6 L 242.7,162.3 L 243.6,166.5 L 247.9,172.5 L 253.5,177.7 L 259.9,177.7 L 262.3,178.5 L 266.8,179.0 L 271.4,185.0 L 275.5,187.1 L 279.2,185.6 L 280.3,184.4 L 285.7,187.5 L 289.2,190.8 L 293.1,193.0 L 294.6,198.5 L 295.6,202.1 L 288.9,202.7 L 288.7,205.2 L 285.9,208.0 L 289.8,209.4 L 294.7,213.0 L 292.1,213.3 L 289.0,216.1 L 283.5,218.8 L 282.7,225.5 L 285.3,226.8 L 280.8,227.3 L 270.1,226.3 L 263.6,233.1 L 259.7,236.7 L 257.5,237.2 L 253.5,236.9 L 250.3,235.2 L 248.0,232.9 L 245.8,231.7 L 242.8,230.9 L 241.4,231.7 L 237.1,230.3 L 232.6,233.6 L 229.5,233.2 L 224.6,229.4 L 218.5,225.7 L 217.0,223.2 L 211.3,219.7 L 206.2,214.8 L 205.3,212.1 L 202.5,213.9 L 200.1,212.3 L 198.4,209.4 L 198.0,203.1 L 198.7,198.1 L 196.7,195.8 L 195.4,196.3 L 188.2,194.9 L 186.0,191.1 L 182.3,191.3 L 180.3,185.1 L 181.5,179.2 L 179.2,177.5 L 177.5,173.3 L 177.7,171.5 L 176.8,167.5 L 177.5,164.2 L 177.2,161.6 L 175.8,157.4 L 182.1,156.3 L 186.4,154.7 L 186.6,152.6 L 187.9,149.6 L 182.7,144.0 L 183.6,140.3 L 184.8,130.6 L 183.0,124.4 L 183.9,120.5 Z" />
                             <path className="prov cursor-pointer stroke-white stroke-[1px] transition-opacity duration-150 hover:opacity-[.85]" fill="#003399" data-p="ID-SU" data-nama="Sumatera Utara" d="M 117.1,64.0 L 117.0,66.8 L 114.4,69.8 L 117.7,69.5 L 118.8,71.0 L 122.9,72.1 L 126.9,75.3 L 130.6,76.3 L 131.4,77.4 L 134.3,82.4 L 143.5,85.8 L 147.7,88.3 L 149.9,90.3 L 156.7,94.3 L 158.7,97.6 L 164.8,100.0 L 167.7,103.4 L 173.2,107.5 L 173.3,111.9 L 173.5,114.4 L 175.2,114.1 L 177.7,116.0 L 180.4,115.0 L 183.9,120.5 L 183.0,124.4 L 184.8,130.6 L 183.6,140.3 L 182.7,144.0 L 186.4,144.8 L 186.6,152.6 L 186.4,154.7 L 182.1,156.3 L 181.1,157.2 L 176.0,159.0 L 177.5,164.2 L 176.8,167.5 L 178.4,169.9 L 176.2,172.6 L 177.8,176.4 L 175.9,176.5 L 171.9,173.9 L 168.0,173.4 L 168.3,179.9 L 170.7,182.5 L 172.1,184.2 L 167.6,187.2 L 164.1,187.4 L 162.7,186.5 L 160.0,185.4 L 154.2,186.1 L 150.6,191.2 L 148.7,191.5 L 146.0,192.1 L 145.4,188.0 L 143.4,181.8 L 142.9,178.6 L 140.8,175.5 L 138.7,168.5 L 135.9,160.6 L 136.1,159.1 L 133.4,152.8 L 136.0,149.6 L 134.6,147.8 L 133.7,145.4 L 130.8,146.0 L 125.0,139.6 L 121.4,137.4 L 121.4,137.4 L 119.8,136.2 L 116.1,134.6 L 114.9,127.4 L 112.5,124.0 L 112.4,122.5 L 111.3,119.2 L 112.9,116.6 L 111.7,111.2 L 110.3,111.0 L 107.4,108.7 L 107.0,103.2 L 108.2,101.4 L 107.1,100.2 L 104.8,97.5 L 109.9,94.9 L 107.3,92.9 L 105.9,87.7 L 103.9,84.2 L 106.0,79.1 L 107.1,76.6 L 107.6,75.6 L 110.8,67.2 L 113.6,64.1 L 117.1,64.0 Z" />
@@ -865,7 +876,7 @@ const ContentOverview = () => {
                                 </div>
 
                                 {/* Body (Data dari JS) */}
-                                <div id="cardInfoBody" className="text-[11.5px] leading-relaxed text-slate-600 [&>p>span]:text-slate-800 [&>p]:mb-1.5 last:[&>p]:mb-0"></div>
+                                <div id="cardInfoBody" className="grid grid-cols-[max-content_max-content_1fr] items-baseline gap-x-2 gap-y-1.5 text-[11.5px] leading-relaxed text-slate-600"></div>
 
                                 {/* Action */}
                                 <button type="button" data-detail="all" className="mt-4 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-blue-800 hover:shadow active:scale-[0.98]">
@@ -889,7 +900,7 @@ const ContentOverview = () => {
                                 </div>
 
                                 {/* Body (Data dari JS) */}
-                                <div id="cardProduksiBody" className="text-[11.5px] leading-relaxed text-slate-600 [&>p>span]:text-slate-800 [&>p]:mb-1.5 last:[&>p]:mb-0"></div>
+                                <div id="cardProduksiBody" className="grid grid-cols-[max-content_max-content_1fr] items-baseline gap-x-2 gap-y-1.5 text-[11.5px] leading-relaxed text-slate-600"></div>
                             </div>
 
                         </div>
@@ -933,17 +944,13 @@ const ContentOverview = () => {
                                 <div
                                     id="cardDetailBody"
                                     className="
-                    text-sm text-slate-700
+                    grid grid-cols-[max-content_max-content_1fr] items-baseline gap-x-3 gap-y-2 text-sm text-slate-700
                     
                     /* 1. Styling untuk Judul Section (Info Umum, Produksi, dll) */
-                    [&>p.text-blue-900]:mt-5 [&>p.text-blue-900]:text-base [&>p.text-blue-900]:font-bold [&>p.text-blue-900]:text-slate-900 first:[&>p.text-blue-900]:mt-0
-                    
-                    /* 2. Styling ajaib untuk Label (Nama Wilayah, Provinsi, dll) agar lebarnya rata (tabular alignment) */
-                    [&>p>span.font-semibold]:inline-block [&>p>span.font-semibold]:w-40 [&>p>span.font-semibold]:text-slate-500 [&>p>span.font-semibold]:font-medium
-                    [&>p]:mb-2 last:[&>p]:mb-0
+                    [&>p.text-blue-900]:mt-5 [&>p.text-blue-900]:mb-0 [&>p.text-blue-900]:text-base [&>p.text-blue-900]:font-bold [&>p.text-blue-900]:text-slate-900 first:[&>p.text-blue-900]:mt-0
                     
                     /* 3. Styling Garis Pemisah (HR) menjadi lebih elegan */
-                    [&>hr]:my-6 [&>hr]:border-dashed [&>hr]:border-slate-200
+                    [&>hr]:my-1 [&>hr]:border-dashed [&>hr]:border-slate-200
                     
                     /* 4. Menghaluskan tampilan Tabel bawaan JS */
                     [&_table]:shadow-sm [&_th]:bg-slate-800 [&_th]:text-slate-100 [&_td]:text-slate-600 [&_tr:hover]:bg-slate-50
