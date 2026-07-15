@@ -12,6 +12,15 @@
   --font-sans: var(--font-poppins);
 }
 
+@keyframes hintBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
