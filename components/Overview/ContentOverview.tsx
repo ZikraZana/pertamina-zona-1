@@ -813,19 +813,20 @@ const ContentOverview = () => {
                                 <h3 className="mb-1.5 text-[10.5px] font-bold uppercase tracking-wide text-slate-400">Wilayah Kerja</h3>
                                 <details className="group mb-2 rounded-lg border border-slate-200 open:bg-slate-50" open>
                                     <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-xs font-semibold text-slate-800 [&::-webkit-details-marker]:hidden">
-                                        <span>WK Operator <span className="font-normal text-slate-400">(5)</span></span>
+                                        <span>WK Operator <span className="font-normal text-slate-400">(6)</span></span>
                                         <svg className="h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                                     </summary>
                                     <ul className="list-outside list-disc space-y-1 px-3 pb-2.5 pl-7 text-[11px] leading-snug text-slate-600">
-                                        <li>PHE Jambi Merang <span className="text-slate-400">(GS)</span></li>
                                         <li>PHE NSO <span className="text-slate-400">(GS)</span></li>
-                                        <li>PEP Asset 1 <span className="text-slate-400">— Rantau, P. Susu, Lirik (CR)</span></li>
-                                        <li>KSO SEBWP Meruap <span className="text-slate-400">(CR)</span></li>
-                                        <li>KSO Tamiang Raya Energy <span className="text-slate-400">(CR)</span></li>
+                                        <li>PEP Rantau <span className="text-slate-400">(CR)</span></li>
+                                        <li>PEP Pangkalan Susu <span className="text-slate-400">(CR)</span></li>
+                                        <li>PEP Lirik <span className="text-slate-400">(CR)</span></li>
+                                        <li>PEP Jambi <span className="text-slate-400">(CR)</span></li>
+                                        <li>PHE Jambi Merang <span className="text-slate-400">(GS)</span></li>
                                     </ul>
                                 </details>
 
-                                <details className="group rounded-lg border border-slate-200 open:bg-slate-50">
+                                <details className="mb-1.5 group rounded-lg border border-slate-200 open:bg-slate-50">
                                     <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-xs font-semibold text-slate-800 [&::-webkit-details-marker]:hidden">
                                         <span>WK Non-Operator <span className="font-normal text-slate-400">(2)</span></span>
                                         <svg className="h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
@@ -833,6 +834,16 @@ const ContentOverview = () => {
                                     <ul className="list-outside list-disc space-y-1 px-3 pb-2.5 pl-7 text-[11px] leading-snug text-slate-600">
                                         <li>JABUNG <span className="text-slate-400">(CR)</span></li>
                                         <li>KAKAP <span className="text-slate-400">(CR)</span></li>
+                                    </ul>
+                                </details>
+                                <details className="group rounded-lg border border-slate-200 open:bg-slate-50">
+                                    <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-xs font-semibold text-slate-800 [&::-webkit-details-marker]:hidden">
+                                        <span>Mitra <span className="font-normal text-slate-400">(2)</span></span>
+                                        <svg className="h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                                    </summary>
+                                    <ul className="list-outside list-disc space-y-1 px-3 pb-2.5 pl-7 text-[11px] leading-snug text-slate-600">
+                                        <li>KSO SEBWP Meruap <span className="text-slate-400">(CR)</span></li>
+                                        <li>KSO Tamiang Raya Energy <span className="text-slate-400">(CR)</span></li>
                                     </ul>
                                 </details>
                             </div>
