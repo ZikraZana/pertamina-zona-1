@@ -45,6 +45,85 @@ const ContentOverview = () => {
         // Kunci wilayah kerja yang sedang aktif (panelnya sedang terbuka)
         let activeKey: string | null = null;
 
+        // ===== STATE UNTUK FACILITY VIEWER (Fasilitas / Flow Diagram / Alur Penjualan) =====
+let facilityActiveIndex = 0;
+let facilityWilayahName = '';
+
+const facilityPages = [
+    {
+        title: "Fasilitas Kerja",
+        subtitleTemplate: (nama: string) => `Berikut ini merupakan foto dari fasilitas yang ada di wilayah kerja ${nama}`,
+        image: "/images/fasilitas.jpg",
+    },
+    {
+        title: "Flow Diagram",
+        subtitleTemplate: (nama: string) => `Berikut ini merupakan flow diagram dari wilayah kerja ${nama}`,
+        image: "/images/flow-diagram.jpg",
+    },
+    {
+        title: "Alur Penjualan",
+        subtitleTemplate: (nama: string) => `Berikut ini merupakan alur penjualan di wilayah kerja ${nama}`,
+        image: "/images/alur-penjualan.jpg",
+    },
+];
+
+function renderFacilityPage() {
+    const page = facilityPages[facilityActiveIndex];
+    const titleEl = document.getElementById('facilityTitle');
+    const subtitleEl = document.getElementById('facilitySubtitle');
+    const imageEl = document.getElementById('facilityImage') as HTMLImageElement | null;
+    const prevBtn = document.getElementById('facilityPrevBtn') as HTMLButtonElement | null;
+    const nextBtn = document.getElementById('facilityNextBtn') as HTMLButtonElement | null;
+    const prevLabel = document.getElementById('facilityPrevLabel');
+    const nextLabel = document.getElementById('facilityNextLabel');
+
+    if (titleEl) titleEl.textContent = page.title;
+    if (subtitleEl) subtitleEl.textContent = page.subtitleTemplate(facilityWilayahName);
+    if (imageEl) {
+        imageEl.src = page.image;
+        imageEl.alt = page.title;
+    }
+
+    const hasPrev = facilityActiveIndex > 0;
+    const hasNext = facilityActiveIndex < facilityPages.length - 1;
+
+    if (prevBtn) prevBtn.disabled = !hasPrev;
+    if (nextBtn) nextBtn.disabled = !hasNext;
+    if (prevLabel) prevLabel.textContent = hasPrev ? facilityPages[facilityActiveIndex - 1].title : '';
+    if (nextLabel) nextLabel.textContent = hasNext ? facilityPages[facilityActiveIndex + 1].title : '';
+}
+
+function openFacilityViewer(index: number, namaWilayah: string) {
+    facilityActiveIndex = index;
+    facilityWilayahName = namaWilayah;
+    renderFacilityPage();
+
+    const overlay = document.getElementById('facilityOverlay');
+    overlay?.classList.remove('hidden');
+    overlay?.classList.add('flex');
+}
+
+function closeFacilityViewer() {
+    const overlay = document.getElementById('facilityOverlay');
+    overlay?.classList.add('hidden');
+    overlay?.classList.remove('flex');
+}
+
+function facilityGoPrev() {
+    if (facilityActiveIndex > 0) {
+        facilityActiveIndex--;
+        renderFacilityPage();
+    }
+}
+
+function facilityGoNext() {
+    if (facilityActiveIndex < facilityPages.length - 1) {
+        facilityActiveIndex++;
+        renderFacilityPage();
+    }
+}
+// ===== END STATE FACILITY VIEWER =====
+
         const koordinatWilayah: Record<string, string> = {
             'nso': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1758828.4833084824!2d96.44592863870214!3d5.222246513227389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3047773ee34bcc15%3A0x96b7cedbe6bb0f8c!2sPT.%20Pertamina%20Hulu%20Energi%20NSO!5e1!3m2!1sen!2sus!4v1783928795832!5m2!1sen!2sus',
             'p-susu': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13762.458951983883!2d98.20356883627866!3d4.120297531596398!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x303713005aed9639%3A0x97cca8a709c3fa20!2sPERTAMINA%20EP%2C%20PANGKALAN%20SUSU%20FIELD!5e1!3m2!1sen!2sus!4v1783928920370!5m2!1sen!2sus',
@@ -197,7 +276,6 @@ const ContentOverview = () => {
                 nama_wilayah: null, provinsi: null, kabupaten_kota: null, jenis_wk: null, tahun_berdiri: null, luas_wilayah: null, part_interest: null, kkp: null, produksi_minyak: null, produksi_gas: null, tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah: null, sumur_eksplorasi_active: null, sumur_eksplorasi_total: null, producer_active: null, producer_total: null, injector_active: null, injector_total: null, sumur_total_active: null, sumur_total_total: null, process_facilities_active: null, process_facilities_total: null, offshore_platforms_active: null, offshore_platforms_total: null, swamp_platforms_active: null, swamp_platforms_total: null, gas_compressors_active: null, gas_compressors_total: null, pipeline_active: null, pipeline_total: null, drilling_rigs: null, workover_rigs: null,
             };
 
-            // DATASET
             // DATASET
             // Sumber: Materi Kunjungan Kerja Komisi XII DPR RI, GMZ1, 25 Mei 2026 (slide 7-12)
             // Field null = tidak disebutkan di ppt untuk wilayah kerja tsb.
@@ -566,6 +644,41 @@ const ContentOverview = () => {
                     </div>
                   </div>
 
+                <hr class="col-span-3 my-3">  
+               
+                <p class="col-span-3 mb-2 font-semibold text-blue-900">Gambar</p>
+
+                <div class="col-span-3 mb-3 grid grid-cols-3 gap-2">
+                <button
+                    type="button"
+                    data-facility-open="0"
+                    data-facility-nama="${d.nama_wilayah}"
+                    class="rounded-lg bg-slate-200 hover:bg-slate-300 transition-colors px-3 py-3 text-xs font-semibold text-slate-800 cursor-pointer"
+                >
+                    Fasilitas
+                </button>
+                <button
+                    type="button"
+                    data-facility-open="1"
+                    data-facility-nama="${d.nama_wilayah}"
+                    class="rounded-lg bg-slate-200 hover:bg-slate-300 transition-colors px-3 py-3 text-xs font-semibold text-slate-800 cursor-pointer"
+                >
+                    Flow Diagram
+                </button>
+                <button
+                    type="button"
+                    data-facility-open="2"
+                    data-facility-nama="${d.nama_wilayah}"
+                    class="rounded-lg bg-slate-200 hover:bg-slate-300 transition-colors px-3 py-3 text-xs font-semibold text-slate-800 cursor-pointer"
+                >
+                    Alur Penjualan
+                </button>
+                </div>
+   
+                <div class="col-span-3 text-xs italic text-slate-400">
+                    <p>*Klik salah satu tombol untuk melihat gambar</p>
+                  </div>
+                  
                   <hr class="col-span-3 my-3">
                   <p class="col-span-3 mb-2 font-semibold text-blue-900">Open Google Maps</p>
                   <div id="satelliteMapContainer" class="col-span-3 overflow-hidden rounded-lg border border-slate-200"></div>
@@ -640,8 +753,40 @@ const ContentOverview = () => {
                 return;
             }
 
+            // ===== FACILITY VIEWER HANDLERS =====
+
+// A. Buka viewer Fasilitas / Flow Diagram / Alur Penjualan
+const facilityBtn = target.closest<HTMLElement>('[data-facility-open]');
+if (facilityBtn) {
+    e.stopPropagation();
+    const idx = parseInt(facilityBtn.dataset.facilityOpen ?? '0', 10);
+    openFacilityViewer(idx, facilityBtn.dataset.facilityNama ?? '');
+    return;
+}
+
+// B. Tombol "Kembali" (kiri atas) -> tutup halaman viewer, balik ke halaman sebelumnya
+if (target.closest('#facilityBackBtn')) {
+    e.stopPropagation();
+    closeFacilityViewer();
+    return;
+}
+
+// C. Navigasi Prev / Next di antara Fasilitas / Flow Diagram / Alur Penjualan
+if (target.closest('#facilityPrevBtn')) {
+    e.stopPropagation();
+    facilityGoPrev();
+    return;
+}
+if (target.closest('#facilityNextBtn')) {
+    e.stopPropagation();
+    facilityGoNext();
+    return;
+}
+
+// ===== END FACILITY VIEWER HANDLERS =====
+
             // 5. Menutup panel jika klik sembarang di luar area card aktif
-            const clickedInsideCard = target.closest('#card-info, #card-produksi, #card-fasilitas, #card-detail, #zone-overview-container');
+            const clickedInsideCard = target.closest('#card-info, #card-produksi, #card-fasilitas, #card-detail, #zone-overview-container, #facilityOverlay');
             const clickedInsideStaticCard = target.closest('#card-geografis');
 
             if (!clickedInsideCard && !clickedInsideStaticCard) {
@@ -1010,6 +1155,68 @@ const ContentOverview = () => {
 
                 </div>
             </div>
+
+            {/* ===== FACILITY VIEWER PAGE (Fasilitas / Flow Diagram / Alur Penjualan) ===== */}
+<div
+    id="facilityOverlay"
+    className="fixed inset-3 z-[1000] hidden flex-col overflow-y-auto rounded-xl border border-slate-300 bg-white p-4 shadow-2xl sm:inset-4 sm:p-6 lg:inset-6 lg:p-8"
+>
+    {/* Tombol Kembali - kiri atas */}
+    <div className="mb-6 flex items-center">
+        <button
+            type="button"
+            id="facilityBackBtn"
+            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-900"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Kembali
+        </button>
+    </div>
+
+    {/* Judul & subjudul */}
+    <div className="mb-6 text-center">
+        <h2 id="facilityTitle" className="text-xl font-bold text-blue-900 sm:text-2xl">-</h2>
+        <p id="facilitySubtitle" className="mx-auto mt-1 max-w-xl text-xs text-slate-500 sm:text-sm">-</p>
+    </div>
+
+    {/* Konten: prev - gambar - next */}
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 lg:flex-row lg:gap-6">
+        {/* Tombol Sebelumnya + label gambar tujuan */}
+        <button
+            type="button"
+            id="facilityPrevBtn"
+            className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            <span id="facilityPrevLabel" className="whitespace-nowrap">-</span>
+        </button>
+
+        {/* Gambar */}
+        <img
+            id="facilityImage"
+            src=""
+            alt=""
+            className="max-h-[55vh] w-full max-w-3xl rounded-lg border border-slate-100 object-contain shadow-sm"
+        />
+
+        {/* Tombol Selanjutnya + label gambar tujuan */}
+        <button
+            type="button"
+            id="facilityNextBtn"
+            className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0"
+        >
+            <span id="facilityNextLabel" className="whitespace-nowrap">-</span>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    </div>
+</div>
+{/* ===== END FACILITY VIEWER PAGE ===== */}
         </>
     );
 };
