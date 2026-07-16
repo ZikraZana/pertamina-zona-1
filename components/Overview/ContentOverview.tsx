@@ -472,6 +472,11 @@ const ContentOverview = () => {
                   ${row('Tanggal Data', d.tanggal_produksi)}
                   ${row('Produksi Minyak', `${d.produksi_minyak ?? '-'} Mbopd`)}
                   ${row('Produksi Gas', `${d.produksi_gas ?? '-'} MMscfd`)}
+                  <div class="col-span-3 mt-4 text-xs italic text-slate-400">
+                    <p>Keterangan:</p>
+                    <p>MBOPD: Million Barrels of Oil per Day </p>
+                    <p>MMSCFD: Million Metric Standard Cubic Feet per Day</p>
+                  </div>
                   <hr class="col-span-3 my-3">
                   <p class="col-span-3 font-semibold text-blue-900">Fasilitas</p>
                   ${row('Nama Fasilitas', d.nama_fasilitas)}
@@ -559,12 +564,6 @@ const ContentOverview = () => {
                       <p class="font-semibold text-lime-800">Workover Rigs</p>
                       <p>${d.workover_rigs ?? '-'}</p>
                     </div>
-                  </div>
-
-                  <div class="col-span-3 mt-4 text-xs italic text-slate-400">
-                    <p>Keterangan:</p>
-                    <p>BOPD: Barrels of Oil Per Day</p>
-                    <p>MMSCFD: Million Metric Standard Cubic Feet per Day</p>
                   </div>
 
                   <hr class="col-span-3 my-3">
