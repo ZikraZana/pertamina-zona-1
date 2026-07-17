@@ -49,25 +49,71 @@ const ContentOverview = () => {
 let facilityActiveIndex = 0;
 let facilityWilayahName = '';
 
-const facilityPages = [
-    {
-        title: "Fasilitas Kerja",
-        subtitleTemplate: (nama: string) => `Berikut ini merupakan foto dari fasilitas yang ada di wilayah kerja ${nama}`,
-        image: "/images/fasilitas.jpg",
+// Gambar spesifik per wilayah kerja. Kode di sini harus sama dengan kode di data-p/data-badge-click
+// (nso, p-susu, rantau, lirik, jambi, jambi-merang, dst).
+const facilityImagesByWilayah: Record<string, { fasilitas: string; flowDiagram: string; alurPenjualan: string }> = {
+    'nso': {
+        fasilitas: '/images/nso/fasilitas.jpg',
+        flowDiagram: '/images/nso/flow-diagram.jpg',
+        alurPenjualan: '/images/nso/alur-penjualan.jpg',
     },
-    {
-        title: "Flow Diagram",
-        subtitleTemplate: (nama: string) => `Berikut ini merupakan flow diagram dari wilayah kerja ${nama}`,
-        image: "/images/flow-diagram.jpg",
+    'p-susu': {
+        fasilitas: '/images/p-susu/fasilitas.jpg',
+        flowDiagram: '/images/p-susu/flow-diagram.jpg',
+        alurPenjualan: '/images/p-susu/alur-penjualan.jpg',
     },
-    {
-        title: "Alur Penjualan",
-        subtitleTemplate: (nama: string) => `Berikut ini merupakan alur penjualan di wilayah kerja ${nama}`,
-        image: "/images/alur-penjualan.jpg",
+    'rantau': {
+        fasilitas: '/images/rantau/fasilitas.jpg',
+        flowDiagram: '/images/rantau/flow-diagram.jpg',
+        alurPenjualan: '/images/rantau/alur-penjualan.jpg',
     },
-];
+    'lirik': {
+        fasilitas: '/images/lirik/fasilitas.jpg',
+        flowDiagram: '/images/lirik/flow-diagram.jpg',
+        alurPenjualan: '/images/lirik/alur-penjualan.jpg',
+    },
+    'jambi': {
+        fasilitas: '/images/jambi/fasilitas.jpg',
+        flowDiagram: '/images/jambi/flow-diagram.jpg',
+        alurPenjualan: '/images/jambi/alur-penjualan.jpg',
+    },
+    'jambi-merang': {
+        fasilitas: '/images/jambi-merang/fasilitas.jpg',
+        flowDiagram: '/images/jambi-merang/flow-diagram.jpg',
+        alurPenjualan: '/images/jambi-merang/alur-penjualan.jpg',
+    },
+};
+
+// Fallback kalau suatu wilayah belum punya gambar sendiri
+const DEFAULT_FACILITY_IMAGES = {
+    fasilitas: '/images/fasilitas.jpg',
+    flowDiagram: '/images/flow-diagram.jpg',
+    alurPenjualan: '/images/alur-penjualan.jpg',
+};
+
+function getFacilityPages() {
+    const images = (activeKey && facilityImagesByWilayah[activeKey]) || DEFAULT_FACILITY_IMAGES;
+    return [
+        {
+            title: "Fasilitas Kerja",
+            subtitleTemplate: (nama: string) => `Berikut ini merupakan foto dari fasilitas yang ada di wilayah kerja ${nama}`,
+            image: images.fasilitas,
+        },
+        {
+            title: "Flow Diagram",
+            subtitleTemplate: (nama: string) => `Berikut ini merupakan flow diagram dari wilayah kerja ${nama}`,
+            image: images.flowDiagram,
+        },
+        {
+            title: "Alur Penjualan",
+            subtitleTemplate: (nama: string) => `Berikut ini merupakan alur penjualan di wilayah kerja ${nama}`,
+            image: images.alurPenjualan,
+        },
+    ];
+}
 
 function renderFacilityPage() {
+    const facilityPages = getFacilityPages();
     const page = facilityPages[facilityActiveIndex];
     const titleEl = document.getElementById('facilityTitle');
     const subtitleEl = document.getElementById('facilitySubtitle');
@@ -79,7 +125,18 @@ function renderFacilityPage() {
 
     if (titleEl) titleEl.textContent = page.title;
     if (subtitleEl) subtitleEl.textContent = page.subtitleTemplate(facilityWilayahName);
-    if (imageEl) {
+    const fallbackEl = document.getElementById('facilityImageFallback') as HTMLDivElement | null;
+    if (imageEl && fallbackEl) {
+        imageEl.classList.remove('hidden');
+        fallbackEl.classList.add('hidden');
+        fallbackEl.classList.remove('flex');
+
+        imageEl.onerror = () => {
+            imageEl.classList.add('hidden');
+            fallbackEl.classList.remove('hidden');
+            fallbackEl.classList.add('flex');
+        };
+
         imageEl.src = page.image;
         imageEl.alt = page.title;
     }
@@ -117,7 +174,7 @@ function facilityGoPrev() {
 }
 
 function facilityGoNext() {
-    if (facilityActiveIndex < facilityPages.length - 1) {
+    if (facilityActiveIndex < getFacilityPages().length - 1) {
         facilityActiveIndex++;
         renderFacilityPage();
     }
@@ -1196,12 +1253,23 @@ if (target.closest('#facilityNextBtn')) {
         </button>
 
         {/* Gambar */}
-        <img
-            id="facilityImage"
-            src=""
-            alt=""
-            className="max-h-[55vh] w-full max-w-3xl rounded-lg border border-slate-100 object-contain shadow-sm"
-        />
+        <div className="relative max-h-[55vh] w-full max-w-3xl">
+            <img
+                id="facilityImage"
+                src=""
+                alt=""
+                className="max-h-[55vh] w-full max-w-3xl rounded-lg border border-slate-100 object-contain shadow-sm"
+            />
+            <div
+                id="facilityImageFallback"
+                className="hidden aspect-video w-full max-w-3xl flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 text-slate-400"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="text-xs font-semibold">Gambar belum tersedia</p>
+            </div>
+        </div>
 
         {/* Tombol Selanjutnya + label gambar tujuan */}
         <button
