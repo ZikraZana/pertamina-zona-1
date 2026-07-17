@@ -46,140 +46,149 @@ const ContentOverview = () => {
         let activeKey: string | null = null;
 
         // ===== STATE UNTUK FACILITY VIEWER (Fasilitas / Flow Diagram / Alur Penjualan) =====
-let facilityActiveIndex = 0;
-let facilityWilayahName = '';
+        let facilityActiveIndex = 0;
+        let facilityWilayahName = '';
 
-// Gambar spesifik per wilayah kerja. Kode di sini harus sama dengan kode di data-p/data-badge-click
-// (nso, p-susu, rantau, lirik, jambi, jambi-merang, dst).
-const facilityImagesByWilayah: Record<string, { fasilitas: string; flowDiagram: string; alurPenjualan: string }> = {
-    'nso': {
-        fasilitas: '/images/nso/fasilitas.jpg',
-        flowDiagram: '/images/nso/flow-diagram.jpg',
-        alurPenjualan: '/images/nso/alur-penjualan.jpg',
-    },
-    'p-susu': {
-        fasilitas: '/images/p-susu/fasilitas.jpg',
-        flowDiagram: '/images/p-susu/flow-diagram.jpg',
-        alurPenjualan: '/images/p-susu/alur-penjualan.jpg',
-    },
-    'rantau': {
-        fasilitas: '/images/rantau/fasilitas.jpg',
-        flowDiagram: '/images/rantau/flow-diagram.jpg',
-        alurPenjualan: '/images/rantau/alur-penjualan.jpg',
-    },
-    'lirik': {
-        fasilitas: '/images/lirik/fasilitas.jpg',
-        flowDiagram: '/images/lirik/flow-diagram.jpg',
-        alurPenjualan: '/images/lirik/alur-penjualan.jpg',
-    },
-    'jambi': {
-        fasilitas: '/images/jambi/fasilitas.jpg',
-        flowDiagram: '/images/jambi/flow-diagram.jpg',
-        alurPenjualan: '/images/jambi/alur-penjualan.jpg',
-    },
-    'jambi-merang': {
-        fasilitas: '/images/jambi-merang/fasilitas.jpg',
-        flowDiagram: '/images/jambi-merang/flow-diagram.jpg',
-        alurPenjualan: '/images/jambi-merang/alur-penjualan.jpg',
-    },
-};
-
-// Fallback kalau suatu wilayah belum punya gambar sendiri
-const DEFAULT_FACILITY_IMAGES = {
-    fasilitas: '/images/fasilitas.jpg',
-    flowDiagram: '/images/flow-diagram.jpg',
-    alurPenjualan: '/images/alur-penjualan.jpg',
-};
-
-function getFacilityPages() {
-    const images = (activeKey && facilityImagesByWilayah[activeKey]) || DEFAULT_FACILITY_IMAGES;
-    return [
-        {
-            title: "Fasilitas Kerja",
-            subtitleTemplate: (nama: string) => `Berikut ini merupakan foto dari fasilitas yang ada di wilayah kerja ${nama}`,
-            image: images.fasilitas,
-        },
-        {
-            title: "Flow Diagram",
-            subtitleTemplate: (nama: string) => `Berikut ini merupakan flow diagram dari wilayah kerja ${nama}`,
-            image: images.flowDiagram,
-        },
-        {
-            title: "Alur Penjualan",
-            subtitleTemplate: (nama: string) => `Berikut ini merupakan alur penjualan di wilayah kerja ${nama}`,
-            image: images.alurPenjualan,
-        },
-    ];
-}
-
-function renderFacilityPage() {
-    const facilityPages = getFacilityPages();
-    const page = facilityPages[facilityActiveIndex];
-    const titleEl = document.getElementById('facilityTitle');
-    const subtitleEl = document.getElementById('facilitySubtitle');
-    const imageEl = document.getElementById('facilityImage') as HTMLImageElement | null;
-    const prevBtn = document.getElementById('facilityPrevBtn') as HTMLButtonElement | null;
-    const nextBtn = document.getElementById('facilityNextBtn') as HTMLButtonElement | null;
-    const prevLabel = document.getElementById('facilityPrevLabel');
-    const nextLabel = document.getElementById('facilityNextLabel');
-
-    if (titleEl) titleEl.textContent = page.title;
-    if (subtitleEl) subtitleEl.textContent = page.subtitleTemplate(facilityWilayahName);
-    const fallbackEl = document.getElementById('facilityImageFallback') as HTMLDivElement | null;
-    if (imageEl && fallbackEl) {
-        imageEl.classList.remove('hidden');
-        fallbackEl.classList.add('hidden');
-        fallbackEl.classList.remove('flex');
-
-        imageEl.onerror = () => {
-            imageEl.classList.add('hidden');
-            fallbackEl.classList.remove('hidden');
-            fallbackEl.classList.add('flex');
+        // Gambar spesifik per wilayah kerja. Kode di sini harus sama dengan kode di data-p/data-badge-click
+        // (nso, p-susu, rantau, lirik, jambi, jambi-merang, dst).
+        const facilityImagesByWilayah: Record<string, { fasilitas: string; flowDiagram: string; alurPenjualan: string }> = {
+            'nso': {
+                fasilitas: '/images/nso/fasilitas.jpg',
+                flowDiagram: '/images/nso/flow-diagram.jpg',
+                alurPenjualan: '/images/nso/alur-penjualan.jpg',
+            },
+            'p-susu': {
+                fasilitas: '/images/p-susu/fasilitas.jpg',
+                flowDiagram: '/images/p-susu/flow-diagram.jpg',
+                alurPenjualan: '/images/p-susu/alur-penjualan.jpg',
+            },
+            'rantau': {
+                fasilitas: '/images/rantau/fasilitas.jpg',
+                flowDiagram: '/images/rantau/flow-diagram.jpg',
+                alurPenjualan: '/images/rantau/alur-penjualan.jpg',
+            },
+            'lirik': {
+                fasilitas: '/images/lirik/fasilitas.jpg',
+                flowDiagram: '/images/lirik/flow-diagram.jpg',
+                alurPenjualan: '/images/lirik/alur-penjualan.jpg',
+            },
+            'jambi': {
+                fasilitas: '/images/jambi/fasilitas.jpg',
+                flowDiagram: '/images/jambi/flow-diagram.jpg',
+                alurPenjualan: '/images/jambi/alur-penjualan.jpg',
+            },
+            'jambi-merang': {
+                fasilitas: '/images/jambi-merang/fasilitas.jpg',
+                flowDiagram: '/images/jambi-merang/flow-diagram.jpg',
+                alurPenjualan: '/images/jambi-merang/alur-penjualan.jpg',
+            },
         };
 
-        imageEl.src = page.image;
-        imageEl.alt = page.title;
-    }
+        // Fallback kalau suatu wilayah belum punya gambar sendiri
+        const DEFAULT_FACILITY_IMAGES = {
+            fasilitas: '/images/fasilitas.jpg',
+            flowDiagram: '/images/flow-diagram.jpg',
+            alurPenjualan: '/images/alur-penjualan.jpg',
+        };
 
-    const hasPrev = facilityActiveIndex > 0;
-    const hasNext = facilityActiveIndex < facilityPages.length - 1;
+        function getFacilityPages() {
+            const images = (activeKey && facilityImagesByWilayah[activeKey]) || DEFAULT_FACILITY_IMAGES;
+            return [
+                {
+                    title: "Fasilitas Kerja",
+                    subtitleTemplate: (nama: string) => `Berikut ini merupakan foto dari fasilitas yang ada di wilayah kerja ${nama}`,
+                    image: images.fasilitas,
+                },
+                {
+                    title: "Flow Diagram",
+                    subtitleTemplate: (nama: string) => `Berikut ini merupakan flow diagram dari wilayah kerja ${nama}`,
+                    image: images.flowDiagram,
+                },
+                {
+                    title: "Alur Penjualan",
+                    subtitleTemplate: (nama: string) => `Berikut ini merupakan alur penjualan di wilayah kerja ${nama}`,
+                    image: images.alurPenjualan,
+                },
+            ];
+        }
 
-    if (prevBtn) prevBtn.disabled = !hasPrev;
-    if (nextBtn) nextBtn.disabled = !hasNext;
-    if (prevLabel) prevLabel.textContent = hasPrev ? facilityPages[facilityActiveIndex - 1].title : '';
-    if (nextLabel) nextLabel.textContent = hasNext ? facilityPages[facilityActiveIndex + 1].title : '';
-}
+        // FIX: sekarang meng-update SEMUA tombol prev/next sekaligus (versi desktop
+        // yang cuma tampil di lg+, dan versi mobile yang berdampingan di bawah gambar)
+        // lewat data-attribute, bukan lagi lewat 1 id tunggal.
+        function renderFacilityPage() {
+            const facilityPages = getFacilityPages();
+            const page = facilityPages[facilityActiveIndex];
+            const titleEl = document.getElementById('facilityTitle');
+            const subtitleEl = document.getElementById('facilitySubtitle');
+            const imageEl = document.getElementById('facilityImage') as HTMLImageElement | null;
 
-function openFacilityViewer(index: number, namaWilayah: string) {
-    facilityActiveIndex = index;
-    facilityWilayahName = namaWilayah;
-    renderFacilityPage();
+            if (titleEl) titleEl.textContent = page.title;
+            if (subtitleEl) subtitleEl.textContent = page.subtitleTemplate(facilityWilayahName);
+            const fallbackEl = document.getElementById('facilityImageFallback') as HTMLDivElement | null;
+            if (imageEl && fallbackEl) {
+                imageEl.classList.remove('hidden');
+                fallbackEl.classList.add('hidden');
+                fallbackEl.classList.remove('flex');
 
-    const overlay = document.getElementById('facilityOverlay');
-    overlay?.classList.remove('hidden');
-    overlay?.classList.add('flex');
-}
+                imageEl.onerror = () => {
+                    imageEl.classList.add('hidden');
+                    fallbackEl.classList.remove('hidden');
+                    fallbackEl.classList.add('flex');
+                };
 
-function closeFacilityViewer() {
-    const overlay = document.getElementById('facilityOverlay');
-    overlay?.classList.add('hidden');
-    overlay?.classList.remove('flex');
-}
+                imageEl.src = page.image;
+                imageEl.alt = page.title;
+            }
 
-function facilityGoPrev() {
-    if (facilityActiveIndex > 0) {
-        facilityActiveIndex--;
-        renderFacilityPage();
-    }
-}
+            const hasPrev = facilityActiveIndex > 0;
+            const hasNext = facilityActiveIndex < facilityPages.length - 1;
+            const prevLabelText = hasPrev ? facilityPages[facilityActiveIndex - 1].title : '';
+            const nextLabelText = hasNext ? facilityPages[facilityActiveIndex + 1].title : '';
 
-function facilityGoNext() {
-    if (facilityActiveIndex < getFacilityPages().length - 1) {
-        facilityActiveIndex++;
-        renderFacilityPage();
-    }
-}
-// ===== END STATE FACILITY VIEWER =====
+            document.querySelectorAll<HTMLButtonElement>('[data-facility-nav="prev"]').forEach((btn) => {
+                btn.disabled = !hasPrev;
+            });
+            document.querySelectorAll<HTMLButtonElement>('[data-facility-nav="next"]').forEach((btn) => {
+                btn.disabled = !hasNext;
+            });
+            document.querySelectorAll('[data-facility-label="prev"]').forEach((el) => {
+                el.textContent = prevLabelText;
+            });
+            document.querySelectorAll('[data-facility-label="next"]').forEach((el) => {
+                el.textContent = nextLabelText;
+            });
+        }
+
+        function openFacilityViewer(index: number, namaWilayah: string) {
+            facilityActiveIndex = index;
+            facilityWilayahName = namaWilayah;
+            renderFacilityPage();
+
+            const overlay = document.getElementById('facilityOverlay');
+            overlay?.classList.remove('hidden');
+            overlay?.classList.add('flex');
+        }
+
+        function closeFacilityViewer() {
+            const overlay = document.getElementById('facilityOverlay');
+            overlay?.classList.add('hidden');
+            overlay?.classList.remove('flex');
+        }
+
+        function facilityGoPrev() {
+            if (facilityActiveIndex > 0) {
+                facilityActiveIndex--;
+                renderFacilityPage();
+            }
+        }
+
+        function facilityGoNext() {
+            if (facilityActiveIndex < getFacilityPages().length - 1) {
+                facilityActiveIndex++;
+                renderFacilityPage();
+            }
+        }
+        // ===== END STATE FACILITY VIEWER =====
 
         const koordinatWilayah: Record<string, string> = {
             'nso': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1758828.4833084824!2d96.44592863870214!3d5.222246513227389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3047773ee34bcc15%3A0x96b7cedbe6bb0f8c!2sPT.%20Pertamina%20Hulu%20Energi%20NSO!5e1!3m2!1sen!2sus!4v1783928795832!5m2!1sen!2sus',
@@ -705,12 +714,12 @@ function facilityGoNext() {
                
                 <p class="col-span-3 mb-2 font-semibold text-blue-900">Gambar</p>
 
-                <div class="col-span-3 mb-3 grid grid-cols-3 gap-2">
+                <div class="col-span-3 mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 <button
                     type="button"
                     data-facility-open="0"
                     data-facility-nama="${d.nama_wilayah}"
-                    class="rounded-lg bg-slate-200 hover:bg-slate-300 transition-colors px-3 py-3 text-xs font-semibold text-slate-800 cursor-pointer"
+                    class="rounded-lg bg-slate-200 hover:bg-slate-300 transition-colors px-2 py-3 text-[11px] leading-tight font-semibold text-slate-800 cursor-pointer sm:px-3 sm:text-xs"
                 >
                     Fasilitas
                 </button>
@@ -718,7 +727,7 @@ function facilityGoNext() {
                     type="button"
                     data-facility-open="1"
                     data-facility-nama="${d.nama_wilayah}"
-                    class="rounded-lg bg-slate-200 hover:bg-slate-300 transition-colors px-3 py-3 text-xs font-semibold text-slate-800 cursor-pointer"
+                    class="rounded-lg bg-slate-200 hover:bg-slate-300 transition-colors px-2 py-3 text-[11px] leading-tight font-semibold text-slate-800 cursor-pointer sm:px-3 sm:text-xs"
                 >
                     Flow Diagram
                 </button>
@@ -726,7 +735,7 @@ function facilityGoNext() {
                     type="button"
                     data-facility-open="2"
                     data-facility-nama="${d.nama_wilayah}"
-                    class="rounded-lg bg-slate-200 hover:bg-slate-300 transition-colors px-3 py-3 text-xs font-semibold text-slate-800 cursor-pointer"
+                    class="col-span-2 rounded-lg bg-slate-200 hover:bg-slate-300 transition-colors px-2 py-3 text-[11px] leading-tight font-semibold text-slate-800 cursor-pointer sm:col-span-1 sm:px-3 sm:text-xs"
                 >
                     Alur Penjualan
                 </button>
@@ -812,35 +821,38 @@ function facilityGoNext() {
 
             // ===== FACILITY VIEWER HANDLERS =====
 
-// A. Buka viewer Fasilitas / Flow Diagram / Alur Penjualan
-const facilityBtn = target.closest<HTMLElement>('[data-facility-open]');
-if (facilityBtn) {
-    e.stopPropagation();
-    const idx = parseInt(facilityBtn.dataset.facilityOpen ?? '0', 10);
-    openFacilityViewer(idx, facilityBtn.dataset.facilityNama ?? '');
-    return;
-}
+            // A. Buka viewer Fasilitas / Flow Diagram / Alur Penjualan
+            const facilityBtn = target.closest<HTMLElement>('[data-facility-open]');
+            if (facilityBtn) {
+                e.stopPropagation();
+                const idx = parseInt(facilityBtn.dataset.facilityOpen ?? '0', 10);
+                openFacilityViewer(idx, facilityBtn.dataset.facilityNama ?? '');
+                return;
+            }
 
-// B. Tombol "Kembali" (kiri atas) -> tutup halaman viewer, balik ke halaman sebelumnya
-if (target.closest('#facilityBackBtn')) {
-    e.stopPropagation();
-    closeFacilityViewer();
-    return;
-}
+            // B. Tombol "Kembali" (kiri atas) -> tutup halaman viewer, balik ke halaman sebelumnya
+            if (target.closest('#facilityBackBtn')) {
+                e.stopPropagation();
+                closeFacilityViewer();
+                return;
+            }
 
-// C. Navigasi Prev / Next di antara Fasilitas / Flow Diagram / Alur Penjualan
-if (target.closest('#facilityPrevBtn')) {
-    e.stopPropagation();
-    facilityGoPrev();
-    return;
-}
-if (target.closest('#facilityNextBtn')) {
-    e.stopPropagation();
-    facilityGoNext();
-    return;
-}
+            // C. Navigasi Prev / Next di antara Fasilitas / Flow Diagram / Alur Penjualan
+            // FIX: pakai data-attribute (bukan id tunggal) supaya tombol versi
+            // desktop (kiri-kanan gambar) dan versi mobile (berdampingan di bawah
+            // gambar) sama-sama bisa merespons klik.
+            if (target.closest('[data-facility-nav="prev"]')) {
+                e.stopPropagation();
+                facilityGoPrev();
+                return;
+            }
+            if (target.closest('[data-facility-nav="next"]')) {
+                e.stopPropagation();
+                facilityGoNext();
+                return;
+            }
 
-// ===== END FACILITY VIEWER HANDLERS =====
+            // ===== END FACILITY VIEWER HANDLERS =====
 
             // 5. Menutup panel jika klik sembarang di luar area card aktif
             const clickedInsideCard = target.closest('#card-info, #card-produksi, #card-fasilitas, #card-detail, #zone-overview-container, #facilityOverlay');
@@ -1214,77 +1226,118 @@ if (target.closest('#facilityNextBtn')) {
             </div>
 
             {/* ===== FACILITY VIEWER PAGE (Fasilitas / Flow Diagram / Alur Penjualan) ===== */}
-<div
-    id="facilityOverlay"
-    className="fixed inset-3 z-[1000] hidden flex-col overflow-y-auto rounded-xl border border-slate-300 bg-white p-4 shadow-2xl sm:inset-4 sm:p-6 lg:inset-6 lg:p-8"
->
-    {/* Tombol Kembali - kiri atas */}
-    <div className="mb-6 flex items-center">
-        <button
-            type="button"
-            id="facilityBackBtn"
-            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-900"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Kembali
-        </button>
-    </div>
-
-    {/* Judul & subjudul */}
-    <div className="mb-6 text-center">
-        <h2 id="facilityTitle" className="text-xl font-bold text-blue-900 sm:text-2xl">-</h2>
-        <p id="facilitySubtitle" className="mx-auto mt-1 max-w-xl text-xs text-slate-500 sm:text-sm">-</p>
-    </div>
-
-    {/* Konten: prev - gambar - next */}
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 lg:flex-row lg:gap-6">
-        {/* Tombol Sebelumnya + label gambar tujuan */}
-        <button
-            type="button"
-            id="facilityPrevBtn"
-            className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-            <span id="facilityPrevLabel" className="whitespace-nowrap">-</span>
-        </button>
-
-        {/* Gambar */}
-        <div className="relative max-h-[55vh] w-full max-w-3xl">
-            <img
-                id="facilityImage"
-                src=""
-                alt=""
-                className="max-h-[55vh] w-full max-w-3xl rounded-lg border border-slate-100 object-contain shadow-sm"
-            />
+            {/*
+                FIX RESPONSIF:
+                1. z-1000 -> z-[1000]  (z-1000 BUKAN class Tailwind valid, jadi sebelumnya
+                   overlay ini bisa ketimpa elemen lain seperti #detail-pane yang z-50).
+                2. Tambah overflow-x-hidden supaya tombol yang labelnya panjang tidak
+                   memicu horizontal scroll di layar sempit.
+                3. Urutan mobile: Gambar tampil duluan, baru tombol Prev/Next berdampingan
+                   di bawahnya (versi lg ke atas tetap: Prev - Gambar - Next sejajar).
+            */}
             <div
-                id="facilityImageFallback"
-                className="hidden aspect-video w-full max-w-3xl flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 text-slate-400"
+                id="facilityOverlay"
+                className="fixed inset-3 z-[1000] hidden flex-col overflow-y-auto overflow-x-hidden rounded-xl border border-slate-300 bg-white p-4 shadow-2xl sm:inset-4 sm:p-6 lg:inset-6 lg:p-8"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <p className="text-xs font-semibold">Gambar belum tersedia</p>
-            </div>
-        </div>
+                {/* Tombol Kembali - kiri atas */}
+                <div className="mb-4 flex shrink-0 items-center sm:mb-6">
+                    <button
+                        type="button"
+                        id="facilityBackBtn"
+                        className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-900"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Kembali
+                    </button>
+                </div>
 
-        {/* Tombol Selanjutnya + label gambar tujuan */}
-        <button
-            type="button"
-            id="facilityNextBtn"
-            className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0"
-        >
-            <span id="facilityNextLabel" className="whitespace-nowrap">-</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-        </button>
-    </div>
-</div>
-{/* ===== END FACILITY VIEWER PAGE ===== */}
+                {/* Judul & subjudul */}
+                <div className="mb-4 shrink-0 text-center sm:mb-6">
+                    <h2 id="facilityTitle" className="text-lg font-bold text-blue-900 sm:text-xl lg:text-2xl">-</h2>
+                    <p id="facilitySubtitle" className="mx-auto mt-1 max-w-xl px-2 text-xs text-slate-500 sm:text-sm">-</p>
+                </div>
+
+                {/*
+                    Konten: Gambar + navigasi.
+                    FIX (gambar kegeser kalau salah satu tombol prev/next kosong/hilang):
+                    di desktop, tombol Prev/Next sekarang di-absolute-kan menempel ke tepi
+                    kiri/kanan container (bukan lagi sibling flex yang ikut menentukan
+                    centering). Jadi lebar/ada-tidaknya tombol TIDAK PERNAH mempengaruhi
+                    posisi gambar lagi — gambar selalu murni di-center via mx-auto.
+                */}
+                <div className="relative flex w-full flex-1 flex-col items-center justify-center gap-4 lg:flex-row">
+
+                    {/* Tombol Sebelumnya (versi desktop) - absolute nempel di tepi kiri, hanya tampil di lg+ */}
+                    <button
+                        type="button"
+                        data-facility-nav="prev"
+                        className="hidden shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0 lg:absolute lg:left-0 lg:top-1/2 lg:flex lg:-translate-y-1/2"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        <span data-facility-label="prev" className="whitespace-nowrap">-</span>
+                    </button>
+
+                    {/* Gambar - selalu di tengah container, tidak lagi terpengaruh tombol */}
+                    <div className="relative w-full max-w-3xl lg:mx-auto">
+                        <img
+                            id="facilityImage"
+                            src=""
+                            alt=""
+                            className="max-h-[42vh] w-full max-w-3xl rounded-lg border border-slate-100 object-contain shadow-sm sm:max-h-[50vh] lg:max-h-[55vh]"
+                        />
+                        <div
+                            id="facilityImageFallback"
+                            className="hidden aspect-video w-full max-w-3xl flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 text-slate-400"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p className="text-xs font-semibold">Gambar belum tersedia</p>
+                        </div>
+                    </div>
+
+                    {/* Tombol Selanjutnya (versi desktop) - absolute nempel di tepi kanan, hanya tampil di lg+ */}
+                    <button
+                        type="button"
+                        data-facility-nav="next"
+                        className="hidden shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0 lg:absolute lg:right-0 lg:top-1/2 lg:flex lg:-translate-y-1/2"
+                    >
+                        <span data-facility-label="next" className="whitespace-nowrap">-</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    {/* Navigasi mobile: Prev & Next berdampingan di bawah gambar, hilang di lg+ */}
+                    <div className="flex w-full max-w-3xl shrink-0 items-center justify-between gap-3 lg:hidden">
+                        <button
+                            type="button"
+                            data-facility-nav="prev"
+                            className="flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                            </svg>
+                            <span data-facility-label="prev" className="truncate">-</span>
+                        </button>
+                        <button
+                            type="button"
+                            data-facility-nav="next"
+                            className="flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0"
+                        >
+                            <span data-facility-label="next" className="truncate">-</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {/* ===== END FACILITY VIEWER PAGE ===== */}
         </>
     );
 };
