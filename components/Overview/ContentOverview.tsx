@@ -1225,19 +1225,9 @@ const ContentOverview = () => {
                 </div>
             </div>
 
-            {/* ===== FACILITY VIEWER PAGE (Fasilitas / Flow Diagram / Alur Penjualan) ===== */}
-            {/*
-                FIX RESPONSIF:
-                1. z-1000 -> z-[1000]  (z-1000 BUKAN class Tailwind valid, jadi sebelumnya
-                   overlay ini bisa ketimpa elemen lain seperti #detail-pane yang z-50).
-                2. Tambah overflow-x-hidden supaya tombol yang labelnya panjang tidak
-                   memicu horizontal scroll di layar sempit.
-                3. Urutan mobile: Gambar tampil duluan, baru tombol Prev/Next berdampingan
-                   di bawahnya (versi lg ke atas tetap: Prev - Gambar - Next sejajar).
-            */}
             <div
                 id="facilityOverlay"
-                className="fixed inset-3 z-[1000] hidden flex-col overflow-y-auto overflow-x-hidden rounded-xl border border-slate-300 bg-white p-4 shadow-2xl sm:inset-4 sm:p-6 lg:inset-6 lg:p-8"
+                className="fixed inset-3 z-1000 hidden flex-col overflow-y-auto overflow-x-hidden rounded-xl border border-slate-300 bg-white p-4 shadow-2xl sm:inset-4 sm:p-6 lg:inset-6 lg:p-8"
             >
                 {/* Tombol Kembali - kiri atas */}
                 <div className="mb-4 flex shrink-0 items-center sm:mb-6">
@@ -1259,17 +1249,8 @@ const ContentOverview = () => {
                     <p id="facilitySubtitle" className="mx-auto mt-1 max-w-xl px-2 text-xs text-slate-500 sm:text-sm">-</p>
                 </div>
 
-                {/*
-                    Konten: Gambar + navigasi.
-                    FIX (gambar kegeser kalau salah satu tombol prev/next kosong/hilang):
-                    di desktop, tombol Prev/Next sekarang di-absolute-kan menempel ke tepi
-                    kiri/kanan container (bukan lagi sibling flex yang ikut menentukan
-                    centering). Jadi lebar/ada-tidaknya tombol TIDAK PERNAH mempengaruhi
-                    posisi gambar lagi — gambar selalu murni di-center via mx-auto.
-                */}
                 <div className="relative flex w-full flex-1 flex-col items-center justify-center gap-4 lg:flex-row">
 
-                    {/* Tombol Sebelumnya (versi desktop) - absolute nempel di tepi kiri, hanya tampil di lg+ */}
                     <button
                         type="button"
                         data-facility-nav="prev"
@@ -1281,11 +1262,9 @@ const ContentOverview = () => {
                         <span data-facility-label="prev" className="whitespace-nowrap">-</span>
                     </button>
 
-                    {/* Gambar - selalu di tengah container, tidak lagi terpengaruh tombol */}
                     <div className="relative w-full max-w-3xl lg:mx-auto">
                         <img
                             id="facilityImage"
-                            src=""
                             alt=""
                             className="max-h-[42vh] w-full max-w-3xl rounded-lg border border-slate-100 object-contain shadow-sm sm:max-h-[50vh] lg:max-h-[55vh]"
                         />
@@ -1300,7 +1279,6 @@ const ContentOverview = () => {
                         </div>
                     </div>
 
-                    {/* Tombol Selanjutnya (versi desktop) - absolute nempel di tepi kanan, hanya tampil di lg+ */}
                     <button
                         type="button"
                         data-facility-nav="next"
@@ -1312,7 +1290,6 @@ const ContentOverview = () => {
                         </svg>
                     </button>
 
-                    {/* Navigasi mobile: Prev & Next berdampingan di bawah gambar, hilang di lg+ */}
                     <div className="flex w-full max-w-3xl shrink-0 items-center justify-between gap-3 lg:hidden">
                         <button
                             type="button"
@@ -1337,7 +1314,6 @@ const ContentOverview = () => {
                     </div>
                 </div>
             </div>
-            {/* ===== END FACILITY VIEWER PAGE ===== */}
         </>
     );
 };
