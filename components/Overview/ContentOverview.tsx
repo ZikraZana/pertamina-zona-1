@@ -106,7 +106,7 @@ const ContentOverview = () => {
                 },
                 {
                     title: "Alur Penjualan",
-                    subtitleTemplate: (nama: string) => `Berikut ini merupakan alur penjualan di wilayah kerja ${nama}`,
+                    subtitleTemplate: (nama: string) => `Berikut ini merupakan alur penjualan minyak di wilayah kerja ${nama}`,
                     image: images.alurPenjualan,
                 },
             ];
