@@ -39,6 +39,17 @@ type WilayahData = {
     workover_rigs: string | null;
 };
 
+type FacilityImage = {
+    src: string;
+    caption?: string;
+};
+
+type FacilityImageSet = {
+    fasilitas: FacilityImage[];
+    flowDiagram: FacilityImage[];
+    alurPenjualan: FacilityImage[];
+};
+
 const ContentOverview = () => {
     useEffect(() => {
 
@@ -47,48 +58,60 @@ const ContentOverview = () => {
 
         // ===== STATE UNTUK FACILITY VIEWER (Fasilitas / Flow Diagram / Alur Penjualan) =====
         let facilityActiveIndex = 0;
+        let facilitySubIndex = 0;
         let facilityWilayahName = '';
 
         // Gambar spesifik per wilayah kerja. Kode di sini harus sama dengan kode di data-p/data-badge-click
         // (nso, p-susu, rantau, lirik, jambi, jambi-merang, dst).
-        const facilityImagesByWilayah: Record<string, { fasilitas: string; flowDiagram: string; alurPenjualan: string }> = {
+        const facilityImagesByWilayah: Record<string, FacilityImageSet> = {
             'nso': {
-                fasilitas: '/images/nso/fasilitas.jpg',
-                flowDiagram: '/images/nso/flow-diagram.jpg',
-                alurPenjualan: '/images/nso/alur-penjualan.jpg',
+                fasilitas: [{ src: '/images/nso/fasilitas.jpg' }],
+                flowDiagram: [{ src: '/images/nso/flow-diagram.jpg' }],
+                alurPenjualan: [
+                    { src: '/images/nso/alur-penjualan-minyak.jpg', caption: 'Alur penjualan minyak di wilayah kerja NSO' },
+                    { src: '/images/nso/alur-penjualan-gas-1.jpg', caption: 'Alur penjualan gas di wilayah kerja NSO (1)' },
+                    { src: '/images/nso/alur-penjualan-gas-2.jpg', caption: 'Alur penjualan gas di wilayah kerja NSO (2)'},
+                ],
             },
             'p-susu': {
-                fasilitas: '/images/p-susu/fasilitas.jpg',
-                flowDiagram: '/images/p-susu/flow-diagram.jpg',
-                alurPenjualan: '/images/p-susu/alur-penjualan.jpg',
+                fasilitas: [{ src: '/images/p-susu/fasilitas.jpg' }],
+                flowDiagram: [{ src: '/images/p-susu/flow-diagram.jpg' }],
+                alurPenjualan: [
+                    { src: '/images/p-susu/alur-penjualan-minyak.jpg', caption: 'Alur penjualan minyak di wilayah kerja Pangkalan Susu' },
+                    { src: '/images/p-susu/alur-penjualan-gas.jpg', caption: 'Alur penjualan gas di wilayah kerja Pangkalan Susu' },
+                ],
             },
             'rantau': {
-                fasilitas: '/images/rantau/fasilitas.jpg',
-                flowDiagram: '/images/rantau/flow-diagram.jpg',
-                alurPenjualan: '/images/rantau/alur-penjualan.jpg',
+                fasilitas: [{ src: '/images/rantau/fasilitas.jpg' }],
+                flowDiagram: [{ src: '/images/rantau/flow-diagram.jpg' }],
+                alurPenjualan: [{ src: '/images/rantau/alur-penjualan.jpg' }],
             },
             'lirik': {
-                fasilitas: '/images/lirik/fasilitas.jpg',
-                flowDiagram: '/images/lirik/flow-diagram.jpg',
-                alurPenjualan: '/images/lirik/alur-penjualan.jpg',
+                fasilitas: [{ src: '/images/lirik/fasilitas.jpg' }],
+                flowDiagram: [{ src: '/images/lirik/flow-diagram.jpg' }],
+                alurPenjualan: [{ src: '/images/lirik/alur-penjualan.jpg' }],
             },
             'jambi': {
-                fasilitas: '/images/jambi/fasilitas.jpg',
-                flowDiagram: '/images/jambi/flow-diagram.jpg',
-                alurPenjualan: '/images/jambi/alur-penjualan.jpg',
+                fasilitas: [{ src: '/images/jambi/fasilitas.jpg' }],
+                flowDiagram: [{ src: '/images/jambi/flow-diagram.jpg' }],
+                alurPenjualan: [{ src: '/images/jambi/alur-penjualan.jpg' }],
             },
             'jambi-merang': {
-                fasilitas: '/images/jambi-merang/fasilitas.jpg',
-                flowDiagram: '/images/jambi-merang/flow-diagram.jpg',
-                alurPenjualan: '/images/jambi-merang/alur-penjualan.jpg',
+                fasilitas: [{ src: '/images/jambi-merang/fasilitas.jpg' }],
+                flowDiagram: [{ src: '/images/jambi-merang/flow-diagram.jpg' }],
+                alurPenjualan: [
+                    { src: '/images/jambi-merang/alur-penjualan-minyak.jpg', caption: 'Alur penjualan minyak di wilayah kerja Jambi Merang' },
+                    { src: '/images/jambi-merang/alur-penjualan-gas-1.jpg', caption: 'Alur penjualan gas di wilayah kerja Jambi Merang (1)' },
+                    { src: '/images/jambi-merang/alur-penjualan-gas-2.jpg', caption: 'Alur penjualan gas di wilayah kerja Jambi Merang (2)' },
+                ],
             },
         };
 
         // Fallback kalau suatu wilayah belum punya gambar sendiri
-        const DEFAULT_FACILITY_IMAGES = {
-            fasilitas: '/images/fasilitas.jpg',
-            flowDiagram: '/images/flow-diagram.jpg',
-            alurPenjualan: '/images/alur-penjualan.jpg',
+        const DEFAULT_FACILITY_IMAGES: FacilityImageSet = {
+            fasilitas: [{ src: '/images/fasilitas.jpg' }],
+            flowDiagram: [{ src: '/images/flow-diagram.jpg' }],
+            alurPenjualan: [{ src: '/images/alur-penjualan.jpg' }],
         };
 
         function getFacilityPages() {
@@ -97,17 +120,17 @@ const ContentOverview = () => {
                 {
                     title: "Fasilitas Kerja",
                     subtitleTemplate: (nama: string) => `Berikut ini merupakan foto dari fasilitas yang ada di wilayah kerja ${nama}`,
-                    image: images.fasilitas,
+                    images: images.fasilitas,
                 },
                 {
                     title: "Flow Diagram",
                     subtitleTemplate: (nama: string) => `Berikut ini merupakan flow diagram dari wilayah kerja ${nama}`,
-                    image: images.flowDiagram,
+                    images: images.flowDiagram,
                 },
                 {
                     title: "Alur Penjualan",
-                    subtitleTemplate: (nama: string) => `Berikut ini merupakan alur penjualan minyak di wilayah kerja ${nama}`,
-                    image: images.alurPenjualan,
+                    subtitleTemplate: (nama: string) => `Berikut ini merupakan alur penjualan di wilayah kerja ${nama}`,
+                    images: images.alurPenjualan,
                 },
             ];
         }
@@ -115,15 +138,23 @@ const ContentOverview = () => {
         // FIX: sekarang meng-update SEMUA tombol prev/next sekaligus (versi desktop
         // yang cuma tampil di lg+, dan versi mobile yang berdampingan di bawah gambar)
         // lewat data-attribute, bukan lagi lewat 1 id tunggal.
-        function renderFacilityPage() {
+       function renderFacilityPage() {
             const facilityPages = getFacilityPages();
             const page = facilityPages[facilityActiveIndex];
+            const images = page.images;
+
+            if (facilitySubIndex >= images.length) facilitySubIndex = 0;
+            const currentImage = images[facilitySubIndex];
+
             const titleEl = document.getElementById('facilityTitle');
             const subtitleEl = document.getElementById('facilitySubtitle');
             const imageEl = document.getElementById('facilityImage') as HTMLImageElement | null;
+            const counterEl = document.getElementById('facilityImageCounter');
+            const captionEl = document.getElementById('facilityImageCaption');
 
             if (titleEl) titleEl.textContent = page.title;
             if (subtitleEl) subtitleEl.textContent = page.subtitleTemplate(facilityWilayahName);
+
             const fallbackEl = document.getElementById('facilityImageFallback') as HTMLDivElement | null;
             if (imageEl && fallbackEl) {
                 imageEl.classList.remove('hidden');
@@ -136,10 +167,51 @@ const ContentOverview = () => {
                     fallbackEl.classList.add('flex');
                 };
 
-                imageEl.src = page.image;
-                imageEl.alt = page.title;
+                imageEl.src = currentImage.src;
+                imageEl.alt = currentImage.caption || page.title;
             }
 
+            // Badge "1 of 3" — hanya tampil kalau gambar di halaman ini lebih dari 1
+            if (counterEl) {
+                if (images.length > 1) {
+                    counterEl.textContent = `${facilitySubIndex + 1} of ${images.length}`;
+                    counterEl.classList.remove('hidden');
+                } else {
+                    counterEl.classList.add('hidden');
+                }
+            }
+
+            // Caption per gambar
+            if (captionEl) {
+                if (currentImage.caption) {
+                    captionEl.textContent = currentImage.caption;
+                    captionEl.classList.remove('hidden');
+                } else {
+                    captionEl.textContent = '';
+                    captionEl.classList.add('hidden');
+                }
+            }
+
+            // Tombol next/back galeri (bawah-tengah gambar) — hanya tampil kalau >1 gambar
+            const hasSubPrev = facilitySubIndex > 0;
+            const hasSubNext = facilitySubIndex < images.length - 1;
+            document.querySelectorAll<HTMLButtonElement>('[data-facility-subnav="prev"]').forEach((btn) => {
+                btn.disabled = !hasSubPrev;
+            });
+            document.querySelectorAll<HTMLButtonElement>('[data-facility-subnav="next"]').forEach((btn) => {
+                btn.disabled = !hasSubNext;
+            });
+            document.querySelectorAll('[data-facility-subnav-container]').forEach((el) => {
+                if (images.length > 1) {
+                    el.classList.remove('hidden');
+                    el.classList.add('flex');
+                } else {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex');
+                }
+            });
+
+            // Navigasi antar-halaman (Fasilitas / Flow Diagram / Alur Penjualan) — tetap seperti semula
             const hasPrev = facilityActiveIndex > 0;
             const hasNext = facilityActiveIndex < facilityPages.length - 1;
             const prevLabelText = hasPrev ? facilityPages[facilityActiveIndex - 1].title : '';
@@ -161,6 +233,7 @@ const ContentOverview = () => {
 
         function openFacilityViewer(index: number, namaWilayah: string) {
             facilityActiveIndex = index;
+            facilitySubIndex = 0;
             facilityWilayahName = namaWilayah;
             renderFacilityPage();
 
@@ -175,9 +248,11 @@ const ContentOverview = () => {
             overlay?.classList.remove('flex');
         }
 
+
         function facilityGoPrev() {
             if (facilityActiveIndex > 0) {
                 facilityActiveIndex--;
+                facilitySubIndex = 0;
                 renderFacilityPage();
             }
         }
@@ -185,6 +260,23 @@ const ContentOverview = () => {
         function facilityGoNext() {
             if (facilityActiveIndex < getFacilityPages().length - 1) {
                 facilityActiveIndex++;
+                facilitySubIndex = 0;
+                renderFacilityPage();
+            }
+        }
+
+        // BARU: navigasi galeri di dalam satu halaman (mis. Alur Penjualan minyak/gas)
+        function facilitySubGoPrev() {
+            if (facilitySubIndex > 0) {
+                facilitySubIndex--;
+                renderFacilityPage();
+            }
+        }
+
+        function facilitySubGoNext() {
+            const images = getFacilityPages()[facilityActiveIndex].images;
+            if (facilitySubIndex < images.length - 1) {
+                facilitySubIndex++;
                 renderFacilityPage();
             }
         }
@@ -851,6 +943,17 @@ const ContentOverview = () => {
                 facilityGoNext();
                 return;
             }
+            // D. Navigasi galeri gambar di dalam satu halaman (mis. Alur Penjualan minyak/gas)
+            if (target.closest('[data-facility-subnav="prev"]')) {
+                e.stopPropagation();
+                facilitySubGoPrev();
+                return;
+            }
+            if (target.closest('[data-facility-subnav="next"]')) {
+                e.stopPropagation();
+                facilitySubGoNext();
+                return;
+            }
 
             // ===== END FACILITY VIEWER HANDLERS =====
 
@@ -1263,19 +1366,60 @@ const ContentOverview = () => {
                     </button>
 
                     <div className="relative w-full max-w-3xl lg:mx-auto">
-                        <img
-                            id="facilityImage"
-                            alt=""
-                            className="max-h-[42vh] w-full max-w-3xl rounded-lg border border-slate-100 object-contain shadow-sm sm:max-h-[50vh] lg:max-h-[55vh]"
-                        />
+                        <div className="relative">
+                            <img
+                                id="facilityImage"
+                                alt=""
+                                className="max-h-[42vh] w-full max-w-3xl rounded-lg border border-slate-100 object-contain shadow-sm sm:max-h-[50vh] lg:max-h-[55vh]"
+                            />
+                            <div
+                                id="facilityImageFallback"
+                                className="hidden aspect-video w-full max-w-3xl flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 text-slate-400"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <p className="text-xs font-semibold">Gambar belum tersedia</p>
+                            </div>
+
+                            {/* Badge "1 of 3" — pojok kanan-atas gambar */}
+                            <span
+                                id="facilityImageCounter"
+                                className="hidden absolute right-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-white"
+                            ></span>
+                        </div>
+
+                        {/* Caption per gambar */}
+                        <p
+                            id="facilityImageCaption"
+                            className="hidden mt-2 px-2 text-center text-xs font-medium text-slate-600 sm:text-sm"
+                        ></p>
+
+                        {/* Tombol next/back galeri — bawah-tengah gambar, hanya tampil jika halaman punya >1 gambar */}
                         <div
-                            id="facilityImageFallback"
-                            className="hidden aspect-video w-full max-w-3xl flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 text-slate-400"
+                            data-facility-subnav-container
+                            className="hidden mt-3 items-center justify-center gap-3"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <p className="text-xs font-semibold">Gambar belum tersedia</p>
+                            <button
+                                type="button"
+                                data-facility-subnav="prev"
+                                className="flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-30"
+                                aria-label="Gambar sebelumnya"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <button
+                                type="button"
+                                data-facility-subnav="next"
+                                className="flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-30"
+                                aria-label="Gambar berikutnya"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
 
