@@ -1430,7 +1430,20 @@ const ContentOverview = () => {
                     <p id="facilitySubtitle" className="mx-auto mt-1 max-w-xl px-2 text-xs text-slate-500 sm:text-sm">-</p>
                 </div>
 
-<div className="relative w-full max-w-3xl lg:mx-auto">
+                <div className="relative flex w-full flex-1 flex-col items-center justify-center gap-4 lg:flex-row">
+
+                    <button
+                        type="button"
+                        data-facility-nav="prev"
+                        className="hidden shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0 lg:absolute lg:left-0 lg:top-1/2 lg:flex lg:-translate-y-1/2"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        <span data-facility-label="prev" className="whitespace-nowrap">-</span>
+                    </button>
+
+                    <div className="relative w-full max-w-3xl lg:mx-auto">
 
                         {/* Toolbar Zoom & Download */}
                         <div className="mb-2 flex items-center justify-center gap-2">
@@ -1528,6 +1541,41 @@ const ContentOverview = () => {
                             </button>
                         </div>
                     </div>
+
+                    <button
+                        type="button"
+                        data-facility-nav="next"
+                        className="hidden shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0 lg:absolute lg:right-0 lg:top-1/2 lg:flex lg:-translate-y-1/2"
+                    >
+                        <span data-facility-label="next" className="whitespace-nowrap">-</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div className="flex w-full max-w-3xl shrink-0 items-center justify-between gap-3 lg:hidden">
+                        <button
+                            type="button"
+                            data-facility-nav="prev"
+                            className="flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                            </svg>
+                            <span data-facility-label="prev" className="truncate">-</span>
+                        </button>
+                        <button
+                            type="button"
+                            data-facility-nav="next"
+                            className="flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0"
+                        >
+                            <span data-facility-label="next" className="truncate">-</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         </>
     );
