@@ -691,6 +691,7 @@ const ContentOverview = () => {
             const d = lastData;
             const titleEl = document.getElementById('cardDetailTitle')!;
             const bodyEl = document.getElementById('cardDetailBody')!;
+            const scrollContainer = bodyEl.parentElement;
 
             titleEl.textContent = `${lastNama} — Detail Lengkap`;
             bodyEl.innerHTML = `
@@ -866,6 +867,7 @@ const ContentOverview = () => {
                 el?.classList.add(...CARD_HIDDEN);
             });
             toggleSplitView(true);
+            scrollContainer?.scrollTo({ top: 0, behavior: 'auto' });
         }
 
         // ============================================================
