@@ -76,7 +76,10 @@ const ContentOverview = () => {
             },
             'p-susu': {
                 fasilitas: [{ src: '/images/p-susu/fasilitas.jpg' }],
-                flowDiagram: [{ src: '/images/p-susu/flow-diagram.jpg' }],
+                flowDiagram: [
+                    { src: '/images/p-susu/flow-diagram-oil.jpg', caption: 'Flow diagram minyak di wilayah kerja Pangkalan Susu' },
+                    { src: '/images/p-susu/flow-diagram-gas.jpg', caption: 'Flow diagram gas di wilayah kerja Pangkalan Susu' },
+                ],
                 alurPenjualan: [
                     { src: '/images/p-susu/alur-penjualan-minyak.jpg', caption: 'Alur penjualan minyak di wilayah kerja Pangkalan Susu' },
                     { src: '/images/p-susu/alur-penjualan-gas.jpg', caption: 'Alur penjualan gas di wilayah kerja Pangkalan Susu' },
@@ -84,7 +87,12 @@ const ContentOverview = () => {
             },
             'rantau': {
                 fasilitas: [{ src: '/images/rantau/fasilitas.jpg' }],
-                flowDiagram: [{ src: '/images/rantau/flow-diagram.jpg' }],
+                flowDiagram: [
+                    { src: '/images/rantau/flow-diagram-oil.jpg', caption: 'Flow diagram minyak di wilayah kerja Rantau' },
+                    { src: '/images/rantau/process-flow-eksisting.jpg', caption: 'Process flow eksisting di wilayah kerja Rantau' },
+                    { src: '/images/rantau/process-flow-gas-handling.jpg', caption: 'Process flow gas handling di wilayah kerja Rantau' },
+                    { src: '/images/rantau/rev-process-flow-gas-handling.jpg', caption: 'Perubahan process flow gas handling di wilayah kerja Rantau' },
+                ],
                 alurPenjualan: [{ src: '/images/rantau/alur-penjualan.jpg' }],
             },
             'lirik': {
