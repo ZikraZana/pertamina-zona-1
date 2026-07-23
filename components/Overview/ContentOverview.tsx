@@ -60,6 +60,7 @@ const ContentOverview = () => {
         let facilityActiveIndex = 0;
         let facilitySubIndex = 0;
         let facilityWilayahName = '';
+        let facilityZoom = 1;
 
         // Gambar spesifik per wilayah kerja. Kode di sini harus sama dengan kode di data-p/data-badge-click
         // (nso, p-susu, rantau, lirik, jambi, jambi-merang, dst).
@@ -145,6 +146,9 @@ const ContentOverview = () => {
 
             if (facilitySubIndex >= images.length) facilitySubIndex = 0;
             const currentImage = images[facilitySubIndex];
+
+            facilityZoom = 1;
+            applyZoom();
 
             const titleEl = document.getElementById('facilityTitle');
             const subtitleEl = document.getElementById('facilitySubtitle');
@@ -281,6 +285,59 @@ const ContentOverview = () => {
             }
         }
         // ===== END STATE FACILITY VIEWER =====
+
+        const ZOOM_STEP = 0.5;
+        const ZOOM_MIN = 1;
+        const ZOOM_MAX = 3;
+
+        function applyZoom() {
+            const imageEl = document.getElementById('facilityImage') as HTMLImageElement | null;
+            const wrapperEl = document.getElementById('facilityImageWrapper');
+            const labelEl = document.getElementById('facilityZoomLabel');
+            const zoomOutBtn = document.getElementById('facilityZoomOutBtn') as HTMLButtonElement | null;
+            const zoomInBtn = document.getElementById('facilityZoomInBtn') as HTMLButtonElement | null;
+
+            if (imageEl) {
+                imageEl.style.transform = `scale(${facilityZoom})`;
+                imageEl.style.transformOrigin = 'center center';
+                imageEl.style.transition = 'transform 0.15s ease-out';
+            }
+            if (wrapperEl) {
+                // Saat di-zoom, wrapper jadi bisa di-scroll (pan) untuk menjelajah bagian gambar yang membesar
+                wrapperEl.classList.toggle('overflow-auto', facilityZoom > 1);
+                wrapperEl.classList.toggle('cursor-move', facilityZoom > 1);
+            }
+            if (labelEl) labelEl.textContent = `${Math.round(facilityZoom * 100)}%`;
+            if (zoomOutBtn) zoomOutBtn.disabled = facilityZoom <= ZOOM_MIN;
+            if (zoomInBtn) zoomInBtn.disabled = facilityZoom >= ZOOM_MAX;
+        }
+
+        function facilityZoomIn() {
+            facilityZoom = Math.min(ZOOM_MAX, facilityZoom + ZOOM_STEP);
+            applyZoom();
+        }
+
+        function facilityZoomOut() {
+            facilityZoom = Math.max(ZOOM_MIN, facilityZoom - ZOOM_STEP);
+            applyZoom();
+        }
+
+        function facilityDownloadImage() {
+            const images = getFacilityPages()[facilityActiveIndex].images;
+            const currentImage = images[facilitySubIndex];
+            if (!currentImage) return;
+
+            const link = document.createElement('a');
+            link.href = currentImage.src;
+            // Ambil nama file asli dari path/URL sebagai nama file unduhan
+            const fileName = currentImage.src.split('/').pop()?.split('?')[0] || 'gambar.jpg';
+            link.download = fileName;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
 
         const koordinatWilayah: Record<string, string> = {
             'nso': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1758828.4833084824!2d96.44592863870214!3d5.222246513227389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3047773ee34bcc15%3A0x96b7cedbe6bb0f8c!2sPT.%20Pertamina%20Hulu%20Energi%20NSO!5e1!3m2!1sen!2sus!4v1783928795832!5m2!1sen!2sus',
@@ -691,6 +748,7 @@ const ContentOverview = () => {
             const d = lastData;
             const titleEl = document.getElementById('cardDetailTitle')!;
             const bodyEl = document.getElementById('cardDetailBody')!;
+            const scrollContainer = bodyEl.parentElement;
 
             titleEl.textContent = `${lastNama} — Detail Lengkap`;
             bodyEl.innerHTML = `
@@ -866,6 +924,7 @@ const ContentOverview = () => {
                 el?.classList.add(...CARD_HIDDEN);
             });
             toggleSplitView(true);
+            scrollContainer?.scrollTo({ top: 0, behavior: 'auto' });
         }
 
         // ============================================================
@@ -957,6 +1016,25 @@ const ContentOverview = () => {
 
             // ===== END FACILITY VIEWER HANDLERS =====
 
+            // E. Zoom in / zoom out / download gambar
+            if (target.closest('[data-facility-zoom="in"]')) {
+                e.stopPropagation();
+                facilityZoomIn();
+                return;
+            }
+            if (target.closest('[data-facility-zoom="out"]')) {
+                e.stopPropagation();
+                facilityZoomOut();
+                return;
+            }
+            if (target.closest('[data-facility-download]')) {
+                e.stopPropagation();
+                facilityDownloadImage();
+                return;
+            }
+
+            // ===== END FACILITY VIEWER HANDLERS =====
+            
             // 5. Menutup panel jika klik sembarang di luar area card aktif
             const clickedInsideCard = target.closest('#card-info, #card-produksi, #card-fasilitas, #card-detail, #zone-overview-container, #facilityOverlay');
             const clickedInsideStaticCard = target.closest('#card-geografis');
@@ -1352,21 +1430,49 @@ const ContentOverview = () => {
                     <p id="facilitySubtitle" className="mx-auto mt-1 max-w-xl px-2 text-xs text-slate-500 sm:text-sm">-</p>
                 </div>
 
-                <div className="relative flex w-full flex-1 flex-col items-center justify-center gap-4 lg:flex-row">
+<div className="relative w-full max-w-3xl lg:mx-auto">
 
-                    <button
-                        type="button"
-                        data-facility-nav="prev"
-                        className="hidden shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0 lg:absolute lg:left-0 lg:top-1/2 lg:flex lg:-translate-y-1/2"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                        </svg>
-                        <span data-facility-label="prev" className="whitespace-nowrap">-</span>
-                    </button>
+                        {/* Toolbar Zoom & Download */}
+                        <div className="mb-2 flex items-center justify-center gap-2">
+                            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1">
+                                <button
+                                    type="button"
+                                    id="facilityZoomOutBtn"
+                                    data-facility-zoom="out"
+                                    className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-white disabled:pointer-events-none disabled:opacity-30"
+                                    aria-label="Perkecil gambar"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+                                    </svg>
+                                </button>
+                                <span id="facilityZoomLabel" className="w-12 select-none text-center text-xs font-semibold text-slate-600">100%</span>
+                                <button
+                                    type="button"
+                                    id="facilityZoomInBtn"
+                                    data-facility-zoom="in"
+                                    className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-white disabled:pointer-events-none disabled:opacity-30"
+                                    aria-label="Perbesar gambar"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </button>
+                            </div>
 
-                    <div className="relative w-full max-w-3xl lg:mx-auto">
-                        <div className="relative">
+                            <button
+                                type="button"
+                                data-facility-download
+                                className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-white"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                                </svg>
+                                Unduh
+                            </button>
+                        </div>
+
+                        <div id="facilityImageWrapper" className="relative">
                             <img
                                 id="facilityImage"
                                 alt=""
@@ -1422,41 +1528,6 @@ const ContentOverview = () => {
                             </button>
                         </div>
                     </div>
-
-                    <button
-                        type="button"
-                        data-facility-nav="next"
-                        className="hidden shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0 lg:absolute lg:right-0 lg:top-1/2 lg:flex lg:-translate-y-1/2"
-                    >
-                        <span data-facility-label="next" className="whitespace-nowrap">-</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-
-                    <div className="flex w-full max-w-3xl shrink-0 items-center justify-between gap-3 lg:hidden">
-                        <button
-                            type="button"
-                            data-facility-nav="prev"
-                            className="flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                            </svg>
-                            <span data-facility-label="prev" className="truncate">-</span>
-                        </button>
-                        <button
-                            type="button"
-                            data-facility-nav="next"
-                            className="flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-0"
-                        >
-                            <span data-facility-label="next" className="truncate">-</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
             </div>
         </>
     );
