@@ -62,6 +62,13 @@ const ContentOverview = () => {
         let facilityWilayahName = '';
         let facilityZoom = 1;
 
+        // ===== STATE UNTUK DRAG-TO-PAN (klik-tahan-geser saat gambar di-zoom) =====
+        let isPanning = false;
+        let panStartX = 0;
+        let panStartY = 0;
+        let panScrollStartX = 0;
+        let panScrollStartY = 0;
+
         // Gambar spesifik per wilayah kerja. Kode di sini harus sama dengan kode di data-p/data-badge-click
         // (nso, p-susu, rantau, lirik, jambi, jambi-merang, dst).
         const facilityImagesByWilayah: Record<string, FacilityImageSet> = {
@@ -71,7 +78,7 @@ const ContentOverview = () => {
                 alurPenjualan: [
                     { src: '/images/nso/alur-penjualan-minyak.jpg', caption: 'Alur penjualan minyak di wilayah kerja NSO' },
                     { src: '/images/nso/alur-penjualan-gas-1.jpg', caption: 'Alur penjualan gas di wilayah kerja NSO (1)' },
-                    { src: '/images/nso/alur-penjualan-gas-2.jpg', caption: 'Alur penjualan gas di wilayah kerja NSO (2)'},
+                    { src: '/images/nso/alur-penjualan-gas-2.jpg', caption: 'Alur penjualan gas di wilayah kerja NSO (2)' },
                 ],
             },
             'p-susu': {
@@ -147,7 +154,7 @@ const ContentOverview = () => {
         // FIX: sekarang meng-update SEMUA tombol prev/next sekaligus (versi desktop
         // yang cuma tampil di lg+, dan versi mobile yang berdampingan di bawah gambar)
         // lewat data-attribute, bukan lagi lewat 1 id tunggal.
-       function renderFacilityPage() {
+        function renderFacilityPage() {
             const facilityPages = getFacilityPages();
             const page = facilityPages[facilityActiveIndex];
             const images = page.images;
@@ -313,7 +320,7 @@ const ContentOverview = () => {
             if (wrapperEl) {
                 // Saat di-zoom, wrapper jadi bisa di-scroll (pan) untuk menjelajah bagian gambar yang membesar
                 wrapperEl.classList.toggle('overflow-auto', facilityZoom > 1);
-                wrapperEl.classList.toggle('cursor-move', facilityZoom > 1);
+                wrapperEl.classList.toggle('cursor-grab', facilityZoom > 1);
             }
             if (labelEl) labelEl.textContent = `${Math.round(facilityZoom * 100)}%`;
             if (zoomOutBtn) zoomOutBtn.disabled = facilityZoom <= ZOOM_MIN;
@@ -330,6 +337,41 @@ const ContentOverview = () => {
             applyZoom();
         }
 
+        // ===== DRAG-TO-PAN: klik kiri lalu geser mouse untuk menggeser gambar yang di-zoom =====
+        function handleImagePanStart(e: MouseEvent) {
+            const wrapperEl = document.getElementById('facilityImageWrapper');
+            if (!wrapperEl || facilityZoom <= ZOOM_MIN) return;
+
+            const target = e.target as HTMLElement;
+            if (!target.closest('#facilityImageWrapper')) return;
+
+            isPanning = true;
+            panStartX = e.clientX;
+            panStartY = e.clientY;
+            panScrollStartX = wrapperEl.scrollLeft;
+            panScrollStartY = wrapperEl.scrollTop;
+            wrapperEl.classList.add('cursor-grabbing');
+            e.preventDefault();
+        }
+
+        function handleImagePanMove(e: MouseEvent) {
+            if (!isPanning) return;
+            const wrapperEl = document.getElementById('facilityImageWrapper');
+            if (!wrapperEl) return;
+
+            const deltaX = e.clientX - panStartX;
+            const deltaY = e.clientY - panStartY;
+            wrapperEl.scrollLeft = panScrollStartX - deltaX;
+            wrapperEl.scrollTop = panScrollStartY - deltaY;
+        }
+
+        function handleImagePanEnd() {
+            if (!isPanning) return;
+            isPanning = false;
+            const wrapperEl = document.getElementById('facilityImageWrapper');
+            wrapperEl?.classList.remove('cursor-grabbing');
+        }
+
         function facilityDownloadImage() {
             const images = getFacilityPages()[facilityActiveIndex].images;
             const currentImage = images[facilitySubIndex];
@@ -342,6 +384,7 @@ const ContentOverview = () => {
             link.download = fileName;
             link.target = '_blank';
             link.rel = 'noopener noreferrer';
+            link.addEventListener('click', (evt) => evt.stopPropagation());
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -1042,7 +1085,7 @@ const ContentOverview = () => {
             }
 
             // ===== END FACILITY VIEWER HANDLERS =====
-            
+
             // 5. Menutup panel jika klik sembarang di luar area card aktif
             const clickedInsideCard = target.closest('#card-info, #card-produksi, #card-fasilitas, #card-detail, #zone-overview-container, #facilityOverlay');
             const clickedInsideStaticCard = target.closest('#card-geografis');
@@ -1054,9 +1097,15 @@ const ContentOverview = () => {
 
         // Pasang listener global tunggal di tingkat document
         document.addEventListener('click', handleGlobalClick);
+        document.addEventListener('mousedown', handleImagePanStart);
+        document.addEventListener('mousemove', handleImagePanMove);
+        document.addEventListener('mouseup', handleImagePanEnd);;
 
         return () => {
             document.removeEventListener('click', handleGlobalClick);
+            document.removeEventListener('mousedown', handleImagePanStart);
+            document.removeEventListener('mousemove', handleImagePanMove);
+            document.removeEventListener('mouseup', handleImagePanEnd);
         };
 
     }, []);
@@ -1497,6 +1546,7 @@ const ContentOverview = () => {
                             <img
                                 id="facilityImage"
                                 alt=""
+                                draggable={false}
                                 className="max-h-[42vh] w-full max-w-3xl rounded-lg border border-slate-100 object-contain shadow-sm sm:max-h-[50vh] lg:max-h-[55vh]"
                             />
                             <div
