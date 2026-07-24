@@ -16,12 +16,6 @@ type WeeklyReport = {
     file_size: number | null;
 };
 
-const DUMMY_REPORTS: WeeklyReport[] = [
-    { id: "1", title: "Weekly Report Minggu ke-1 Juli", report_date: "2026-07-06", file_name: "wr-01.pdf", file_size: 245000 },
-    { id: "2", title: "Weekly Report Minggu ke-2 Juli", report_date: "2026-07-13", file_name: "wr-02.pdf", file_size: 312000 },
-    { id: "3", title: "Weekly Report Minggu ke-3 Juli", report_date: "2026-07-20", file_name: "wr-03.pdf", file_size: 289000 },
-];
-
 const MONTH_NAMES = [
     "Januari", "Februari", "Maret", "April", "Mei", "Juni",
     "Juli", "Agustus", "September", "Oktober", "November", "Desember",
@@ -114,6 +108,20 @@ const WeeklyReportContent = () => {
         };
     }, [supabase]);
 
+    useEffect(() => {
+        if (!user) return;
+
+        async function fetchReports(){
+            fetch("/api/weekly-reports")
+                .then((res) => res.json())
+                .then((json) => setReports(json.reports))
+        }
+
+        fetchReports();
+
+    }, [user])
+
+
     // ============================================================
     // STATE BARU — untuk kalender, panel, dan modal preview.
     // ============================================================
@@ -123,17 +131,18 @@ const WeeklyReportContent = () => {
     const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
     const [previewReport, setPreviewReport] = useState<WeeklyReport | null>(null);
     const [showUploadForm, setShowUploadForm] = useState(false);
+    const [reports, setReports] = useState<WeeklyReport[]>([]);
 
     // Peta tanggal -> laporan (nanti ganti DUMMY_REPORTS jadi data asli)
     const reportsByDate = useMemo(() => {
         const map = new Map<string, WeeklyReport[]>();
-        for (const report of DUMMY_REPORTS) {
+        for (const report of reports) {
             const list = map.get(report.report_date) ?? [];
             list.push(report);
             map.set(report.report_date, list);
         }
         return map;
-    }, []);
+    }, [reports]);
 
     function goToPrevMonth() {
         setViewMonth((m) => {
@@ -182,6 +191,7 @@ const WeeklyReportContent = () => {
             setPreviewReport(dayReports[0]);
         }
     }
+
 
     // ============================================================
     // RENDER
@@ -412,7 +422,7 @@ const WeeklyReportContent = () => {
                                 <div className="mt-2 flex flex-col gap-2">
                                     <p className="text-xs font-semibold text-slate-500">Laporan terbaru:</p>
                                     <ul className="flex flex-col gap-2">
-                                        {DUMMY_REPORTS.slice(0, 5).map((report) => (
+                                        {reports.slice(0, 5).map((report) => (
                                             <li key={report.id}>
                                                 <button
                                                     onClick={() => {
