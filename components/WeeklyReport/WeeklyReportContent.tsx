@@ -108,17 +108,15 @@ const WeeklyReportContent = () => {
         };
     }, [supabase]);
 
+    async function fetchReports() {
+        const res = await fetch("/api/weekly-reports");
+        const json = await res.json();
+        setReports(json.reports)
+    }
+
     useEffect(() => {
         if (!user) return;
-
-        async function fetchReports(){
-            fetch("/api/weekly-reports")
-                .then((res) => res.json())
-                .then((json) => setReports(json.reports))
-        }
-
         fetchReports();
-
     }, [user])
 
 
@@ -132,6 +130,9 @@ const WeeklyReportContent = () => {
     const [previewReport, setPreviewReport] = useState<WeeklyReport | null>(null);
     const [showUploadForm, setShowUploadForm] = useState(false);
     const [reports, setReports] = useState<WeeklyReport[]>([]);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [previewLoading, setPreviewLoading] = useState(false);
+    const [previewError, setPreviewError] = useState<string | null>(null);
 
     // Peta tanggal -> laporan (nanti ganti DUMMY_REPORTS jadi data asli)
     const reportsByDate = useMemo(() => {
@@ -188,10 +189,81 @@ const WeeklyReportContent = () => {
         const dayReports = reportsByDate.get(dateKey);
         setSelectedDateKey(dateKey);
         if (dayReports && dayReports.length === 1) {
-            setPreviewReport(dayReports[0]);
+            openPreview(dayReports[0]);
         }
     }
 
+    async function openPreview(report: WeeklyReport) {
+        setPreviewReport(report);
+        setPreviewUrl(null);
+        setPreviewError(null);
+        setPreviewLoading(true);
+        try {
+            const res = await fetch(`/api/weekly-reports/${report.id}/download`);
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error ?? "Gagal membuka file.");
+            setPreviewUrl(json.url);
+        } catch (err) {
+            setPreviewError(err instanceof Error ? err.message : "Gagal membuka file.");
+        } finally {
+            setPreviewLoading(false);
+        }
+    }
+
+    function closePreview() {
+        setPreviewReport(null);
+        setPreviewUrl(null);
+        setPreviewError(null);
+    }
+
+    const [uploadTitle, setUploadTitle] = useState("");
+    const [uploadDate, setUploadDate] = useState("");
+    const [uploadFile, setUploadFile] = useState<File | null>(null);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const [uploadLoading, setUploadLoading] = useState(false)
+    const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+
+    async function handleUpload(e: React.FormEvent) {
+        e.preventDefault();
+        setUploadError(null);
+        setUploadSuccess(null);
+
+        if (!uploadFile) {
+            setUploadError("Pilih File PDF terlebih dahulu")
+            return;
+        }
+        if (!uploadTitle.trim() || !uploadDate) {
+            setUploadError("Judul dan Tanggal Laporan wajib diisi")
+            return;
+        }
+
+        setUploadLoading(true);
+
+        const formData = new FormData();
+        formData.append("file", uploadFile);
+        formData.append("title", uploadTitle.trim());
+        formData.append("report_date", uploadDate);
+
+        const res = await fetch("/api/weekly-reports", {
+            method: "POST",
+            body: formData,
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+            setUploadError(json.error ?? "Gagal mengunggah laporan")
+            setUploadLoading(false)
+            return;
+        }
+
+        await fetchReports();
+        setUploadTitle("");
+        setUploadDate("");
+        setUploadFile(null);
+        setUploadLoading(false);
+        setUploadSuccess("Weekly report berhasil diunggah.");
+    }
 
     // ============================================================
     // RENDER
@@ -287,13 +359,17 @@ const WeeklyReportContent = () => {
 
                     {/* Upload form (admin only) — UI saja, belum benar-benar upload */}
                     {role === "admin" && showUploadForm && (
-                        <form className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-end">
+                        <form onSubmit={handleUpload} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-end">
+                            {uploadError && <p className="basis-full text-xs font-medium text-red-600">{uploadError}</p>}
+                            {uploadSuccess && <p className="basis-full text-xs font-medium text-green-600">{uploadSuccess}</p>}
                             <div className="flex-1 basis-full sm:basis-56">
                                 <label className="mb-1 block text-xs font-semibold text-slate-600">Judul Laporan</label>
                                 <input
                                     type="text"
                                     placeholder="Weekly Report Minggu ke-1 Juli"
                                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    value={uploadTitle}
+                                    onChange={(e) => setUploadTitle(e.target.value)}
                                 />
                             </div>
                             <div className="basis-full sm:basis-40">
@@ -301,6 +377,8 @@ const WeeklyReportContent = () => {
                                 <input
                                     type="date"
                                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    value={uploadDate}
+                                    onChange={(e) => setUploadDate(e.target.value)}
                                 />
                             </div>
                             <div className="basis-full sm:basis-56">
@@ -309,13 +387,15 @@ const WeeklyReportContent = () => {
                                     type="file"
                                     accept="application/pdf"
                                     className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none file:mr-2 file:rounded-md file:border-0 file:bg-blue-900 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
+                                    onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
                                 />
                             </div>
                             <button
                                 type="submit"
+                                disabled={uploadLoading}
                                 className="h-fit rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800"
                             >
-                                Unggah
+                                {uploadLoading ? "Mengunggah..." : "Unggah"}
                             </button>
                         </form>
                     )}
@@ -406,7 +486,7 @@ const WeeklyReportContent = () => {
                                 {selectedDateReports.map((report) => (
                                     <li key={report.id}>
                                         <button
-                                            onClick={() => setPreviewReport(report)}
+                                            onClick={() => openPreview(report)}
                                             className="flex w-full flex-col items-start rounded-lg border border-slate-200 px-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
                                         >
                                             <span className="text-xs font-semibold text-blue-900">{report.title}</span>
@@ -427,7 +507,7 @@ const WeeklyReportContent = () => {
                                                 <button
                                                     onClick={() => {
                                                         setSelectedDateKey(report.report_date);
-                                                        setPreviewReport(report);
+                                                        openPreview(report);
                                                     }}
                                                     className="flex w-full flex-col items-start rounded-lg border border-slate-200 px-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
                                                 >
@@ -460,16 +540,24 @@ const WeeklyReportContent = () => {
                                 <p className="text-[11px] text-slate-400">{formatDateLong(previewReport.report_date)}</p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button className="rounded-lg bg-blue-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-800">
-                                    Download
-                                </button>
+
+                                {previewUrl && (
+                                    <a
+                                        href={previewUrl}
+                                        download={previewReport?.file_name}
+                                        className="rounded-lg bg-blue-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-800"
+                                    >
+                                        Download
+                                    </a>
+                                )}
+
                                 {role === "admin" && (
                                     <button className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50">
                                         Hapus
                                     </button>
                                 )}
                                 <button
-                                    onClick={() => setPreviewReport(null)}
+                                    onClick={closePreview}
                                     aria-label="Tutup"
                                     className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
                                 >
@@ -480,10 +568,20 @@ const WeeklyReportContent = () => {
                             </div>
                         </div>
 
-                        <div className="flex flex-1 items-center justify-center overflow-hidden bg-slate-100">
-                            <p className="px-6 text-center text-sm text-slate-400">
-                                (Pratinjau PDF muncul di sini setelah logic upload/download disambungkan)
-                            </p>
+                        <div className="flex-1 overflow-hidden bg-slate-100">
+                            {previewLoading && (
+                                <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                                    Memuat pratinjau...
+                                </div>
+                            )}
+                            {previewError && (
+                                <div className="flex h-full items-center justify-center px-6 text-center text-sm text-red-600">
+                                    {previewError}
+                                </div>
+                            )}
+                            {previewUrl && !previewLoading && (
+                                <iframe src={previewUrl} title={previewReport?.title} className="h-full w-full" />
+                            )}
                         </div>
                     </div>
                 </div>
