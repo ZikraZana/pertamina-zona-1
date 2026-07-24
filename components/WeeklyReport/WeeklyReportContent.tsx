@@ -221,6 +221,33 @@ const WeeklyReportContent = () => {
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [uploadLoading, setUploadLoading] = useState(false)
     const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+
+    function handleDragOver(e: React.DragEvent<HTMLLabelElement>) {
+        e.preventDefault();   // wajib, biar browser tidak buka file-nya sendiri
+        setIsDragging(true);
+    }
+
+    function handleDragLeave(e: React.DragEvent<HTMLLabelElement>) {
+        e.preventDefault();
+        setIsDragging(false);
+    }
+
+    function handleDrop(e: React.DragEvent<HTMLLabelElement>) {
+        e.preventDefault();
+        setIsDragging(false);
+
+        const droppedFile = e.dataTransfer.files?.[0];
+        if (!droppedFile) return;
+
+        if (droppedFile.type !== "application/pdf") {
+            setUploadError("File harus berformat PDF.");
+            return;
+        }
+
+        setUploadError(null);
+        setUploadFile(droppedFile);
+    }
 
     async function handleUpload(e: React.FormEvent) {
         e.preventDefault();
@@ -261,6 +288,7 @@ const WeeklyReportContent = () => {
         setUploadLoading(false);
         setUploadSuccess("Weekly report berhasil diunggah.");
     }
+
 
     // ============================================================
     // RENDER
@@ -354,7 +382,6 @@ const WeeklyReportContent = () => {
                         </div>
                     </div>
 
-                    {/* Upload form (admin only) — UI saja, belum benar-benar upload */}
                     {/* Upload form (admin only) */}
                     {role === "admin" && showUploadForm && (
                         <form onSubmit={handleUpload} className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -374,11 +401,16 @@ const WeeklyReportContent = () => {
                                 {/* Dropzone file PDF */}
                                 <label
                                     htmlFor="upload-file-input"
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={handleDrop}
                                     className={[
                                         "group relative flex flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors",
-                                        uploadFile
-                                            ? "border-blue-300 bg-blue-50"
-                                            : "border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50/50",
+                                        isDragging
+                                            ? "border-blue-500 bg-blue-100"
+                                            : uploadFile
+                                                ? "border-blue-300 bg-blue-50"
+                                                : "border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50/50",
                                     ].join(" ")}
                                 >
                                     <input
