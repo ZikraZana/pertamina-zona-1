@@ -307,7 +307,7 @@ const ContentOverview = () => {
 
             if (imageEl) {
                 imageEl.style.transform = `scale(${facilityZoom})`;
-                imageEl.style.transformOrigin = 'center center';
+                imageEl.style.transformOrigin = 'top left';
                 imageEl.style.transition = 'transform 0.15s ease-out';
             }
             if (wrapperEl) {
