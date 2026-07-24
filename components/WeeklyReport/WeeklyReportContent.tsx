@@ -133,6 +133,7 @@ const WeeklyReportContent = () => {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [previewLoading, setPreviewLoading] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
+    const [downloadLoading, setDownloadLoading] = useState(false);
 
     // Peta tanggal -> laporan (nanti ganti DUMMY_REPORTS jadi data asli)
     const reportsByDate = useMemo(() => {
@@ -207,6 +208,30 @@ const WeeklyReportContent = () => {
             setPreviewError(err instanceof Error ? err.message : "Gagal membuka file.");
         } finally {
             setPreviewLoading(false);
+        }
+    }
+
+    async function handleDownload() {
+        if (!previewUrl || !previewReport) return;
+
+        setDownloadLoading(true);
+        try {
+            const res = await fetch(previewUrl);
+            if (!res.ok) throw new Error("Gagal mengunduh file.");
+            const blob = await res.blob();
+
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            link.download = previewReport.file_name;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(blobUrl);
+        } catch (err) {
+            setPreviewError(err instanceof Error ? err.message : "Gagal mengunduh file.");
+        } finally {
+            setDownloadLoading(false);
         }
     }
 
@@ -425,7 +450,7 @@ const WeeklyReportContent = () => {
                                     </svg>
                                     {uploadFile ? (
                                         <div className="flex flex-col items-center gap-0.5">
-                                            <span className="max-w-[220px] truncate text-xs font-semibold text-blue-900">{uploadFile.name}</span>
+                                            <span className="max-w-55 truncate text-xs font-semibold text-blue-900">{uploadFile.name}</span>
                                             <span className="text-[10px] text-slate-400">{formatFileSize(uploadFile.size)} · klik untuk ganti file</span>
                                         </div>
                                     ) : (
@@ -607,13 +632,13 @@ const WeeklyReportContent = () => {
                             <div className="flex items-center gap-2">
 
                                 {previewUrl && (
-                                    <a
-                                        href={previewUrl}
-                                        download={previewReport?.file_name}
-                                        className="rounded-lg bg-blue-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-800"
+                                    <button
+                                        onClick={handleDownload}
+                                        disabled={downloadLoading}
+                                        className="rounded-lg bg-blue-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
-                                        Download
-                                    </a>
+                                        {downloadLoading ? "Mengunduh..." : "Download"}
+                                    </button>
                                 )}
 
                                 {role === "admin" && (
