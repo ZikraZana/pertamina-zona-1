@@ -40,7 +40,6 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get("file");
-    const title = formData.get("title");
     const reportDate = formData.get("report_date");
 
     if (!(file instanceof File)) {
@@ -49,9 +48,9 @@ export async function POST(request: Request) {
     if (file.type !== "application/pdf") {
         return NextResponse.json({ error: "File harus berformat PDF." }, { status: 400 });
     }
-    if (typeof title !== "string" || !title.trim()) {
-        return NextResponse.json({ error: "Judul laporan wajib diisi." }, { status: 400 });
-    }
+
+    const title = file.name.replace(/\.pdf$/i, "");
+    
     if (typeof reportDate !== "string" || !reportDate) {
         return NextResponse.json({ error: "Tanggal laporan wajib diisi." }, { status: 400 });
     }
@@ -73,7 +72,7 @@ export async function POST(request: Request) {
     const { data: inserted, error: insertError } = await supabase
         .from("weekly_reports")
         .insert({
-            title: title.trim(),
+            title: title,
             report_date: reportDate,
             file_path: storagePath,
             file_name: file.name,

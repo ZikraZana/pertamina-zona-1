@@ -216,7 +216,6 @@ const WeeklyReportContent = () => {
         setPreviewError(null);
     }
 
-    const [uploadTitle, setUploadTitle] = useState("");
     const [uploadDate, setUploadDate] = useState("");
     const [uploadFile, setUploadFile] = useState<File | null>(null);
     const [uploadError, setUploadError] = useState<string | null>(null);
@@ -232,8 +231,8 @@ const WeeklyReportContent = () => {
             setUploadError("Pilih File PDF terlebih dahulu")
             return;
         }
-        if (!uploadTitle.trim() || !uploadDate) {
-            setUploadError("Judul dan Tanggal Laporan wajib diisi")
+        if (!uploadDate) {
+            setUploadError("Tanggal Laporan wajib diisi")
             return;
         }
 
@@ -241,7 +240,6 @@ const WeeklyReportContent = () => {
 
         const formData = new FormData();
         formData.append("file", uploadFile);
-        formData.append("title", uploadTitle.trim());
         formData.append("report_date", uploadDate);
 
         const res = await fetch("/api/weekly-reports", {
@@ -258,7 +256,6 @@ const WeeklyReportContent = () => {
         }
 
         await fetchReports();
-        setUploadTitle("");
         setUploadDate("");
         setUploadFile(null);
         setUploadLoading(false);
@@ -358,45 +355,81 @@ const WeeklyReportContent = () => {
                     </div>
 
                     {/* Upload form (admin only) — UI saja, belum benar-benar upload */}
+                    {/* Upload form (admin only) */}
                     {role === "admin" && showUploadForm && (
-                        <form onSubmit={handleUpload} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-end">
-                            {uploadError && <p className="basis-full text-xs font-medium text-red-600">{uploadError}</p>}
-                            {uploadSuccess && <p className="basis-full text-xs font-medium text-green-600">{uploadSuccess}</p>}
-                            <div className="flex-1 basis-full sm:basis-56">
-                                <label className="mb-1 block text-xs font-semibold text-slate-600">Judul Laporan</label>
-                                <input
-                                    type="text"
-                                    placeholder="Weekly Report Minggu ke-1 Juli"
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                    value={uploadTitle}
-                                    onChange={(e) => setUploadTitle(e.target.value)}
-                                />
+                        <form onSubmit={handleUpload} className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div>
+                                <h3 className="text-sm font-bold text-blue-900">Unggah Weekly Report</h3>
+                                <p className="text-xs text-slate-400">Judul laporan akan otomatis mengikuti nama file PDF.</p>
                             </div>
-                            <div className="basis-full sm:basis-40">
-                                <label className="mb-1 block text-xs font-semibold text-slate-600">Tanggal Laporan</label>
-                                <input
-                                    type="date"
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                    value={uploadDate}
-                                    onChange={(e) => setUploadDate(e.target.value)}
-                                />
+
+                            {uploadError && (
+                                <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{uploadError}</p>
+                            )}
+                            {uploadSuccess && (
+                                <p className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-600">{uploadSuccess}</p>
+                            )}
+
+                            <div className="flex flex-col gap-4 sm:flex-row">
+                                {/* Dropzone file PDF */}
+                                <label
+                                    htmlFor="upload-file-input"
+                                    className={[
+                                        "group relative flex flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors",
+                                        uploadFile
+                                            ? "border-blue-300 bg-blue-50"
+                                            : "border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50/50",
+                                    ].join(" ")}
+                                >
+                                    <input
+                                        id="upload-file-input"
+                                        type="file"
+                                        accept="application/pdf"
+                                        className="sr-only"
+                                        onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
+                                    />
+                                    <svg viewBox="0 0 24 24" className="h-7 w-7 text-blue-900/60 transition-transform group-hover:-translate-y-0.5" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 13.5l3-3.5 3 3.5M12 10.5V19M6.75 19h10.5a3.75 3.75 0 001.28-7.28 5.25 5.25 0 00-9.9-1.4A4.5 4.5 0 006.75 19z" />
+                                    </svg>
+                                    {uploadFile ? (
+                                        <div className="flex flex-col items-center gap-0.5">
+                                            <span className="max-w-[220px] truncate text-xs font-semibold text-blue-900">{uploadFile.name}</span>
+                                            <span className="text-[10px] text-slate-400">{formatFileSize(uploadFile.size)} · klik untuk ganti file</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center gap-0.5">
+                                            <span className="text-xs font-semibold text-slate-600">Klik untuk pilih file PDF</span>
+                                            <span className="text-[10px] text-slate-400">Hanya format .pdf</span>
+                                        </div>
+                                    )}
+                                </label>
+
+                                {/* Tanggal + submit */}
+                                <div className="flex flex-col justify-between gap-3 sm:w-56">
+                                    <div>
+                                        <label className="mb-1 block text-xs font-semibold text-slate-600">Tanggal Laporan</label>
+                                        <input
+                                            type="date"
+                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                            value={uploadDate}
+                                            onChange={(e) => setUploadDate(e.target.value)}
+                                        />
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={uploadLoading}
+                                        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        {uploadLoading && (
+                                            <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                            </svg>
+                                        )}
+                                        {uploadLoading ? "Mengunggah..." : "Unggah Laporan"}
+                                    </button>
+                                </div>
                             </div>
-                            <div className="basis-full sm:basis-56">
-                                <label className="mb-1 block text-xs font-semibold text-slate-600">File PDF</label>
-                                <input
-                                    type="file"
-                                    accept="application/pdf"
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none file:mr-2 file:rounded-md file:border-0 file:bg-blue-900 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
-                                    onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                disabled={uploadLoading}
-                                className="h-fit rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800"
-                            >
-                                {uploadLoading ? "Mengunggah..." : "Unggah"}
-                            </button>
                         </form>
                     )}
 
