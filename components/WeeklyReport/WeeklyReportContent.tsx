@@ -248,6 +248,11 @@ const WeeklyReportContent = () => {
     const [uploadLoading, setUploadLoading] = useState(false)
     const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editDate, setEditDate] = useState("");
+    const [editFile, setEditFile] = useState<File | null>(null);
+    const [editLoading, setEditLoading] = useState(false);
+    const [editError, setEditError] = useState<string | null>(null);
 
     function handleDragOver(e: React.DragEvent<HTMLLabelElement>) {
         e.preventDefault();   // wajib, biar browser tidak buka file-nya sendiri
@@ -336,6 +341,52 @@ const WeeklyReportContent = () => {
         }
         closePreview();
         await fetchReports();
+    }
+
+    function startEdit() {
+        if (!previewReport) return;
+        setEditDate(previewReport.report_date);
+        setEditFile(null);
+        setEditError(null);
+        setIsEditing(true);
+    }
+
+    async function handleEdit(e: React.FormEvent) {
+        e.preventDefault();
+        if (!previewReport) return;
+
+        setEditError(null);
+
+        if (!editDate) {
+            setEditError("Tanggal Laporan wajib diisi")
+            return;
+        }
+
+        setEditLoading(true);
+
+        const formData = new FormData();
+        formData.append("report_date", editDate);
+        if (editFile) formData.append("file", editFile);
+
+
+        const res = await fetch(`/api/weekly-reports/${previewReport.id}`, {
+            method: 'PATCH',
+            body: formData
+        })
+
+        const json = await res.json();
+
+        if (!res.ok) {
+            setEditError(json.error ?? "Gagal mengedit laporan")
+            setEditLoading(false)
+            return;
+        }
+
+        setPreviewReport(json.report);
+        setIsEditing(false);
+        setEditLoading(false)
+        await fetchReports();
+
     }
 
 
@@ -665,6 +716,16 @@ const WeeklyReportContent = () => {
                                     </button>
                                 )}
 
+                                {role === "admin" && !isEditing && (
+                                    <button
+                                        onClick={startEdit}
+                                        className="rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+                                    >
+                                        Edit
+                                    </button>
+                                )}
+
+
                                 {role === "admin" && (
                                     <button onClick={handleDelete} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50">
                                         Hapus
@@ -683,18 +744,73 @@ const WeeklyReportContent = () => {
                         </div>
 
                         <div className="flex-1 overflow-hidden bg-slate-100">
-                            {previewLoading && (
-                                <div className="flex h-full items-center justify-center text-sm text-slate-400">
-                                    Memuat pratinjau...
-                                </div>
-                            )}
-                            {previewError && (
-                                <div className="flex h-full items-center justify-center px-6 text-center text-sm text-red-600">
-                                    {previewError}
-                                </div>
-                            )}
-                            {previewUrl && !previewLoading && (
-                                <iframe src={previewUrl} title={previewReport?.title} className="h-full w-full" />
+                            {isEditing ? (
+                                <form onSubmit={handleEdit} className="flex h-full flex-col gap-4 overflow-y-auto p-5">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-blue-900">Edit Weekly Report</h3>
+                                        <p className="text-xs text-slate-400">Kosongkan file kalau tidak ingin mengganti PDF.</p>
+                                    </div>
+
+                                    {editError && (
+                                        <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{editError}</p>
+                                    )}
+
+                                    <div>
+                                        <label className="mb-1 block text-xs font-semibold text-slate-600">Tanggal Laporan</label>
+                                        <input
+                                            type="date"
+                                            value={editDate}
+                                            onChange={(e) => setEditDate(e.target.value)}
+                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="mb-1 block text-xs font-semibold text-slate-600">Ganti File PDF (opsional)</label>
+                                        <input
+                                            type="file"
+                                            accept="application/pdf"
+                                            onChange={(e) => setEditFile(e.target.files?.[0] ?? null)}
+                                            className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none file:mr-2 file:rounded-md file:border-0 file:bg-blue-900 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
+                                        />
+                                        {editFile && (
+                                            <p className="mt-1 text-[10px] text-slate-400">{editFile.name} · {formatFileSize(editFile.size)}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="submit"
+                                            disabled={editLoading}
+                                            className="rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                            {editLoading ? "Menyimpan..." : "Simpan Perubahan"}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsEditing(false)}
+                                            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100"
+                                        >
+                                            Batal
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <>
+                                    {previewLoading && (
+                                        <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                                            Memuat pratinjau...
+                                        </div>
+                                    )}
+                                    {previewError && (
+                                        <div className="flex h-full items-center justify-center px-6 text-center text-sm text-red-600">
+                                            {previewError}
+                                        </div>
+                                    )}
+                                    {previewUrl && !previewLoading && (
+                                        <iframe src={previewUrl} title={previewReport?.title} className="h-full w-full" />
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

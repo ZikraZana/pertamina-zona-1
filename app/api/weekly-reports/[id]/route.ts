@@ -94,6 +94,7 @@ export async function PATCH(
     const reportDate = formData.get("report_date");
 
     const updateData: {
+        title?: string;
         report_date?: string;
         file_path?: string;
         file_name?: string;
@@ -131,6 +132,7 @@ export async function PATCH(
             return NextResponse.json({ error: uploadError.message }, { status: 500 });
         }
 
+        updateData.title = file.name.replace(/\.pdf$/i, "");
         updateData.file_path = storagePath;
         updateData.file_name = file.name;
         updateData.file_size = file.size;
