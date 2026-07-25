@@ -315,6 +315,29 @@ const WeeklyReportContent = () => {
         setUploadSuccess("Weekly report berhasil diunggah.");
     }
 
+    async function handleDelete() {
+        if (!previewReport) return;
+
+        // konfirmasi dulu, biar nggak kehapus tanpa sengaja
+        const confirmed = window.confirm(`Hapus laporan "${previewReport.title}"?`);
+        if (!confirmed) return;
+
+        // ... lanjutin sendiri: fetch ke /api/weekly-reports/${previewReport.id}
+        // dengan method DELETE, cek hasilnya, kalau sukses tutup modal & fetchReports() ulang
+
+        const res = await fetch(`/api/weekly-reports/${previewReport.id}`, {
+            method: 'DELETE',
+        })
+        const json = await res.json()
+
+        if (!res.ok) {
+            setPreviewError(json.error ?? "Gagal menghapus laporan")
+            return;
+        }
+        closePreview();
+        await fetchReports();
+    }
+
 
     // ============================================================
     // RENDER
@@ -643,7 +666,7 @@ const WeeklyReportContent = () => {
                                 )}
 
                                 {role === "admin" && (
-                                    <button className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50">
+                                    <button onClick={handleDelete} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50">
                                         Hapus
                                     </button>
                                 )}
