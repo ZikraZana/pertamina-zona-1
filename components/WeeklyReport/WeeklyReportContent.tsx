@@ -108,17 +108,6 @@ const WeeklyReportContent = () => {
         };
     }, [supabase]);
 
-    async function fetchReports() {
-        const res = await fetch("/api/weekly-reports");
-        const json = await res.json();
-        setReports(json.reports)
-    }
-
-    useEffect(() => {
-        if (!user) return;
-        fetchReports();
-    }, [user])
-
 
     // ============================================================
     // STATE BARU — untuk kalender, panel, dan modal preview.
@@ -134,6 +123,18 @@ const WeeklyReportContent = () => {
     const [previewLoading, setPreviewLoading] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
     const [downloadLoading, setDownloadLoading] = useState(false);
+
+
+    async function fetchReports() {
+        const res = await fetch("/api/weekly-reports");
+        const json = await res.json();
+        setReports(json.reports)
+    }
+
+    useEffect(() => {
+        if (!user) return;
+        fetchReports();
+    }, [user])
 
     // Peta tanggal -> laporan (nanti ganti DUMMY_REPORTS jadi data asli)
     const reportsByDate = useMemo(() => {
