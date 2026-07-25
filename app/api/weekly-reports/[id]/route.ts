@@ -143,7 +143,7 @@ export async function PATCH(
         .from("weekly_reports")
         .update(updateData)
         .eq("id", id)
-        .select("id, title, report_date, file_name, file_size, created_at, updated_at")
+        .select("id, title, report_date, file_name, file_size, created_at, updated_at, updated_by:profiles!weekly_reports_updated_by_fkey(full_name)")
         .single();
 
     if (updateError) {

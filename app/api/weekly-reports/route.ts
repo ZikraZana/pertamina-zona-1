@@ -6,7 +6,7 @@ export async function GET() {
 
     const { data, error } = await supabase
         .from("weekly_reports")
-        .select("id, title, report_date, file_name, file_size, created_at")
+        .select("id, title, report_date, file_name, file_size, created_at, updated_at, updated_by:profiles!weekly_reports_updated_by_fkey(full_name)")
         .order("report_date", { ascending: false });
 
     if (error) {

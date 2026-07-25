@@ -14,6 +14,8 @@ type WeeklyReport = {
     report_date: string; // YYYY-MM-DD
     file_name: string;
     file_size: number | null;
+    updated_at: string;
+    updated_by: { full_name: string | null } | null;
 };
 
 const MONTH_NAMES = [
@@ -31,6 +33,11 @@ function toDateKey(year: number, month: number, day: number) {
 
 function formatDateLong(dateStr: string) {
     const d = new Date(`${dateStr}T00:00:00`);
+    return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+}
+
+function formatDateTime(dateStr: string) {
+    const d = new Date(dateStr);
     return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 }
 
@@ -703,6 +710,11 @@ const WeeklyReportContent = () => {
                             <div>
                                 <h3 className="text-sm font-bold text-blue-900 sm:text-base">{previewReport.title}</h3>
                                 <p className="text-[11px] text-slate-400">{formatDateLong(previewReport.report_date)}</p>
+                                {previewReport.updated_by && (
+                                    <p className="text-[10px] text-slate-400">
+                                        Terakhir diubah oleh {previewReport.updated_by.full_name ?? "tidak diketahui"} pada {formatDateTime(previewReport.updated_at)}
+                                    </p>
+                                )}
                             </div>
                             <div className="flex items-center gap-2">
 
