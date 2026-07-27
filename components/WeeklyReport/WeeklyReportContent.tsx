@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client"
 import { User } from "@supabase/supabase-js";
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 // ============================================================
 // DATA DUMMY sementara, biar kalender ada isinya.
@@ -199,6 +199,8 @@ const WeeklyReportContent = () => {
         setSelectedDateKey(dateKey);
         if (dayReports && dayReports.length === 1) {
             openPreview(dayReports[0]);
+        } else if (dayReports && dayReports.length > 1) {
+            reportRefs.current.get(dayReports[0].id)?.scrollIntoView({ behavior: "smooth", block: "center" });
         }
     }
 
@@ -260,6 +262,21 @@ const WeeklyReportContent = () => {
     const [editFile, setEditFile] = useState<File | null>(null);
     const [editLoading, setEditLoading] = useState(false);
     const [editError, setEditError] = useState<string | null>(null);
+    const reportRefs = useRef<Map<string, HTMLLIElement>>(new Map());
+    const calendarPanelRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (calendarPanelRef.current && !calendarPanelRef.current.contains(e.target as Node)) {
+                setSelectedDateKey(null);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     function handleDragOver(e: React.DragEvent<HTMLLabelElement>) {
         e.preventDefault();   // wajib, biar browser tidak buka file-nya sendiri
@@ -572,7 +589,7 @@ const WeeklyReportContent = () => {
                         </form>
                     )}
 
-                    <div className="flex flex-col gap-4 lg:flex-row">
+                    <div ref={calendarPanelRef} className="flex flex-col gap-4 lg:flex-row">
                         {/* Kalender */}
                         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-lg lg:flex-1">
                             <div className="mb-4 flex items-center justify-between">
@@ -630,8 +647,14 @@ const WeeklyReportContent = () => {
                                             ].join(" ")}
                                         >
                                             {cell.day}
-                                            {hasReport && (
+                                            {hasReport && dayReports!.length === 1 && (
                                                 <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-blue-900" />
+                                            )}
+                                            {hasReport && dayReports!.length > 1 && (
+                                                <span className="absolute bottom-1 flex gap-0.5">
+                                                    <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
+                                                    <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
+                                                </span>
                                             )}
                                         </button>
                                     );
@@ -644,53 +667,38 @@ const WeeklyReportContent = () => {
                             </div>
                         </div>
 
-                        {/* Panel tanggal terpilih */}
-                        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-lg lg:w-72">
-                            <h2 className="mb-3 text-sm font-bold text-blue-900">
-                                {selectedDateKey ? formatDateLong(selectedDateKey) : "Pilih tanggal di kalender"}
-                            </h2>
+                        {/* Panel semua laporan */}
+                        <div className="flex max-h-125 flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-lg lg:w-72">
+                            <h2 className="mb-3 text-sm font-bold text-blue-900">Semua Laporan</h2>
 
-                            {selectedDateKey && selectedDateReports.length === 0 && (
-                                <p className="text-xs text-slate-400">Tidak ada laporan pada tanggal ini.</p>
+                            {reports.length === 0 && (
+                                <p className="text-xs text-slate-400">Belum ada laporan yang diunggah.</p>
                             )}
 
-                            <ul className="flex flex-col gap-2">
-                                {selectedDateReports.map((report) => (
-                                    <li key={report.id}>
+                            <ul className="flex flex-col gap-2 overflow-y-auto">
+                                {reports.map((report) => (
+                                    <li
+                                        key={report.id}
+                                        ref={(el) => {
+                                            if (el) reportRefs.current.set(report.id, el);
+                                            else reportRefs.current.delete(report.id);
+                                        }}
+                                    >
                                         <button
                                             onClick={() => openPreview(report)}
-                                            className="flex w-full flex-col items-start rounded-lg border border-slate-200 px-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
+                                            className={[
+                                                "flex w-full flex-col items-start rounded-lg border px-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50",
+                                                report.report_date === selectedDateKey
+                                                    ? "border-blue-400 bg-blue-50"
+                                                    : "border-slate-200",
+                                            ].join(" ")}
                                         >
                                             <span className="text-xs font-semibold text-blue-900">{report.title}</span>
-                                            <span className="text-[10px] text-slate-400">
-                                                {report.file_name} {report.file_size ? `· ${formatFileSize(report.file_size)}` : ""}
-                                            </span>
+                                            <span className="text-[10px] text-slate-400">{formatDateLong(report.report_date)}</span>
                                         </button>
                                     </li>
                                 ))}
                             </ul>
-
-                            {!selectedDateKey && (
-                                <div className="mt-2 flex flex-col gap-2">
-                                    <p className="text-xs font-semibold text-slate-500">Laporan terbaru:</p>
-                                    <ul className="flex flex-col gap-2">
-                                        {reports.slice(0, 5).map((report) => (
-                                            <li key={report.id}>
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedDateKey(report.report_date);
-                                                        openPreview(report);
-                                                    }}
-                                                    className="flex w-full flex-col items-start rounded-lg border border-slate-200 px-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
-                                                >
-                                                    <span className="text-xs font-semibold text-blue-900">{report.title}</span>
-                                                    <span className="text-[10px] text-slate-400">{formatDateLong(report.report_date)}</span>
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
