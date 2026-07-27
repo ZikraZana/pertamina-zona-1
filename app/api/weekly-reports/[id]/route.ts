@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// DELETE /api/weekly-reports/[id]
+// DELETE /api/performance-reports/[id]
 export async function DELETE(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
@@ -23,13 +23,13 @@ export async function DELETE(
 
     if (profile?.role !== "admin") {
         return NextResponse.json(
-            { error: "Hanya admin yang bisa menghapus weekly report." },
+            { error: "Hanya admin yang bisa menghapus laporan." },
             { status: 403 }
         );
     }
 
     const { data: report, error: fetchError } = await supabase
-        .from("weekly_reports")
+        .from("performance_reports")
         .select("file_path")
         .eq("id", id)
         .single();
@@ -38,10 +38,10 @@ export async function DELETE(
         return NextResponse.json({ error: "Laporan tidak ditemukan." }, { status: 404 });
     }
 
-    await supabase.storage.from("weekly-reports").remove([report.file_path]);
+    await supabase.storage.from("performance-reports").remove([report.file_path]);
 
     const { error: deleteError } = await supabase
-        .from("weekly_reports")
+        .from("performance_reports")
         .delete()
         .eq("id", id);
 
@@ -52,7 +52,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
 }
 
-// PATCH /api/weekly-reports/[id]
+// PATCH /api/performance-reports/[id]
 export async function PATCH(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
@@ -74,13 +74,13 @@ export async function PATCH(
 
     if (profile?.role !== "admin") {
         return NextResponse.json(
-            { error: "Hanya admin yang bisa mengedit weekly report." },
+            { error: "Hanya admin yang bisa mengedit laporan." },
             { status: 403 }
         );
     }
 
     const { data: existingReport, error: fetchError } = await supabase
-        .from("weekly_reports")
+        .from("performance_reports")
         .select("file_path")
         .eq("id", id)
         .single();
@@ -122,7 +122,7 @@ export async function PATCH(
         const storagePath = `${newDate}/${Date.now()}-${safeFileName}`;
 
         const { error: uploadError } = await supabase.storage
-            .from("weekly-reports")
+            .from("performance-reports")
             .upload(storagePath, file, {
                 contentType: "application/pdf",
                 upsert: false,
@@ -140,10 +140,10 @@ export async function PATCH(
     }
 
     const { data: updated, error: updateError } = await supabase
-        .from("weekly_reports")
+        .from("performance_reports")
         .update(updateData)
         .eq("id", id)
-        .select("id, title, report_date, file_name, file_size, created_at, updated_at, updated_by:profiles!weekly_reports_updated_by_fkey(full_name)")
+        .select("id, title, report_date, file_name, file_size, created_at, updated_at, updated_by:profiles!performance_reports_updated_by_fkey(full_name)")
         .single();
 
     if (updateError) {
@@ -151,7 +151,7 @@ export async function PATCH(
     }
 
     if (oldFilePathToDelete) {
-        await supabase.storage.from("weekly-reports").remove([oldFilePathToDelete]);
+        await supabase.storage.from("performance-reports").remove([oldFilePathToDelete]);
     }
 
     return NextResponse.json({ report: updated });

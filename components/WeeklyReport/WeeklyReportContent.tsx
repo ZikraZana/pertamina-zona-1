@@ -5,10 +5,10 @@ import { User } from "@supabase/supabase-js";
 import { useEffect, useMemo, useRef, useState } from "react"
 
 // ============================================================
-// DATA DUMMY sementara, biar kalender ada isinya.
-// Nanti ini diganti fetch asli ke /api/weekly-reports (step berikutnya).
+// TIPE DATA LAPORAN
 // ============================================================
-type WeeklyReport = {
+
+type PerformanceReport = {
     id: string;
     title: string;
     report_date: string; // YYYY-MM-DD
@@ -123,9 +123,9 @@ const WeeklyReportContent = () => {
     const [viewYear, setViewYear] = useState(today.getFullYear());
     const [viewMonth, setViewMonth] = useState(today.getMonth());
     const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
-    const [previewReport, setPreviewReport] = useState<WeeklyReport | null>(null);
+    const [previewReport, setPreviewReport] = useState<PerformanceReport | null>(null);
     const [showUploadForm, setShowUploadForm] = useState(false);
-    const [reports, setReports] = useState<WeeklyReport[]>([]);
+    const [reports, setReports] = useState<PerformanceReport[]>([]);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [previewLoading, setPreviewLoading] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
@@ -133,7 +133,7 @@ const WeeklyReportContent = () => {
 
 
     async function fetchReports() {
-        const res = await fetch("/api/weekly-reports");
+        const res = await fetch("/api/performance-reports");
         const json = await res.json();
         setReports(json.reports)
     }
@@ -143,9 +143,9 @@ const WeeklyReportContent = () => {
         fetchReports();
     }, [user])
 
-    // Peta tanggal -> laporan (nanti ganti DUMMY_REPORTS jadi data asli)
+    // Peta tanggal -> laporan, untuk lookup cepat di kalender
     const reportsByDate = useMemo(() => {
-        const map = new Map<string, WeeklyReport[]>();
+        const map = new Map<string, PerformanceReport[]>();
         for (const report of reports) {
             const list = map.get(report.report_date) ?? [];
             list.push(report);
@@ -204,13 +204,13 @@ const WeeklyReportContent = () => {
         }
     }
 
-    async function openPreview(report: WeeklyReport) {
+    async function openPreview(report: PerformanceReport) {
         setPreviewReport(report);
         setPreviewUrl(null);
         setPreviewError(null);
         setPreviewLoading(true);
         try {
-            const res = await fetch(`/api/weekly-reports/${report.id}/download`);
+            const res = await fetch(`/api/performance-reports/${report.id}/download`);
             const json = await res.json();
             if (!res.ok) throw new Error(json.error ?? "Gagal membuka file.");
             setPreviewUrl(json.url);
@@ -324,7 +324,7 @@ const WeeklyReportContent = () => {
         formData.append("file", uploadFile);
         formData.append("report_date", uploadDate);
 
-        const res = await fetch("/api/weekly-reports", {
+        const res = await fetch("/api/performance-reports", {
             method: "POST",
             body: formData,
         });
@@ -341,7 +341,7 @@ const WeeklyReportContent = () => {
         setUploadDate("");
         setUploadFile(null);
         setUploadLoading(false);
-        setUploadSuccess("Weekly report berhasil diunggah.");
+        setUploadSuccess("Laporan berhasil diunggah.");
     }
 
     async function handleDelete() {
@@ -351,10 +351,10 @@ const WeeklyReportContent = () => {
         const confirmed = window.confirm(`Hapus laporan "${previewReport.title}"?`);
         if (!confirmed) return;
 
-        // ... lanjutin sendiri: fetch ke /api/weekly-reports/${previewReport.id}
+        // ... lanjutin sendiri: fetch ke /api/performance-reports/${previewReport.id}
         // dengan method DELETE, cek hasilnya, kalau sukses tutup modal & fetchReports() ulang
 
-        const res = await fetch(`/api/weekly-reports/${previewReport.id}`, {
+        const res = await fetch(`/api/performance-reports/${previewReport.id}`, {
             method: 'DELETE',
         })
         const json = await res.json()
@@ -393,7 +393,7 @@ const WeeklyReportContent = () => {
         if (editFile) formData.append("file", editFile);
 
 
-        const res = await fetch(`/api/weekly-reports/${previewReport.id}`, {
+        const res = await fetch(`/api/performance-reports/${previewReport.id}`, {
             method: 'PATCH',
             body: formData
         })
@@ -422,10 +422,10 @@ const WeeklyReportContent = () => {
             {/* Header */}
             <div className="mx-auto mb-4 w-full max-w-5xl">
                 <h1 className="group relative z-10 mb-1 w-fit cursor-default bg-linear-to-b from-blue-900 to-blue-500 bg-clip-text text-xl font-bold text-transparent transition-transform duration-300 ease-out hover:-translate-y-1 sm:text-2xl lg:text-3xl">
-                    Weekly Report
+                    Performance Report
                 </h1>
                 <p className="text-sm text-blue-900/70">
-                    Lihat dan unduh laporan mingguan Pertamina Hulu Rokan Zona 1 lewat kalender di bawah ini.
+                    Lihat dan unduh laporan kinerja Pertamina Hulu Rokan Zona 1 lewat kalender di bawah ini.
                 </p>
             </div>
 
@@ -439,7 +439,7 @@ const WeeklyReportContent = () => {
             {!authLoading && !user && (
                 <div className="mx-auto w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 text-center shadow-lg">
                     <p className="mb-4 text-sm text-slate-600">
-                        Silakan login untuk melihat weekly report.
+                        Silakan login untuk melihat laporan.
                     </p>
                     <form onSubmit={handleLogin} className="flex flex-col gap-3 text-left">
                         <div>
@@ -510,7 +510,7 @@ const WeeklyReportContent = () => {
                     {role === "admin" && showUploadForm && (
                         <form onSubmit={handleUpload} className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                             <div>
-                                <h3 className="text-sm font-bold text-blue-900">Unggah Weekly Report</h3>
+                                <h3 className="text-sm font-bold text-blue-900">Unggah Laporan</h3>
                                 <p className="text-xs text-slate-400">Judul laporan akan otomatis mengikuti nama file PDF.</p>
                             </div>
 
@@ -767,7 +767,7 @@ const WeeklyReportContent = () => {
                             {isEditing ? (
                                 <form onSubmit={handleEdit} className="flex h-full flex-col gap-4 overflow-y-auto p-5">
                                     <div>
-                                        <h3 className="text-sm font-bold text-blue-900">Edit Weekly Report</h3>
+                                        <h3 className="text-sm font-bold text-blue-900">Edit Laporan</h3>
                                         <p className="text-xs text-slate-400">Kosongkan file kalau tidak ingin mengganti PDF.</p>
                                     </div>
 

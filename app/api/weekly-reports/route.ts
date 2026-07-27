@@ -5,8 +5,8 @@ export async function GET() {
     const supabase = await createClient();
 
     const { data, error } = await supabase
-        .from("weekly_reports")
-        .select("id, title, report_date, file_name, file_size, created_at, updated_at, updated_by:profiles!weekly_reports_updated_by_fkey(full_name)")
+        .from("performance_reports")
+        .select("id, title, report_date, file_name, file_size, created_at, updated_at, updated_by:profiles!performance_reports_updated_by_fkey(full_name)")
         .order("report_date", { ascending: false });
 
     if (error) {
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     const storagePath = `${reportDate}/${Date.now()}-${safeFileName}`;
 
     const { error: uploadError } = await supabase.storage
-        .from("weekly-reports")
+        .from("performance-reports")
         .upload(storagePath, file, {
             contentType: "application/pdf",
             upsert: false,
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     }
 
     const { data: inserted, error: insertError } = await supabase
-        .from("weekly_reports")
+        .from("performance_reports")
         .insert({
             title: title,
             report_date: reportDate,
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
         .single();
 
     if (insertError) {
-        await supabase.storage.from("weekly-reports").remove([storagePath]);
+        await supabase.storage.from("performance-reports").remove([storagePath]);
         return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
 

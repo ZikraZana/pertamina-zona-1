@@ -15,7 +15,7 @@ export async function GET(
     }
 
     const { data: report, error: fetchError } = await supabase
-        .from("weekly_reports")
+        .from("performance_reports")
         .select("file_path, file_name, title")
         .eq("id", id)
         .single();
@@ -25,7 +25,7 @@ export async function GET(
     }
 
     const { data: signed, error: signError } = await supabase.storage
-        .from("weekly-reports")
+        .from("performance-reports")
         .createSignedUrl(report.file_path, 60 * 5);
 
     if (signError || !signed) {
