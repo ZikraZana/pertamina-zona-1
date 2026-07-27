@@ -318,7 +318,6 @@ const ContentOverview = () => {
                 imageEl.style.transition = 'transform 0.15s ease-out';
             }
             if (wrapperEl) {
-                // Saat di-zoom, wrapper jadi bisa di-scroll (pan) untuk menjelajah bagian gambar yang membesar
                 wrapperEl.classList.toggle('overflow-auto', facilityZoom > 1);
                 wrapperEl.classList.toggle('cursor-grab', facilityZoom > 1);
             }
@@ -550,7 +549,7 @@ const ContentOverview = () => {
                 d = {
                     nama_wilayah: "North Sumatra Offshore (NSO)",
                     provinsi: "Aceh",
-                    kabupaten_kota: "Lepas pantai Kab. Aceh Timur, Kab. Aceh Utara & Kota Lhokseumawe",
+                    kabupaten_kota: "3 - Lepas pantai Kab. Aceh Timur (Aceh), Kab. Aceh Utara (Aceh) & Kota Lhokseumawe (Aceh)",
                     jenis_wk: "Gross Split",
                     tahun_berdiri: "1998",
                     luas_wilayah: "6.842,01 km²",
@@ -587,7 +586,7 @@ const ContentOverview = () => {
                 d = {
                     nama_wilayah: "Pangkalan Susu",
                     provinsi: "Sumatera Utara",
-                    kabupaten_kota: "Kab. Langkat & Kab. Deli Serdang",
+                    kabupaten_kota: "2 - Kab. Langkat (Sumatera Utara) & Kab. Deli Serdang (Sumatera Utara)",
                     jenis_wk: "Cost Recovery",
                     tahun_berdiri: "1885",
                     luas_wilayah: "474,54 km²",
@@ -623,8 +622,8 @@ const ContentOverview = () => {
             } else if (kode === 'rantau') {
                 d = {
                     nama_wilayah: "Rantau",
-                    provinsi: "Aceh",
-                    kabupaten_kota: "Kab. Aceh Tamiang (Aceh) & Kab. Langkat (Sumatera Utara)",
+                    provinsi: "Aceh & Sumatera Utara",
+                    kabupaten_kota: "2 - Kab. Aceh Tamiang (Aceh) & Kab. Langkat (Sumatera Utara)",
                     jenis_wk: "Cost Recovery",
                     tahun_berdiri: "1929",
                     luas_wilayah: "58,3 km²",
@@ -661,7 +660,7 @@ const ContentOverview = () => {
                 d = {
                     nama_wilayah: "Lirik",
                     provinsi: "Riau",
-                    kabupaten_kota: "Kab. Indragiri Hulu, Kab. Pelalawan & Kab. Siak",
+                    kabupaten_kota: "3 - Kab. Indragiri Hulu (Riau), Kab. Pelalawan (Riau) & Kab. Siak (Riau)",
                     jenis_wk: "Cost Recovery",
                     tahun_berdiri: "1940",
                     luas_wilayah: "433 km²",
@@ -698,7 +697,7 @@ const ContentOverview = () => {
                 d = {
                     nama_wilayah: "Jambi",
                     provinsi: "Jambi",
-                    kabupaten_kota: "Kota Jambi, Kab. Muaro Jambi & Kab. Batanghari",
+                    kabupaten_kota: "3 - Kota Jambi (Jambi), Kab. Muaro Jambi (Jambi) & Kab. Batanghari (Jambi)",
                     jenis_wk: "Cost Recovery",
                     tahun_berdiri: "1922",
                     luas_wilayah: "5.751 km²",
@@ -735,7 +734,7 @@ const ContentOverview = () => {
                 d = {
                     nama_wilayah: "Jambi Merang",
                     provinsi: "Sumatera Selatan",
-                    kabupaten_kota: "Kab. Musi Banyuasin",
+                    kabupaten_kota: "1 - Kab. Musi Banyuasin (Sumatera Selatan)",
                     jenis_wk: "Gross Split",
                     tahun_berdiri: "2011",
                     luas_wilayah: "1.028,38 km²",
