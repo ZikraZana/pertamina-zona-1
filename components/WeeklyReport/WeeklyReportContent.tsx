@@ -574,7 +574,7 @@ const WeeklyReportContent = () => {
                                     <button
                                         type="submit"
                                         disabled={uploadLoading}
-                                        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
                                     >
                                         {uploadLoading && (
                                             <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -687,7 +687,7 @@ const WeeklyReportContent = () => {
                                         <button
                                             onClick={() => openPreview(report)}
                                             className={[
-                                                "flex w-full flex-col items-start rounded-lg border px-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50",
+                                                "cursor-pointer flex w-full flex-col items-start rounded-lg border px-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50",
                                                 report.report_date === selectedDateKey
                                                     ? "border-blue-400 bg-blue-50"
                                                     : "border-slate-200",
