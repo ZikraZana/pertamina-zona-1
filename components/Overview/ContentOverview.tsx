@@ -1386,7 +1386,7 @@ const ContentOverview = () => {
                                     <p className="text-[10.5px] font-medium text-blue-700">Provinsi</p>
                                 </div>
                                 <div className="rounded-lg bg-blue-50 p-2.5 text-center">
-                                    <p className="text-xl font-bold leading-tight text-blue-900">14</p>
+                                    <p className="text-xl font-bold leading-tight text-blue-900">13</p>
                                     <p className="text-[10.5px] font-medium text-blue-700">Kab/Kota</p>
                                 </div>
                             </div>
