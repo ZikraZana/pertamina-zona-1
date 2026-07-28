@@ -18,22 +18,31 @@ type WilayahData = {
     jenis_fasilitas: string | null;
     jumlah: string | null;
     sumur_eksplorasi_active: string | null;
+    sumur_eksplorasi_non_active: string | null;
     sumur_eksplorasi_total: string | null;
     producer_active: string | null;
+    producer_non_active: string | null;
     producer_total: string | null;
     injector_active: string | null;
+    injector_non_active: string | null;
     injector_total: string | null;
     sumur_total_active: string | null;
+    sumur_total_non_active: string | null;
     sumur_total_total: string | null;
     process_facilities_active: string | null;
+    process_facilities_non_active: string | null;
     process_facilities_total: string | null;
     offshore_platforms_active: string | null;
+    offshore_platforms_non_active: string | null;
     offshore_platforms_total: string | null;
     swamp_platforms_active: string | null;
+    swamp_platforms_non_active: string | null;
     swamp_platforms_total: string | null;
     gas_compressors_active: string | null;
+    gas_compressors_non_active: string | null;
     gas_compressors_total: string | null;
     pipeline_active: string | null;
+    pipeline_non_active: string | null;
     pipeline_total: string | null;
     drilling_rigs: string | null;
     workover_rigs: string | null;
@@ -538,7 +547,7 @@ const ContentOverview = () => {
             titleEl.textContent = namaWilayah;
 
             let d: WilayahData = {
-                nama_wilayah: null, provinsi: null, kabupaten_kota: null, jenis_wk: null, tahun_berdiri: null, luas_wilayah: null, part_interest: null, kkp: null, produksi_minyak: null, produksi_gas: null, tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah: null, sumur_eksplorasi_active: null, sumur_eksplorasi_total: null, producer_active: null, producer_total: null, injector_active: null, injector_total: null, sumur_total_active: null, sumur_total_total: null, process_facilities_active: null, process_facilities_total: null, offshore_platforms_active: null, offshore_platforms_total: null, swamp_platforms_active: null, swamp_platforms_total: null, gas_compressors_active: null, gas_compressors_total: null, pipeline_active: null, pipeline_total: null, drilling_rigs: null, workover_rigs: null,
+                nama_wilayah: null, provinsi: null, kabupaten_kota: null, jenis_wk: null, tahun_berdiri: null, luas_wilayah: null, part_interest: null, kkp: null, produksi_minyak: null, produksi_gas: null, tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah: null, sumur_eksplorasi_active: null, sumur_eksplorasi_non_active: null, sumur_eksplorasi_total: null, producer_active: null, producer_non_active: null, producer_total: null, injector_active: null, injector_non_active: null, injector_total: null, sumur_total_active: null, sumur_total_non_active: null, sumur_total_total: null, process_facilities_active: null, process_facilities_non_active: null, process_facilities_total: null, offshore_platforms_active: null, offshore_platforms_non_active: null, offshore_platforms_total: null, swamp_platforms_active: null, swamp_platforms_non_active: null, swamp_platforms_total: null, gas_compressors_active: null, gas_compressors_non_active: null, gas_compressors_total: null, pipeline_active: null, pipeline_non_active: null, pipeline_total: null, drilling_rigs: null, workover_rigs: null,
             };
 
             // DATASET
@@ -562,22 +571,31 @@ const ContentOverview = () => {
                     jenis_fasilitas: null,
                     jumlah: null,
                     sumur_eksplorasi_active: "3",
+                    sumur_eksplorasi_non_active: null,
                     sumur_eksplorasi_total: "32",
                     producer_active: "5",
+                    producer_non_active: null,
                     producer_total: "9",
                     injector_active: null,
+                    injector_non_active: null,
                     injector_total: null,
                     sumur_total_active: "8",
+                    sumur_total_non_active: null,
                     sumur_total_total: "41",
                     process_facilities_active: "2",
+                    process_facilities_non_active: null,
                     process_facilities_total: "2",
                     offshore_platforms_active: "1",
+                    offshore_platforms_non_active: null,
                     offshore_platforms_total: "1",
                     swamp_platforms_active: null,
+                    swamp_platforms_non_active: null,
                     swamp_platforms_total: null,
                     gas_compressors_active: "2",
+                    gas_compressors_non_active: null,
                     gas_compressors_total: "2",
                     pipeline_active: "1",
+                    pipeline_non_active: null,
                     pipeline_total: "1",
                     drilling_rigs: null,
                     workover_rigs: null,
@@ -599,22 +617,31 @@ const ContentOverview = () => {
                     jenis_fasilitas: null,
                     jumlah: null,
                     sumur_eksplorasi_active: null,
+                    sumur_eksplorasi_non_active: null,
                     sumur_eksplorasi_total: null,
                     producer_active: "26",
+                    producer_non_active: null,
                     producer_total: "484",
                     injector_active: "5",
+                    injector_non_active: null,
                     injector_total: "9",
                     sumur_total_active: "31",
+                    sumur_total_non_active: null,
                     sumur_total_total: "493",
                     process_facilities_active: "11",
+                    process_facilities_non_active: null,
                     process_facilities_total: "14",
                     offshore_platforms_active: null,
+                    offshore_platforms_non_active: null,
                     offshore_platforms_total: null,
                     swamp_platforms_active: null,
+                    swamp_platforms_non_active: null,
                     swamp_platforms_total: null,
                     gas_compressors_active: "6",
+                    gas_compressors_non_active: null,
                     gas_compressors_total: "6",
                     pipeline_active: ">1700 km",
+                    pipeline_non_active: null,
                     pipeline_total: ">1700 km",
                     drilling_rigs: null,
                     workover_rigs: null,
@@ -636,22 +663,31 @@ const ContentOverview = () => {
                     jenis_fasilitas: null,
                     jumlah: null,
                     sumur_eksplorasi_active: null,
+                    sumur_eksplorasi_non_active: null,
                     sumur_eksplorasi_total: null,
                     producer_active: "110",
+                    producer_non_active: null,
                     producer_total: "942",
                     injector_active: "21",
+                    injector_non_active: null,
                     injector_total: "58",
                     sumur_total_active: "131",
+                    sumur_total_non_active: null,
                     sumur_total_total: "1000",
                     process_facilities_active: "1",
+                    process_facilities_non_active: null,
                     process_facilities_total: "1",
                     offshore_platforms_active: null,
+                    offshore_platforms_non_active: null,
                     offshore_platforms_total: null,
                     swamp_platforms_active: null,
+                    swamp_platforms_non_active: null,
                     swamp_platforms_total: null,
                     gas_compressors_active: null,
+                    gas_compressors_non_active: null,
                     gas_compressors_total: null,
                     pipeline_active: null,
+                    pipeline_non_active: null,
                     pipeline_total: null,
                     drilling_rigs: null,
                     workover_rigs: null,
@@ -673,22 +709,31 @@ const ContentOverview = () => {
                     jenis_fasilitas: null,
                     jumlah: null,
                     sumur_eksplorasi_active: null,
+                    sumur_eksplorasi_non_active: null,
                     sumur_eksplorasi_total: null,
                     producer_active: "96",
+                    producer_non_active: null,
                     producer_total: "304",
                     injector_active: "56",
+                    injector_non_active: null,
                     injector_total: "64",
                     sumur_total_active: "152",
+                    sumur_total_non_active: null,
                     sumur_total_total: "368",
                     process_facilities_active: "16",
+                    process_facilities_non_active: null,
                     process_facilities_total: "16",
                     offshore_platforms_active: null,
+                    offshore_platforms_non_active: null,
                     offshore_platforms_total: null,
                     swamp_platforms_active: null,
+                    swamp_platforms_non_active: null,
                     swamp_platforms_total: null,
                     gas_compressors_active: null,
+                    gas_compressors_non_active: null,
                     gas_compressors_total: null,
                     pipeline_active: ">1700 km",
+                    pipeline_non_active: null,
                     pipeline_total: ">1700 km",
                     drilling_rigs: "0 Swamp, 0 Offshore",
                     workover_rigs: "2 Swamp, 0 Offshore",
@@ -710,22 +755,31 @@ const ContentOverview = () => {
                     jenis_fasilitas: null,
                     jumlah: null,
                     sumur_eksplorasi_active: null,
+                    sumur_eksplorasi_non_active: null,
                     sumur_eksplorasi_total: null,
                     producer_active: "176",
+                    producer_non_active: null,
                     producer_total: "626",
                     injector_active: "63",
+                    injector_non_active: null,
                     injector_total: "103",
                     sumur_total_active: "239",
+                    sumur_total_non_active: null,
                     sumur_total_total: "729",
                     process_facilities_active: "9",
+                    process_facilities_non_active: null,
                     process_facilities_total: "9",
                     offshore_platforms_active: null,
+                    offshore_platforms_non_active: null,
                     offshore_platforms_total: null,
                     swamp_platforms_active: null,
+                    swamp_platforms_non_active: null,
                     swamp_platforms_total: null,
                     gas_compressors_active: null,
+                    gas_compressors_non_active: null,
                     gas_compressors_total: "5",
                     pipeline_active: ">375 km",
+                    pipeline_non_active: null,
                     pipeline_total: ">375 km",
                     drilling_rigs: "3 Rig",
                     workover_rigs: "1 Rig WO, 3 Well Service",
@@ -747,22 +801,31 @@ const ContentOverview = () => {
                     jenis_fasilitas: "Central Gas Processing Plant (kapasitas 155 MMSCFD, design lifetime 25 tahun)",
                     jumlah: "3",
                     sumur_eksplorasi_active: null,
+                    sumur_eksplorasi_non_active: null,
                     sumur_eksplorasi_total: null,
                     producer_active: "9 (5 SKN + 4 PGD)",
+                    producer_non_active: null,
                     producer_total: null,
                     injector_active: "2 (water disposal)",
+                    injector_non_active: null,
                     injector_total: null,
                     sumur_total_active: null,
+                    sumur_total_non_active: null,
                     sumur_total_total: null,
                     process_facilities_active: null,
+                    process_facilities_non_active: null,
                     process_facilities_total: null,
                     offshore_platforms_active: null,
+                    offshore_platforms_non_active: null,
                     offshore_platforms_total: null,
                     swamp_platforms_active: null,
+                    swamp_platforms_non_active: null,
                     swamp_platforms_total: null,
                     gas_compressors_active: null,
+                    gas_compressors_non_active: null,
                     gas_compressors_total: null,
                     pipeline_active: null,
+                    pipeline_non_active: null,
                     pipeline_total: null,
                     drilling_rigs: null,
                     workover_rigs: null,
@@ -835,6 +898,7 @@ const ContentOverview = () => {
                       <tr class="bg-blue-900 text-white">
                         <th class="px-2 py-1.5 text-left font-semibold">Wells</th>
                         <th class="w-16 px-2 py-1.5 text-center font-semibold">Active</th>
+                        <th class="w-16 px-2 py-1.5 text-center font-semibold">Non-Active</th>
                         <th class="w-16 px-2 py-1.5 text-center font-semibold">Total</th>
                       </tr>
                     </thead>
@@ -842,21 +906,25 @@ const ContentOverview = () => {
                       <tr class="bg-white">
                         <td class="px-2 py-1">Exploration & Delineation</td>
                         <td class="px-2 py-1 text-center">${d.sumur_eksplorasi_active ?? '-'}</td>
+                        <td class="px-2 py-1 text-center">${d.sumur_eksplorasi_non_active ?? '-'}</td>
                         <td class="px-2 py-1 text-center">${d.sumur_eksplorasi_total ?? '-'}</td>
                       </tr>
                       <tr class="bg-blue-50">
                         <td class="px-2 py-1">Producer</td>
                         <td class="px-2 py-1 text-center">${d.producer_active ?? '-'}</td>
+                        <td class="px-2 py-1 text-center">${d.producer_non_active ?? '-'}</td>
                         <td class="px-2 py-1 text-center">${d.producer_total ?? '-'}</td>
                       </tr>
                       <tr class="bg-white">
                         <td class="px-2 py-1">Injector</td>
                         <td class="px-2 py-1 text-center">${d.injector_active ?? '-'}</td>
+                        <td class="px-2 py-1 text-center">${d.injector_non_active ?? '-'}</td>
                         <td class="px-2 py-1 text-center">${d.injector_total ?? '-'}</td>
                       </tr>
                       <tr class="bg-blue-100 font-semibold">
                         <td class="px-2 py-1">Total</td>
                         <td class="px-2 py-1 text-center">${d.sumur_total_active ?? '-'}</td>
+                        <td class="px-2 py-1 text-center">${d.sumur_total_non_active ?? '-'}</td>
                         <td class="px-2 py-1 text-center">${d.sumur_total_total ?? '-'}</td>
                       </tr>
                     </tbody>
@@ -867,6 +935,7 @@ const ContentOverview = () => {
                       <tr class="bg-blue-900 text-white">
                         <th class="px-2 py-1.5 text-left font-semibold">Surface Facilities</th>
                         <th class="w-16 px-2 py-1.5 text-center font-semibold">Active</th>
+                        <th class="w-16 px-2 py-1.5 text-center font-semibold">Non-Active</th>
                         <th class="w-16 px-2 py-1.5 text-center font-semibold">Total</th>
                       </tr>
                     </thead>
@@ -874,26 +943,31 @@ const ContentOverview = () => {
                       <tr class="bg-white">
                         <td class="px-2 py-1">Process Facilities</td>
                         <td class="px-2 py-1 text-center">${d.process_facilities_active ?? '-'}</td>
+                        <td class="px-2 py-1 text-center">${d. process_facilities_non_active ?? '-'}</td>
                         <td class="px-2 py-1 text-center">${d.process_facilities_total ?? '-'}</td>
                       </tr>
                       <tr class="bg-blue-50">
                         <td class="px-2 py-1">Offshore Platforms</td>
                         <td class="px-2 py-1 text-center">${d.offshore_platforms_active ?? '-'}</td>
+                        <td class="px-2 py-1 text-center">${d.offshore_platforms_non_active ?? '-'}</td>
                         <td class="px-2 py-1 text-center">${d.offshore_platforms_total ?? '-'}</td>
                       </tr>
                       <tr class="bg-white">
                         <td class="px-2 py-1">Swamp Platforms</td>
                         <td class="px-2 py-1 text-center">${d.swamp_platforms_active ?? '-'}</td>
+                        <td class="px-2 py-1 text-center">${d.swamp_platforms_non_active ?? '-'}</td>
                         <td class="px-2 py-1 text-center">${d.swamp_platforms_total ?? '-'}</td>
                       </tr>
                       <tr class="bg-blue-50">
                         <td class="px-2 py-1">Gas Compressors</td>
                         <td class="px-2 py-1 text-center">${d.gas_compressors_active ?? '-'}</td>
+                        <td class="px-2 py-1 text-center">${d.gas_compressors_non_active ?? '-'}</td>
                         <td class="px-2 py-1 text-center">${d.gas_compressors_total ?? '-'}</td>
                       </tr>
                       <tr class="bg-white">
                         <td class="px-2 py-1">Pipeline</td>
                         <td class="px-2 py-1 text-center">${d.pipeline_active ?? '-'}</td>
+                        <td class="px-2 py-1 text-center">${d.pipeline_non_active ?? '-'}</td>
                         <td class="px-2 py-1 text-center">${d.pipeline_total ?? '-'}</td>
                       </tr>
                     </tbody>
