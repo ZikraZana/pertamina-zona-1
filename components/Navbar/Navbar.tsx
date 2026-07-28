@@ -11,7 +11,7 @@ import { useState } from "react";
 // ============================================================
 const navLinks = [
     { href: "/overview", label: "Overview" },
-    { href: "/weekly_report", label: "Weekly Report" },
+    { href: "/performance", label: "Performance Report" },
     // { href: "/produksi", label: "Produksi" },
 ];
 

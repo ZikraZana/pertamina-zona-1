@@ -48,7 +48,7 @@ function formatFileSize(bytes: number | null) {
     return `${(kb / 1024).toFixed(1)} MB`;
 }
 
-const WeeklyReportContent = () => {
+const PerformanceContent = () => {
     // ============================================================
     // STATE & LOGIC AUTH — PERSIS SEPERTI YANG SUDAH KAMU TULIS,
     // TIDAK DIUBAH SAMA SEKALI.
@@ -840,4 +840,4 @@ const WeeklyReportContent = () => {
     );
 };
 
-export default WeeklyReportContent
+export default PerformanceContent
