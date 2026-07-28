@@ -14,6 +14,7 @@ type PerformanceReport = {
     report_date: string; // YYYY-MM-DD
     file_name: string;
     file_size: number | null;
+    category: "weekly" | "biweekly" | "monthly" | "others";
     updated_at: string;
     updated_by: { full_name: string | null } | null;
 };
@@ -24,6 +25,14 @@ const MONTH_NAMES = [
 ];
 
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+
+const CATEGORY_TABS: { label: string; value: "weekly" | "biweekly" | "monthly" | "others" | null }[] = [
+    { label: "Semua", value: null },
+    { label: "Weekly", value: "weekly" },
+    { label: "Biweekly", value: "biweekly" },
+    { label: "Monthly", value: "monthly" },
+    { label: "Others", value: "others" },
+];
 
 function toDateKey(year: number, month: number, day: number) {
     const mm = String(month + 1).padStart(2, "0");
@@ -130,10 +139,14 @@ const PerformanceContent = () => {
     const [previewLoading, setPreviewLoading] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
     const [downloadLoading, setDownloadLoading] = useState(false);
+    const [activeCategory, setActiveCategory] = useState<"weekly" | "biweekly" | "monthly" | "others" | null>(null);
 
 
     async function fetchReports() {
-        const res = await fetch("/api/performance-reports");
+        const url = activeCategory
+            ? `/api/performance-reports?category=${activeCategory}`
+            : "/api/performance-reports";
+        const res = await fetch(url);
         const json = await res.json();
         setReports(json.reports)
     }
@@ -141,7 +154,7 @@ const PerformanceContent = () => {
     useEffect(() => {
         if (!user) return;
         fetchReports();
-    }, [user])
+    }, [user, activeCategory])
 
     // Peta tanggal -> laporan, untuk lookup cepat di kalender
     const reportsByDate = useMemo(() => {
@@ -262,6 +275,7 @@ const PerformanceContent = () => {
     const [editFile, setEditFile] = useState<File | null>(null);
     const [editLoading, setEditLoading] = useState(false);
     const [editError, setEditError] = useState<string | null>(null);
+    const [category, setCategory] = useState<"weekly" | "biweekly" | "monthly" | "others">("weekly");
     const reportRefs = useRef<Map<string, HTMLLIElement>>(new Map());
     const calendarPanelRef = useRef<HTMLDivElement>(null);
 
@@ -323,6 +337,7 @@ const PerformanceContent = () => {
         const formData = new FormData();
         formData.append("file", uploadFile);
         formData.append("report_date", uploadDate);
+        formData.append("category", category);
 
         const res = await fetch("/api/performance-reports", {
             method: "POST",
@@ -571,6 +586,15 @@ const PerformanceContent = () => {
                                             onChange={(e) => setUploadDate(e.target.value)}
                                         />
                                     </div>
+                                    <div>
+                                        <label className="mb-1 block text-xs font-semibold text-slate-600">Kategori</label>
+                                        <select value={category} onChange={(e) => setCategory(e.target.value as "weekly" | "biweekly" | "monthly" | "others")} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500">
+                                            <option value="weekly">Weekly</option>
+                                            <option value="biweekly">Bi-Weekly</option>
+                                            <option value="monthly">Monthly</option>
+                                            <option value="others">Others</option>
+                                        </select>
+                                    </div>
                                     <button
                                         type="submit"
                                         disabled={uploadLoading}
@@ -588,6 +612,23 @@ const PerformanceContent = () => {
                             </div>
                         </form>
                     )}
+
+                    <div className="mx-auto flex w-full max-w-5xl gap-2">
+                        {CATEGORY_TABS.map((tab) => (
+                            <button
+                                key={tab.label}
+                                onClick={() => setActiveCategory(tab.value)}
+                                className={[
+                                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
+                                    activeCategory === tab.value
+                                        ? "bg-blue-900 text-white"
+                                        : "bg-white text-slate-600 hover:bg-blue-50",
+                                ].join(" ")}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
 
                     <div ref={calendarPanelRef} className="flex flex-col gap-4 lg:flex-row">
                         {/* Kalender */}

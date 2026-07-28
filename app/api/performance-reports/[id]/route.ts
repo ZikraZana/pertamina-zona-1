@@ -92,6 +92,7 @@ export async function PATCH(
     const formData = await request.formData();
     const file = formData.get("file");
     const reportDate = formData.get("report_date");
+    const category = formData.get("category");
 
     const updateData: {
         title?: string;
@@ -99,6 +100,7 @@ export async function PATCH(
         file_path?: string;
         file_name?: string;
         file_size?: number;
+        category?: string;
         updated_by: string;
         updated_at: string;
     } = {
@@ -108,6 +110,14 @@ export async function PATCH(
 
     if (typeof reportDate === "string" && reportDate) {
         updateData.report_date = reportDate;
+    }
+
+    const VALID_CATEGORIES = ["weekly", "biweekly", "monthly", "others"];
+    if (typeof category === "string" && category) {
+        if (!VALID_CATEGORIES.includes(category)) {
+            return NextResponse.json({ error: "Kategori laporan tidak valid." }, { status: 400 });
+        }
+        updateData.category = category;
     }
 
     let oldFilePathToDelete: string | null = null;
@@ -143,7 +153,7 @@ export async function PATCH(
         .from("performance_reports")
         .update(updateData)
         .eq("id", id)
-        .select("id, title, report_date, file_name, file_size, created_at, updated_at, updated_by:profiles!performance_reports_updated_by_fkey(full_name)")
+        .select("id, title, report_date, file_name, file_size, created_at, updated_at, updated_by:profiles!performance_reports_updated_by_fkey(full_name), category")
         .single();
 
     if (updateError) {

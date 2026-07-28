@@ -1,13 +1,22 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    const url = new URL(request.url);
+    const category = url.searchParams.get("category");
+
+    let query = supabase
         .from("performance_reports")
-        .select("id, title, report_date, file_name, file_size, created_at, updated_at, updated_by:profiles!performance_reports_updated_by_fkey(full_name)")
+        .select("id, title, report_date, file_name, file_size, created_at, updated_at, updated_by:profiles!performance_reports_updated_by_fkey(full_name), category")
         .order("report_date", { ascending: false });
+
+    if (category) {
+        query = query.eq("category", category);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
@@ -33,7 +42,7 @@ export async function POST(request: Request) {
 
     if (profile?.role !== "admin") {
         return NextResponse.json(
-            { error: "Hanya admin yang bisa mengunggah weekly report." },
+            { error: "Hanya admin yang bisa mengunggah laporan." },
             { status: 403 }
         )
     }
@@ -41,16 +50,22 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get("file");
     const reportDate = formData.get("report_date");
+    const category = formData.get("category")
+
+    const VALID_CATEGORIES = ["weekly", "biweekly", "monthly", "others"];
+    if (typeof category !== "string" || !VALID_CATEGORIES.includes(category)) {
+        return NextResponse.json({ error: "Kategori laporan tidak valid." }, { status: 400 });
+    }
 
     if (!(file instanceof File)) {
-        return NextResponse.json({ error: "File PDF Wajib diisi" }, { status: 400 })
+        return NextResponse.json({ error: "File PDF Wajib diisi." }, { status: 400 })
     }
     if (file.type !== "application/pdf") {
         return NextResponse.json({ error: "File harus berformat PDF." }, { status: 400 });
     }
 
     const title = file.name.replace(/\.pdf$/i, "");
-    
+
     if (typeof reportDate !== "string" || !reportDate) {
         return NextResponse.json({ error: "Tanggal laporan wajib diisi." }, { status: 400 });
     }
@@ -78,8 +93,9 @@ export async function POST(request: Request) {
             file_name: file.name,
             file_size: file.size,
             uploaded_by: user.id,
+            category: category,
         })
-        .select("id, title, report_date, file_name, file_size, created_at")
+        .select("id, title, report_date, file_name, file_size, created_at, category")
         .single();
 
     if (insertError) {
