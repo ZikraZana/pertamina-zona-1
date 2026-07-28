@@ -262,6 +262,7 @@ const PerformanceContent = () => {
         setPreviewReport(null);
         setPreviewUrl(null);
         setPreviewError(null);
+        setIsEditing(false);
     }
 
     const [uploadDate, setUploadDate] = useState("");
@@ -273,6 +274,7 @@ const PerformanceContent = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editDate, setEditDate] = useState("");
     const [editFile, setEditFile] = useState<File | null>(null);
+    const [editCategory, setEditCategory] = useState<"weekly" | "biweekly" | "monthly" | "others">("weekly");
     const [editLoading, setEditLoading] = useState(false);
     const [editError, setEditError] = useState<string | null>(null);
     const [category, setCategory] = useState<"weekly" | "biweekly" | "monthly" | "others">("weekly");
@@ -385,6 +387,7 @@ const PerformanceContent = () => {
     function startEdit() {
         if (!previewReport) return;
         setEditDate(previewReport.report_date);
+        setEditCategory(previewReport.category);
         setEditFile(null);
         setEditError(null);
         setIsEditing(true);
@@ -405,6 +408,7 @@ const PerformanceContent = () => {
 
         const formData = new FormData();
         formData.append("report_date", editDate);
+        formData.append("category", editCategory);
         if (editFile) formData.append("file", editFile);
 
 
@@ -619,7 +623,7 @@ const PerformanceContent = () => {
                                 key={tab.label}
                                 onClick={() => setActiveCategory(tab.value)}
                                 className={[
-                                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
+                                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
                                     activeCategory === tab.value
                                         ? "bg-blue-900 text-white"
                                         : "bg-white text-slate-600 hover:bg-blue-50",
@@ -749,7 +753,7 @@ const PerformanceContent = () => {
             {previewReport && (
                 <div
                     className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 p-3 sm:p-6"
-                    onClick={() => setPreviewReport(null)}
+                    onClick={closePreview}
                 >
                     <div
                         className="flex h-full max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
@@ -771,7 +775,7 @@ const PerformanceContent = () => {
                                     <button
                                         onClick={handleDownload}
                                         disabled={downloadLoading}
-                                        className="rounded-lg bg-blue-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                        className="cursor-pointer rounded-lg bg-blue-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         {downloadLoading ? "Mengunduh..." : "Download"}
                                     </button>
@@ -780,7 +784,7 @@ const PerformanceContent = () => {
                                 {role === "admin" && !isEditing && (
                                     <button
                                         onClick={startEdit}
-                                        className="rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+                                        className="cursor-pointer rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50"
                                     >
                                         Edit
                                     </button>
@@ -788,14 +792,14 @@ const PerformanceContent = () => {
 
 
                                 {role === "admin" && (
-                                    <button onClick={handleDelete} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50">
+                                    <button onClick={handleDelete} className="cursor-pointer rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50">
                                         Hapus
                                     </button>
                                 )}
                                 <button
                                     onClick={closePreview}
                                     aria-label="Tutup"
-                                    className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                                    className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
                                 >
                                     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.5}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -824,6 +828,15 @@ const PerformanceContent = () => {
                                             onChange={(e) => setEditDate(e.target.value)}
                                             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
                                         />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-xs font-semibold text-slate-600">Kategori</label>
+                                        <select value={editCategory} onChange={(e) => setEditCategory(e.target.value as "weekly" | "biweekly" | "monthly" | "others")} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500">
+                                            <option value="weekly" >Weekly</option>
+                                            <option value="biweekly">Bi-Weekly</option>
+                                            <option value="monthly">Monthly</option>
+                                            <option value="others">Others</option>
+                                        </select>
                                     </div>
 
                                     <div>
