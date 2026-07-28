@@ -153,7 +153,7 @@ export async function PATCH(
         .from("performance_reports")
         .update(updateData)
         .eq("id", id)
-        .select("id, title, report_date, file_name, file_size, created_at, updated_at, updated_by:profiles!performance_reports_updated_by_fkey(full_name), category")
+        .select("id, title, report_date, file_name, file_size, created_at, uploaded_by:profiles!performance_reports_uploaded_by_fkey(full_name),updated_at, updated_by:profiles!performance_reports_updated_by_fkey(full_name), category")
         .single();
 
     if (updateError) {

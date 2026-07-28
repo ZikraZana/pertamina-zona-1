@@ -16,6 +16,7 @@ type PerformanceReport = {
     file_size: number | null;
     category: "weekly" | "biweekly" | "monthly" | "others";
     updated_at: string;
+    uploaded_by: { full_name: string | null } | null;
     updated_by: { full_name: string | null } | null;
 };
 
@@ -511,14 +512,14 @@ const PerformanceContent = () => {
                             {role === "admin" && (
                                 <button
                                     onClick={() => setShowUploadForm((v) => !v)}
-                                    className="rounded-lg bg-blue-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-800"
+                                    className="cursor-pointer rounded-lg bg-blue-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-800"
                                 >
                                     {showUploadForm ? "Tutup Form" : "+ Upload Laporan"}
                                 </button>
                             )}
                             <button
                                 onClick={handleLogout}
-                                className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-100"
+                                className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-100"
                             >
                                 Logout
                             </button>
@@ -762,10 +763,15 @@ const PerformanceContent = () => {
                         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
                             <div>
                                 <h3 className="text-sm font-bold text-blue-900 sm:text-base">{previewReport.title}</h3>
-                                <p className="text-[11px] text-slate-400">{formatDateLong(previewReport.report_date)}</p>
+                                <p className="text-[11px] mb-1 text-slate-400">{formatDateLong(previewReport.report_date)}</p>
+                                {previewReport.uploaded_by && (
+                                    <p className="text-[10px] text-slate-400">
+                                        Diupload oleh <b>{previewReport.uploaded_by.full_name ?? "tidak diketahui"}</b>
+                                    </p>
+                                )}
                                 {previewReport.updated_by && (
                                     <p className="text-[10px] text-slate-400">
-                                        Terakhir diubah oleh {previewReport.updated_by.full_name ?? "tidak diketahui"} pada {formatDateTime(previewReport.updated_at)}
+                                        Terakhir diubah oleh <b>{previewReport.updated_by.full_name ?? "tidak diketahui"}</b>
                                     </p>
                                 )}
                             </div>
