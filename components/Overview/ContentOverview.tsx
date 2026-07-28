@@ -1386,7 +1386,7 @@ const ContentOverview = () => {
                                     <p className="text-[10.5px] font-medium text-blue-700">Provinsi</p>
                                 </div>
                                 <div className="rounded-lg bg-blue-50 p-2.5 text-center">
-                                    <p className="text-xl font-bold leading-tight text-blue-900">14</p>
+                                    <p className="text-xl font-bold leading-tight text-blue-900">13</p>
                                     <p className="text-[10.5px] font-medium text-blue-700">Kab/Kota</p>
                                 </div>
                             </div>
@@ -1799,7 +1799,7 @@ const ContentOverview = () => {
                 className="pointer-events-none fixed z-2000 hidden max-w-56"
             >
                 {/* Segitiga di kiri, menempel ke sisi kiri kotak tooltip */}
-                <div className="absolute -left-1.5 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[6px] border-r-[7px] border-y-transparent border-r-[#0d366dgi]"></div>
+                <div className="absolute -left-1.5 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[6px] border-r-[7px] border-y-transparent border-r-[#0d366d]"></div>
 
                 {/* Kotak isi tooltip (yang akan diisi JS) */}
                 <div
