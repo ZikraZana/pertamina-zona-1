@@ -123,8 +123,18 @@ export async function PATCH(
     let oldFilePathToDelete: string | null = null;
 
     if (file instanceof File) {
-        if (file.type !== "application/pdf") {
-            return NextResponse.json({ error: "File harus berformat PDF." }, { status: 400 });
+        const ALLOWED_TYPES = [
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
+            "application/vnd.ms-powerpoint", // .ppt
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+            "application/msword", // .doc
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+            "application/vnd.ms-excel", // .xls
+        ];
+
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            return NextResponse.json({ error: "Format file tidak didukung." }, { status: 400 });
         }
 
         const safeFileName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");

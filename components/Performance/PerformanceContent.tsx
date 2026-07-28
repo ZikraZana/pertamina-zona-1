@@ -58,6 +58,10 @@ function formatFileSize(bytes: number | null) {
     return `${(kb / 1024).toFixed(1)} MB`;
 }
 
+function getCategoryLabel(category: string) {
+    return CATEGORY_TABS.find((tab) => tab.value === category)?.label ?? category;
+}
+
 const PerformanceContent = () => {
     // ============================================================
     // STATE & LOGIC AUTH — PERSIS SEPERTI YANG SUDAH KAMU TULIS,
@@ -168,6 +172,18 @@ const PerformanceContent = () => {
         return map;
     }, [reports]);
 
+    const selectedDateReports = selectedDateKey ? reportsByDate.get(selectedDateKey) ?? [] : [];
+
+    const selectedDateReportsByCategory = useMemo(() => {
+        const map = new Map<string, PerformanceReport[]>();
+        for (const report of selectedDateReports) {
+            const list = map.get(report.category) ?? [];
+            list.push(report);
+            map.set(report.category, list);
+        }
+        return map;
+    }, [selectedDateReports]);
+
     function goToPrevMonth() {
         setViewMonth((m) => {
             if (m === 0) {
@@ -206,16 +222,10 @@ const PerformanceContent = () => {
     }, [viewYear, viewMonth]);
 
     const todayKey = toDateKey(today.getFullYear(), today.getMonth(), today.getDate());
-    const selectedDateReports = selectedDateKey ? reportsByDate.get(selectedDateKey) ?? [] : [];
+
 
     function handleDateClick(dateKey: string) {
-        const dayReports = reportsByDate.get(dateKey);
         setSelectedDateKey(dateKey);
-        if (dayReports && dayReports.length === 1) {
-            openPreview(dayReports[0]);
-        } else if (dayReports && dayReports.length > 1) {
-            reportRefs.current.get(dayReports[0].id)?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
     }
 
     async function openPreview(report: PerformanceReport) {
@@ -282,18 +292,7 @@ const PerformanceContent = () => {
     const reportRefs = useRef<Map<string, HTMLLIElement>>(new Map());
     const calendarPanelRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        function handleClickOutside(e: MouseEvent) {
-            if (calendarPanelRef.current && !calendarPanelRef.current.contains(e.target as Node)) {
-                setSelectedDateKey(null);
-            }
-        }
 
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
 
     function handleDragOver(e: React.DragEvent<HTMLLabelElement>) {
         e.preventDefault();   // wajib, biar browser tidak buka file-nya sendiri
@@ -312,10 +311,10 @@ const PerformanceContent = () => {
         const droppedFile = e.dataTransfer.files?.[0];
         if (!droppedFile) return;
 
-        if (droppedFile.type !== "application/pdf") {
-            setUploadError("File harus berformat PDF.");
-            return;
-        }
+        // if (droppedFile.type !== "application/pdf") {
+        //     setUploadError("File harus berformat PDF.");
+        //     return;
+        // }
 
         setUploadError(null);
         setUploadFile(droppedFile);
@@ -560,7 +559,7 @@ const PerformanceContent = () => {
                                     <input
                                         id="upload-file-input"
                                         type="file"
-                                        accept="application/pdf"
+                                        accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx"
                                         className="sr-only"
                                         onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
                                     />
@@ -574,8 +573,8 @@ const PerformanceContent = () => {
                                         </div>
                                     ) : (
                                         <div className="flex flex-col items-center gap-0.5">
-                                            <span className="text-xs font-semibold text-slate-600">Klik untuk pilih file PDF</span>
-                                            <span className="text-[10px] text-slate-400">Hanya format .pdf</span>
+                                            <span className="text-xs font-semibold text-slate-600">Klik untuk pilih file laporan</span>
+                                            <span className="text-[10px] text-slate-400">Format: PDF, PPT, Word, Excel</span>
                                         </div>
                                     )}
                                 </label>
@@ -713,38 +712,54 @@ const PerformanceContent = () => {
                             </div>
                         </div>
 
-                        {/* Panel semua laporan */}
+                        {/* Panel laporan tanggal terpilih */}
                         <div className="flex max-h-125 flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-lg lg:w-72">
-                            <h2 className="mb-3 text-sm font-bold text-blue-900">Semua Laporan</h2>
+                            <h2 className="mb-3 text-sm font-bold text-blue-900">
+                                {selectedDateKey ? formatDateLong(selectedDateKey) : "Laporan"}
+                            </h2>
 
-                            {reports.length === 0 && (
-                                <p className="text-xs text-slate-400">Belum ada laporan yang diunggah.</p>
+                            {!selectedDateKey && (
+                                <p className="text-xs text-slate-400">Pilih tanggal untuk melihat laporan.</p>
                             )}
 
-                            <ul className="flex flex-col gap-2 overflow-y-auto">
-                                {reports.map((report) => (
-                                    <li
-                                        key={report.id}
-                                        ref={(el) => {
-                                            if (el) reportRefs.current.set(report.id, el);
-                                            else reportRefs.current.delete(report.id);
-                                        }}
-                                    >
-                                        <button
-                                            onClick={() => openPreview(report)}
-                                            className={[
-                                                "cursor-pointer flex w-full flex-col items-start rounded-lg border px-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50",
-                                                report.report_date === selectedDateKey
-                                                    ? "border-blue-400 bg-blue-50"
-                                                    : "border-slate-200",
-                                            ].join(" ")}
-                                        >
-                                            <span className="text-xs font-semibold text-blue-900">{report.title}</span>
-                                            <span className="text-[10px] text-slate-400">{formatDateLong(report.report_date)}</span>
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
+                            {selectedDateKey && selectedDateReports.length === 0 && (
+                                <p className="text-xs text-slate-400">Tidak ada laporan di tanggal ini.</p>
+                            )}
+
+                            {selectedDateKey && selectedDateReports.length > 0 && (
+                                <div className="flex flex-col gap-3 overflow-y-auto">
+                                    {CATEGORY_TABS.filter((tab) => tab.value !== null).map((tab) => {
+                                        const group = selectedDateReportsByCategory.get(tab.value as string) ?? [];
+                                        if (group.length === 0) return null;
+
+                                        return (
+                                            <div key={tab.label}>
+                                                <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                                    {tab.label}
+                                                </h3>
+                                                <ul className="flex flex-col gap-2">
+                                                    {group.map((report) => (
+                                                        <li
+                                                            key={report.id}
+                                                            ref={(el) => {
+                                                                if (el) reportRefs.current.set(report.id, el);
+                                                                else reportRefs.current.delete(report.id);
+                                                            }}
+                                                        >
+                                                            <button
+                                                                onClick={() => openPreview(report)}
+                                                                className="cursor-pointer flex w-full flex-col items-start rounded-lg border border-slate-200 px-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
+                                                            >
+                                                                <span className="text-xs font-semibold text-blue-900">{report.title}</span>
+                                                            </button>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -763,7 +778,10 @@ const PerformanceContent = () => {
                         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
                             <div>
                                 <h3 className="text-sm font-bold text-blue-900 sm:text-base">{previewReport.title}</h3>
-                                <p className="text-[11px] mb-1 text-slate-400">{formatDateLong(previewReport.report_date)}</p>
+                                <p className="text-[11px] text-slate-400">{formatDateLong(previewReport.report_date)}</p>
+                                <span className="mb-1 inline-block w-fit rounded-full bg-blue-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-blue-700">
+                                    {getCategoryLabel(previewReport.category)}
+                                </span>
                                 {previewReport.uploaded_by && (
                                     <p className="text-[10px] text-slate-400">
                                         Diupload oleh <b>{previewReport.uploaded_by.full_name ?? "tidak diketahui"}</b>
@@ -849,7 +867,7 @@ const PerformanceContent = () => {
                                         <label className="mb-1 block text-xs font-semibold text-slate-600">Ganti File PDF (opsional)</label>
                                         <input
                                             type="file"
-                                            accept="application/pdf"
+                                            accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx"
                                             onChange={(e) => setEditFile(e.target.files?.[0] ?? null)}
                                             className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none file:mr-2 file:rounded-md file:border-0 file:bg-blue-900 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
                                         />
@@ -888,7 +906,19 @@ const PerformanceContent = () => {
                                         </div>
                                     )}
                                     {previewUrl && !previewLoading && (
-                                        <iframe src={previewUrl} title={previewReport?.title} className="h-full w-full" />
+                                        previewReport?.file_name.toLowerCase().endsWith(".pdf") ? (
+                                            <iframe src={previewUrl} title={previewReport?.title} className="h-full w-full" />
+                                        ) : (
+                                            <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-slate-500">
+                                                <p>Pratinjau tidak tersedia untuk format file ini.</p>
+                                                <button
+                                                    onClick={handleDownload}
+                                                    className="rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800"
+                                                >
+                                                    Download File
+                                                </button>
+                                            </div>
+                                        )
                                     )}
                                 </>
                             )}
