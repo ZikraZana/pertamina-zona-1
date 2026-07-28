@@ -398,6 +398,34 @@ const ContentOverview = () => {
             document.body.removeChild(link);
         }
 
+        // Data kabupaten/kota per provinsi untuk tooltip di "Cakupan Lokasi"
+// Sesuaikan isinya agar jumlahnya sama dengan angka yang tampil di UI (1, 4, 3, 5, 1)
+        const kabupatenKotaByProvinsi: Record<string, string[]> = {
+            'Aceh': [
+                'Lepas Pantai Kab. Aceh Timur',
+                'Kab. Aceh Utara',
+                'Kota Lhokseumawe',
+                'Kab. Aceh Tamiang',
+            ],
+            'Sumatera Utara': [
+                'Kab. Langkat',
+                'Kab. Deli Serdang',
+            ],
+            'Riau': [
+                'Kab. Indragiri Hulu',
+                'Kab. Pelalawan',
+                'Kab. Siak',
+            ],
+            'Jambi': [
+                'Kota Jambi',
+                'Kab. Muaro Jambi',
+                'Kab. Batanghari',
+            ],
+            'Sumatera Selatan': [
+                'Kab. Musi Banyuasin',
+            ],
+        };
+
         const koordinatWilayah: Record<string, string> = {
             'nso': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1758828.4833084824!2d96.44592863870214!3d5.222246513227389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3047773ee34bcc15%3A0x96b7cedbe6bb0f8c!2sPT.%20Pertamina%20Hulu%20Energi%20NSO!5e1!3m2!1sen!2sus!4v1783928795832!5m2!1sen!2sus',
             'p-susu': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13762.458951983883!2d98.20356883627866!3d4.120297531596398!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x303713005aed9639%3A0x97cca8a709c3fa20!2sPERTAMINA%20EP%2C%20PANGKALAN%20SUSU%20FIELD!5e1!3m2!1sen!2sus!4v1783928920370!5m2!1sen!2sus',
@@ -511,6 +539,27 @@ const ContentOverview = () => {
                 // Hapus dari DOM setelah transisi selesai, supaya benar-benar tidak muncul lagi
                 setTimeout(() => hint.remove(), 700);
             }
+        }
+
+        function showKabKotaTooltip(target: HTMLElement, provinsi: string) {
+            const tooltip = document.getElementById('kabkotaTooltip');
+            const content = document.getElementById('kabkotaTooltipContent');
+            const list = kabupatenKotaByProvinsi[provinsi];
+            if (!tooltip || !content || !list || list.length === 0) return;
+
+            content.innerHTML = list
+                .map((k) => `<div class="whitespace-nowrap">${k}</div>`)
+                .join('');
+            tooltip.classList.remove('hidden');
+
+            const rect = target.getBoundingClientRect();
+            tooltip.style.left = `${rect.right + 8}px`;
+            tooltip.style.top = `${rect.top + rect.height / 2}px`;
+            tooltip.style.transform = 'translateY(-50%)';
+        }
+
+        function hideKabKotaTooltip() {
+            document.getElementById('kabkotaTooltip')?.classList.add('hidden');
         }
 
         function setActive(key: string, nama: string, provinsiCode: string) {
@@ -1168,17 +1217,37 @@ const ContentOverview = () => {
             }
         }
 
+        function handleGlobalMouseOver(e: MouseEvent) {
+            const target = e.target as HTMLElement;
+            const trigger = target.closest<HTMLElement>('[data-kabkota-trigger]');
+            if (trigger) {
+                showKabKotaTooltip(trigger, trigger.dataset.kabkotaTrigger!);
+            }
+        }
+
+        function handleGlobalMouseOut(e: MouseEvent) {
+            const target = e.target as HTMLElement;
+            const trigger = target.closest<HTMLElement>('[data-kabkota-trigger]');
+            if (trigger) {
+                hideKabKotaTooltip();
+            }
+        }
+
         // Pasang listener global tunggal di tingkat document
         document.addEventListener('click', handleGlobalClick);
         document.addEventListener('mousedown', handleImagePanStart);
         document.addEventListener('mousemove', handleImagePanMove);
         document.addEventListener('mouseup', handleImagePanEnd);;
+        document.addEventListener('mouseover', handleGlobalMouseOver);   // BARU
+        document.addEventListener('mouseout', handleGlobalMouseOut);
 
         return () => {
             document.removeEventListener('click', handleGlobalClick);
             document.removeEventListener('mousedown', handleImagePanStart);
             document.removeEventListener('mousemove', handleImagePanMove);
             document.removeEventListener('mouseup', handleImagePanEnd);
+            document.removeEventListener('mouseover', handleGlobalMouseOver); // BARU
+            document.removeEventListener('mouseout', handleGlobalMouseOut);
         };
 
     }, []);
@@ -1325,11 +1394,26 @@ const ContentOverview = () => {
                             <div className="mb-4">
                                 <h3 className="mb-1.5 text-[10.5px] font-bold uppercase tracking-wide text-slate-400">Cakupan Lokasi</h3>
                                 <ul className="divide-y divide-slate-100 text-xs text-slate-700">
-                                    <li className="flex items-center justify-between py-1"><span>Aceh</span><span className="font-semibold text-slate-500">1 Kab</span></li>
-                                    <li className="flex items-center justify-between py-1"><span>Sumatera Utara</span><span className="font-semibold text-slate-500">4 Kab/Kota</span></li>
-                                    <li className="flex items-center justify-between py-1"><span>Riau</span><span className="font-semibold text-slate-500">3 Kab</span></li>
-                                    <li className="flex items-center justify-between py-1"><span>Jambi</span><span className="font-semibold text-slate-500">5 Kab/Kota</span></li>
-                                    <li className="flex items-center justify-between py-1"><span>Sumatera Selatan</span><span className="font-semibold text-slate-500">1 Kab</span></li>
+                                    <li className="flex items-center justify-between py-1">
+                                        <span>Aceh</span>
+                                        <span className="cursor-help font-semibold text-slate-500" data-kabkota-trigger="Aceh">4 Kab/Kota</span>
+                                    </li>
+                                    <li className="flex items-center justify-between py-1">
+                                        <span>Sumatera Utara</span>
+                                        <span className="cursor-help font-semibold text-slate-500" data-kabkota-trigger="Sumatera Utara">2 Kab</span>
+                                    </li>
+                                    <li className="flex items-center justify-between py-1">
+                                        <span>Riau</span>
+                                        <span className="cursor-help font-semibold text-slate-500" data-kabkota-trigger="Riau">3 Kab</span>
+                                    </li>
+                                    <li className="flex items-center justify-between py-1">
+                                        <span>Jambi</span>
+                                        <span className="cursor-help font-semibold text-slate-500" data-kabkota-trigger="Jambi">3 Kab/Kota</span>
+                                    </li>
+                                    <li className="flex items-center justify-between py-1">
+                                        <span>Sumatera Selatan</span>
+                                        <span className="cursor-help font-semibold text-slate-500" data-kabkota-trigger="Sumatera Selatan">1 Kab</span>
+                                    </li>
                                 </ul>
                             </div>
 
@@ -1540,6 +1624,7 @@ const ContentOverview = () => {
                 id="facilityOverlay"
                 className="fixed inset-3 z-1000 hidden flex-col overflow-y-auto overflow-x-hidden rounded-xl border border-slate-300 bg-white p-4 shadow-2xl sm:inset-4 sm:p-6 lg:inset-6 lg:p-8"
             >
+
                 {/* Tombol Kembali - kiri atas */}
                 <div className="mb-4 flex shrink-0 items-center sm:mb-6">
                     <button
@@ -1707,6 +1792,20 @@ const ContentOverview = () => {
                         </button>
                     </div>
                 </div>
+            </div>
+
+            <div
+                id="kabkotaTooltip"
+                className="pointer-events-none fixed z-2000 hidden max-w-56"
+            >
+                {/* Segitiga di kiri, menempel ke sisi kiri kotak tooltip */}
+                <div className="absolute -left-1.5 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[6px] border-r-[7px] border-y-transparent border-r-[#0d366dgi]"></div>
+
+                {/* Kotak isi tooltip (yang akan diisi JS) */}
+                <div
+                    id="kabkotaTooltipContent"
+                    className="rounded-lg bg-[#0d366d] px-3 py-2 text-[11px] font-medium leading-relaxed text-white shadow-lg"
+                ></div>
             </div>
         </>
     );
