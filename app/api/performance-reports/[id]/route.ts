@@ -144,7 +144,7 @@ export async function PATCH(
         const { error: uploadError } = await supabase.storage
             .from("performance-reports")
             .upload(storagePath, file, {
-                contentType: "application/pdf",
+                contentType: file.type,
                 upsert: false,
             });
 
@@ -152,7 +152,7 @@ export async function PATCH(
             return NextResponse.json({ error: uploadError.message }, { status: 500 });
         }
 
-        updateData.title = file.name.replace(/\.pdf$/i, "");
+        updateData.title = file.name.replace(/\.[^.]+$/i, "");
         updateData.file_path = storagePath;
         updateData.file_name = file.name;
         updateData.file_size = file.size;

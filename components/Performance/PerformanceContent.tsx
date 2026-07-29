@@ -157,6 +157,20 @@ const PerformanceContent = () => {
     }
 
     useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (previewReport) return; // modal preview lagi kebuka, jangan reset tanggal
+            if (calendarPanelRef.current && !calendarPanelRef.current.contains(e.target as Node)) {
+                setSelectedDateKey(null);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [previewReport]);
+
+    useEffect(() => {
         if (!user) return;
         fetchReports();
     }, [user, activeCategory])
@@ -171,6 +185,23 @@ const PerformanceContent = () => {
         }
         return map;
     }, [reports]);
+
+    const reportsInCurrentMonth = useMemo(() => {
+        return reports.filter((report) => {
+            const reportDate = new Date(`${report.report_date}T00:00:00`);
+            return reportDate.getFullYear() === viewYear && reportDate.getMonth() === viewMonth;
+        });
+    }, [reports, viewYear, viewMonth]);
+
+    const currentMonthReportsByCategory = useMemo(() => {
+        const map = new Map<string, PerformanceReport[]>();
+        for (const report of reportsInCurrentMonth) {
+            const list = map.get(report.category) ?? [];
+            list.push(report);
+            map.set(report.category, list);
+        }
+        return map;
+    }, [reportsInCurrentMonth]);
 
     const selectedDateReports = selectedDateKey ? reportsByDate.get(selectedDateKey) ?? [] : [];
 
@@ -647,9 +678,16 @@ const PerformanceContent = () => {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 18l-6-6 6-6" />
                                     </svg>
                                 </button>
-                                <span className="text-sm font-bold text-blue-900 sm:text-base">
-                                    {MONTH_NAMES[viewMonth]} {viewYear}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-bold text-blue-900 sm:text-base">
+                                        {MONTH_NAMES[viewMonth]} {viewYear}
+                                    </span>
+                                    {reportsInCurrentMonth.length > 0 && (
+                                        <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">
+                                            {reportsInCurrentMonth.length} laporan
+                                        </span>
+                                    )}
+                                </div>
                                 <button
                                     onClick={goToNextMonth}
                                     aria-label="Bulan berikutnya"
@@ -715,51 +753,56 @@ const PerformanceContent = () => {
                         {/* Panel laporan tanggal terpilih */}
                         <div className="flex max-h-125 flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-lg lg:w-72">
                             <h2 className="mb-3 text-sm font-bold text-blue-900">
-                                {selectedDateKey ? formatDateLong(selectedDateKey) : "Laporan"}
+                                {selectedDateKey ? formatDateLong(selectedDateKey) : `Laporan ${MONTH_NAMES[viewMonth]} ${viewYear}`}
                             </h2>
 
-                            {!selectedDateKey && (
-                                <p className="text-xs text-slate-400">Pilih tanggal untuk melihat laporan.</p>
-                            )}
+                            {(() => {
+                                const activeReports = selectedDateKey ? selectedDateReports : reportsInCurrentMonth;
+                                const activeGroups = selectedDateKey ? selectedDateReportsByCategory : currentMonthReportsByCategory;
+                                const emptyMessage = selectedDateKey ? "Tidak ada laporan di tanggal ini." : "Belum ada laporan pada bulan ini.";
 
-                            {selectedDateKey && selectedDateReports.length === 0 && (
-                                <p className="text-xs text-slate-400">Tidak ada laporan di tanggal ini.</p>
-                            )}
+                                if (activeReports.length === 0) {
+                                    return <p className="text-xs text-slate-400">{emptyMessage}</p>;
+                                }
 
-                            {selectedDateKey && selectedDateReports.length > 0 && (
-                                <div className="flex flex-col gap-3 overflow-y-auto">
-                                    {CATEGORY_TABS.filter((tab) => tab.value !== null).map((tab) => {
-                                        const group = selectedDateReportsByCategory.get(tab.value as string) ?? [];
-                                        if (group.length === 0) return null;
+                                return (
+                                    <div className="flex flex-col gap-3 overflow-y-auto">
+                                        {CATEGORY_TABS.filter((tab) => tab.value !== null).map((tab) => {
+                                            const group = activeGroups.get(tab.value as string) ?? [];
+                                            if (group.length === 0) return null;
 
-                                        return (
-                                            <div key={tab.label}>
-                                                <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                                                    {tab.label}
-                                                </h3>
-                                                <ul className="flex flex-col gap-2">
-                                                    {group.map((report) => (
-                                                        <li
-                                                            key={report.id}
-                                                            ref={(el) => {
-                                                                if (el) reportRefs.current.set(report.id, el);
-                                                                else reportRefs.current.delete(report.id);
-                                                            }}
-                                                        >
-                                                            <button
-                                                                onClick={() => openPreview(report)}
-                                                                className="cursor-pointer flex w-full flex-col items-start rounded-lg border border-slate-200 px-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
+                                            return (
+                                                <div key={tab.label}>
+                                                    <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                                        {tab.label}
+                                                    </h3>
+                                                    <ul className="flex flex-col gap-2">
+                                                        {group.map((report) => (
+                                                            <li
+                                                                key={report.id}
+                                                                ref={(el) => {
+                                                                    if (el) reportRefs.current.set(report.id, el);
+                                                                    else reportRefs.current.delete(report.id);
+                                                                }}
                                                             >
-                                                                <span className="text-xs font-semibold text-blue-900">{report.title}</span>
-                                                            </button>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
+                                                                <button
+                                                                    onClick={() => openPreview(report)}
+                                                                    className="cursor-pointer flex w-full flex-col items-start rounded-lg border border-slate-200 px-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
+                                                                >
+                                                                    <span className="text-xs font-semibold text-blue-900">{report.title}</span>
+                                                                    {!selectedDateKey && (
+                                                                        <span className="text-[10px] text-slate-400">{formatDateLong(report.report_date)}</span>
+                                                                    )}
+                                                                </button>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
                 </div>

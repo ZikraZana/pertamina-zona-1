@@ -74,7 +74,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Format file tidak didukung." }, { status: 400 });
     }
 
-    const title = file.name.replace(/\.pdf$/i, "");
+    const title = file.name.replace(/\.[^.]+$/i, "");
 
     if (typeof reportDate !== "string" || !reportDate) {
         return NextResponse.json({ error: "Tanggal laporan wajib diisi." }, { status: 400 });
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     const { error: uploadError } = await supabase.storage
         .from("performance-reports")
         .upload(storagePath, file, {
-            contentType: "application/pdf",
+            contentType: file.type,
             upsert: false,
         });
 
