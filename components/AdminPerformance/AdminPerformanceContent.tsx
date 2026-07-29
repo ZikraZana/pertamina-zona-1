@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useEffect, useMemo, useState } from "react";
 import OverviewTab from "./OverviewTab";
-import PerformanceReport from "./PerformanceReportTab";
+import PerformanceReportTab from "./PerformanceReportTab";
 
 const AdminPerformanceContent = () => {
     const supabase = useMemo(() => createClient(), []);
@@ -185,7 +185,9 @@ const AdminPerformanceContent = () => {
                     </div>
 
                     {activeTab === "wilayah" && <OverviewTab />}
-                    {activeTab === "performance" && <PerformanceReport />}
+                    {activeTab === "performance" && <PerformanceReportTab userEmail={""} role={"admin"} onLogout={function (): void {
+                        throw new Error("Function not implemented.");
+                    } } />}
                 </div>
             )}
         </div>
