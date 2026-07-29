@@ -137,6 +137,7 @@ const PerformanceContent = () => {
     const [viewYear, setViewYear] = useState(today.getFullYear());
     const [viewMonth, setViewMonth] = useState(today.getMonth());
     const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
+    const [selectedMonthIndex, setSelectedMonthIndex] = useState<number | null>(null);
     const [previewReport, setPreviewReport] = useState<PerformanceReport | null>(null);
     const [showUploadForm, setShowUploadForm] = useState(false);
     const [reports, setReports] = useState<PerformanceReport[]>([]);
@@ -145,6 +146,7 @@ const PerformanceContent = () => {
     const [previewError, setPreviewError] = useState<string | null>(null);
     const [downloadLoading, setDownloadLoading] = useState(false);
     const [activeCategory, setActiveCategory] = useState<"weekly" | "biweekly" | "monthly" | "others" | null>(null);
+    const isMonthlyMode = activeCategory === "monthly";
 
 
     async function fetchReports() {
@@ -158,9 +160,10 @@ const PerformanceContent = () => {
 
     useEffect(() => {
         function handleClickOutside(e: MouseEvent) {
-            if (previewReport) return; // modal preview lagi kebuka, jangan reset tanggal
+            if (previewReport) return;
             if (calendarPanelRef.current && !calendarPanelRef.current.contains(e.target as Node)) {
                 setSelectedDateKey(null);
+                setSelectedMonthIndex(null);
             }
         }
 
@@ -174,6 +177,18 @@ const PerformanceContent = () => {
         if (!user) return;
         fetchReports();
     }, [user, activeCategory])
+
+    const reportsByMonth = useMemo(() => {
+        const map = new Map<number, PerformanceReport[]>();
+        for (const report of reports) {
+            const reportDate = new Date(`${report.report_date}T00:00:00`);
+            if (reportDate.getFullYear() !== viewYear) continue;
+            const list = map.get(reportDate.getMonth()) ?? [];
+            list.push(report);
+            map.set(reportDate.getMonth(), list);
+        }
+        return map;
+    }, [reports, viewYear]);
 
     // Peta tanggal -> laporan, untuk lookup cepat di kalender
     const reportsByDate = useMemo(() => {
@@ -193,6 +208,8 @@ const PerformanceContent = () => {
         });
     }, [reports, viewYear, viewMonth]);
 
+
+
     const currentMonthReportsByCategory = useMemo(() => {
         const map = new Map<string, PerformanceReport[]>();
         for (const report of reportsInCurrentMonth) {
@@ -202,6 +219,37 @@ const PerformanceContent = () => {
         }
         return map;
     }, [reportsInCurrentMonth]);
+
+    const reportsInCurrentYear = useMemo(() => {
+        return reports.filter((report) => {
+            const reportDate = new Date(`${report.report_date}T00:00:00`);
+            return reportDate.getFullYear() === viewYear;
+        });
+    }, [reports, viewYear]);
+
+    const currentYearReportsByCategory = useMemo(() => {
+        const map = new Map<string, PerformanceReport[]>();
+        for (const report of reportsInCurrentYear) {
+            const list = map.get(report.category) ?? [];
+            list.push(report);
+            map.set(report.category, list);
+        }
+        return map;
+    }, [reportsInCurrentYear]);
+
+    const selectedMonthReports = selectedMonthIndex !== null
+        ? reportsByMonth.get(selectedMonthIndex) ?? []
+        : [];
+
+    const selectedMonthReportsByCategory = useMemo(() => {
+        const map = new Map<string, PerformanceReport[]>();
+        for (const report of selectedMonthReports) {
+            const list = map.get(report.category) ?? [];
+            list.push(report);
+            map.set(report.category, list);
+        }
+        return map;
+    }, [selectedMonthReports]);
 
     const selectedDateReports = selectedDateKey ? reportsByDate.get(selectedDateKey) ?? [] : [];
 
@@ -216,23 +264,29 @@ const PerformanceContent = () => {
     }, [selectedDateReports]);
 
     function goToPrevMonth() {
-        setViewMonth((m) => {
-            if (m === 0) {
-                setViewYear((y) => y - 1);
-                return 11;
-            }
-            return m - 1;
-        });
+        if (viewMonth === 0) {
+            setViewMonth(11);
+            setViewYear(viewYear - 1);
+        } else {
+            setViewMonth(viewMonth - 1);
+        }
     }
 
     function goToNextMonth() {
-        setViewMonth((m) => {
-            if (m === 11) {
-                setViewYear((y) => y + 1);
-                return 0;
-            }
-            return m + 1;
-        });
+        if (viewMonth === 11) {
+            setViewMonth(0);
+            setViewYear(viewYear + 1);
+        } else {
+            setViewMonth(viewMonth + 1);
+        }
+    }
+
+    function goToPrevYear() {
+        setViewYear((y) => y - 1);
+    }
+
+    function goToNextYear() {
+        setViewYear((y) => y + 1);
     }
 
     const calendarCells = useMemo(() => {
@@ -251,6 +305,15 @@ const PerformanceContent = () => {
         }
         return cells;
     }, [viewYear, viewMonth]);
+
+    const monthCells = useMemo(() => {
+        return MONTH_NAMES.map((name, index) => ({
+            monthIndex: index,
+            label: name,
+        }));
+    }, []);
+
+
 
     const todayKey = toDateKey(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -670,8 +733,8 @@ const PerformanceContent = () => {
                         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-lg lg:flex-1">
                             <div className="mb-4 flex items-center justify-between">
                                 <button
-                                    onClick={goToPrevMonth}
-                                    aria-label="Bulan sebelumnya"
+                                    onClick={isMonthlyMode ? goToPrevYear : goToPrevMonth}
+                                    aria-label={isMonthlyMode ? "Tahun sebelumnya" : "Bulan sebelumnya"}
                                     className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-blue-900"
                                 >
                                     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.5}>
@@ -680,7 +743,7 @@ const PerformanceContent = () => {
                                 </button>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm font-bold text-blue-900 sm:text-base">
-                                        {MONTH_NAMES[viewMonth]} {viewYear}
+                                        {isMonthlyMode ? viewYear : `${MONTH_NAMES[viewMonth]} ${viewYear}`}
                                     </span>
                                     {reportsInCurrentMonth.length > 0 && (
                                         <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">
@@ -689,8 +752,8 @@ const PerformanceContent = () => {
                                     )}
                                 </div>
                                 <button
-                                    onClick={goToNextMonth}
-                                    aria-label="Bulan berikutnya"
+                                    onClick={isMonthlyMode ? goToNextYear : goToNextMonth}
+                                    aria-label={isMonthlyMode ? "Tahun berikutnya" : "Bulan berikutnya"}
                                     className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-blue-900"
                                 >
                                     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.5}>
@@ -699,50 +762,94 @@ const PerformanceContent = () => {
                                 </button>
                             </div>
 
-                            <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-slate-400">
-                                {DAY_NAMES.map((d) => (
-                                    <div key={d}>{d}</div>
-                                ))}
-                            </div>
+                            {!isMonthlyMode && (
+                                <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-slate-400">
+                                    {DAY_NAMES.map((d) => (
+                                        <div key={d}>{d}</div>
+                                    ))}
+                                </div>
+                            )}
 
-                            <div className="grid grid-cols-7 gap-1">
-                                {calendarCells.map((cell, idx) => {
-                                    if (!cell.day || !cell.dateKey) {
-                                        return <div key={idx} className="aspect-square" />;
-                                    }
-                                    const dayReports = reportsByDate.get(cell.dateKey);
-                                    const hasReport = !!dayReports?.length;
-                                    const isToday = cell.dateKey === todayKey;
-                                    const isSelected = cell.dateKey === selectedDateKey;
 
-                                    return (
-                                        <button
-                                            key={idx}
-                                            onClick={() => handleDateClick(cell.dateKey!)}
-                                            disabled={!hasReport}
-                                            className={[
-                                                "relative flex aspect-square flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors sm:text-sm",
-                                                hasReport
-                                                    ? "cursor-pointer bg-blue-50 text-blue-900 hover:bg-blue-100"
-                                                    : "cursor-default text-slate-400",
-                                                isSelected ? "ring-2 ring-blue-900" : "",
-                                                isToday ? "border border-blue-900" : "",
-                                            ].join(" ")}
-                                        >
-                                            {cell.day}
-                                            {hasReport && dayReports!.length === 1 && (
-                                                <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                            )}
-                                            {hasReport && dayReports!.length > 1 && (
-                                                <span className="absolute bottom-1 flex gap-0.5">
-                                                    <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                                    <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                                </span>
-                                            )}
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                            {isMonthlyMode ? (
+                                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                                    {monthCells.map((cell) => {
+                                        const monthReports = reportsByMonth.get(cell.monthIndex);
+                                        const hasReport = !!monthReports?.length;
+                                        const isCurrentMonth = cell.monthIndex === today.getMonth() && viewYear === today.getFullYear();
+                                        const isSelected = cell.monthIndex === selectedMonthIndex;
+
+                                        return (
+                                            <button
+                                                key={cell.monthIndex}
+                                                onClick={() => {
+                                                    setViewMonth(cell.monthIndex);
+                                                    setSelectedMonthIndex(cell.monthIndex);
+                                                }}
+                                                disabled={!hasReport}
+                                                className={[
+                                                    "relative flex aspect-square flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors sm:text-sm",
+                                                    hasReport
+                                                        ? "cursor-pointer bg-blue-50 text-blue-900 hover:bg-blue-100"
+                                                        : "cursor-default text-slate-400",
+                                                    isSelected ? "ring-2 ring-blue-900" : "",
+                                                    isCurrentMonth ? "border border-blue-900" : "",
+                                                ].join(" ")}
+                                            >
+                                                {cell.label}
+                                                {hasReport && monthReports!.length === 1 && (
+                                                    <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-blue-900" />
+                                                )}
+                                                {hasReport && monthReports!.length > 1 && (
+                                                    <span className="absolute bottom-1 flex gap-0.5">
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
+                                                    </span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-7 gap-1">
+                                    {calendarCells.map((cell, idx) => {
+                                        if (!cell.day || !cell.dateKey) {
+                                            return <div key={idx} className="aspect-square" />;
+                                        }
+                                        const dayReports = reportsByDate.get(cell.dateKey);
+                                        const hasReport = !!dayReports?.length;
+                                        const isToday = cell.dateKey === todayKey;
+                                        const isSelected = cell.dateKey === selectedDateKey;
+
+                                        return (
+                                            <button
+                                                key={idx}
+                                                onClick={() => handleDateClick(cell.dateKey!)}
+                                                disabled={!hasReport}
+                                                className={[
+                                                    "relative flex aspect-square flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors sm:text-sm",
+                                                    hasReport
+                                                        ? "cursor-pointer bg-blue-50 text-blue-900 hover:bg-blue-100"
+                                                        : "cursor-default text-slate-400",
+                                                    isSelected ? "ring-2 ring-blue-900" : "",
+                                                    isToday ? "border border-blue-900" : "",
+                                                ].join(" ")}
+                                            >
+                                                {cell.day}
+                                                {hasReport && dayReports!.length === 1 && (
+                                                    <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-blue-900" />
+                                                )}
+                                                {hasReport && dayReports!.length > 1 && (
+                                                    <span className="absolute bottom-1 flex gap-0.5">
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
+                                                    </span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
 
                             <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-400">
                                 <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
@@ -753,13 +860,37 @@ const PerformanceContent = () => {
                         {/* Panel laporan tanggal terpilih */}
                         <div className="flex max-h-125 flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-lg lg:w-72">
                             <h2 className="mb-3 text-sm font-bold text-blue-900">
-                                {selectedDateKey ? formatDateLong(selectedDateKey) : `Laporan ${MONTH_NAMES[viewMonth]} ${viewYear}`}
+                                {isMonthlyMode
+                                    ? (selectedMonthIndex !== null ? `${MONTH_NAMES[selectedMonthIndex]} ${viewYear}` : `Laporan ${viewYear}`)
+                                    : (selectedDateKey ? formatDateLong(selectedDateKey) : `Laporan ${MONTH_NAMES[viewMonth]} ${viewYear}`)}
                             </h2>
 
                             {(() => {
-                                const activeReports = selectedDateKey ? selectedDateReports : reportsInCurrentMonth;
-                                const activeGroups = selectedDateKey ? selectedDateReportsByCategory : currentMonthReportsByCategory;
-                                const emptyMessage = selectedDateKey ? "Tidak ada laporan di tanggal ini." : "Belum ada laporan pada bulan ini.";
+                                let activeReports: PerformanceReport[];
+                                let activeGroups: Map<string, PerformanceReport[]>;
+                                let emptyMessage: string;
+
+                                if (isMonthlyMode) {
+                                    if (selectedMonthIndex !== null) {
+                                        activeReports = selectedMonthReports;
+                                        activeGroups = selectedMonthReportsByCategory;
+                                        emptyMessage = "Tidak ada laporan di bulan ini.";
+                                    } else {
+                                        activeReports = reportsInCurrentYear;
+                                        activeGroups = currentYearReportsByCategory;
+                                        emptyMessage = "Belum ada laporan pada tahun ini.";
+                                    }
+                                } else {
+                                    if (selectedDateKey) {
+                                        activeReports = selectedDateReports;
+                                        activeGroups = selectedDateReportsByCategory;
+                                        emptyMessage = "Tidak ada laporan di tanggal ini.";
+                                    } else {
+                                        activeReports = reportsInCurrentMonth;
+                                        activeGroups = currentMonthReportsByCategory;
+                                        emptyMessage = "Belum ada laporan pada bulan ini.";
+                                    }
+                                }
 
                                 if (activeReports.length === 0) {
                                     return <p className="text-xs text-slate-400">{emptyMessage}</p>;
@@ -790,7 +921,7 @@ const PerformanceContent = () => {
                                                                     className="cursor-pointer flex w-full flex-col items-start rounded-lg border border-slate-200 px-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
                                                                 >
                                                                     <span className="text-xs font-semibold text-blue-900">{report.title}</span>
-                                                                    {!selectedDateKey && (
+                                                                    {!(selectedDateKey || (isMonthlyMode && selectedMonthIndex !== null)) && (
                                                                         <span className="text-[10px] text-slate-400">{formatDateLong(report.report_date)}</span>
                                                                     )}
                                                                 </button>
