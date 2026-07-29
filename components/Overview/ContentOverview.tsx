@@ -65,6 +65,30 @@ const ContentOverview = () => {
         // Kunci wilayah kerja yang sedang aktif (panelnya sedang terbuka)
         let activeKey: string | null = null;
 
+        // ===== DATA WILAYAH KERJA (diambil dari Supabase lewat /api/wilayah) =====
+        let wilayahDataMap: Record<string, WilayahData> = {};
+        let cancelled = false;
+        let refreshActivePanel: (() => void) | null = null;
+
+        async function loadOverviewData() {
+    try {
+        const res = await fetch('/api/wilayah');
+        if (!res.ok) return;
+        const json = await res.json();
+        if (cancelled) {
+            console.log('FETCH DIBATALKAN karena cancelled=true');
+            return;
+        }
+        wilayahDataMap = json.data ?? {};
+        console.log('DATA MASUK:', Object.keys(wilayahDataMap));
+        if (activeKey && refreshActivePanel) {
+            refreshActivePanel();
+        }
+    } catch (err) {
+        console.error('Gagal memuat data overview:', err);
+    }
+}
+
         // ===== STATE UNTUK FACILITY VIEWER (Fasilitas / Flow Diagram / Alur Penjualan) =====
         let facilityActiveIndex = 0;
         let facilitySubIndex = 0;
@@ -576,15 +600,11 @@ const ContentOverview = () => {
             activeKey = null;
         }
 
-        // 3 "sel" grid: Label | : | Value. Karena semua baris berbagi grid container
-        // yang sama, lebar kolom label & posisi titik dua otomatis rata di semua baris,
-        // dan value yang panjang akan turun baris tetap sejajar di kolomnya sendiri.
-        function row(label: string, value: string | number | null | undefined) {
-            const safeValue = (value === null || value === undefined || value === '') ? '-' : value;
+        function row(label: string, value: string | null) {
             return `
                 <span class="font-medium text-slate-500">${label}</span>
                 <span class="text-slate-400">:</span>
-                <span class="min-w-0 wrap-break-word text-slate-800">${safeValue}</span>
+                <span class="min-w-0 wrap-break-word text-slate-800">${value ?? '-'}</span>
             `;
         }
 
@@ -595,291 +615,11 @@ const ContentOverview = () => {
 
             titleEl.textContent = namaWilayah;
 
-            let d: WilayahData = {
+            const emptyWilayahData: WilayahData = {
                 nama_wilayah: null, provinsi: null, kabupaten_kota: null, jenis_wk: null, tahun_berdiri: null, luas_wilayah: null, part_interest: null, kkp: null, produksi_minyak: null, produksi_gas: null, tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah: null, sumur_eksplorasi_active: null, sumur_eksplorasi_non_active: null, sumur_eksplorasi_total: null, producer_active: null, producer_non_active: null, producer_total: null, injector_active: null, injector_non_active: null, injector_total: null, sumur_total_active: null, sumur_total_non_active: null, sumur_total_total: null, process_facilities_active: null, process_facilities_non_active: null, process_facilities_total: null, offshore_platforms_active: null, offshore_platforms_non_active: null, offshore_platforms_total: null, swamp_platforms_active: null, swamp_platforms_non_active: null, swamp_platforms_total: null, gas_compressors_active: null, gas_compressors_non_active: null, gas_compressors_total: null, pipeline_active: null, pipeline_non_active: null, pipeline_total: null, drilling_rigs: null, workover_rigs: null,
             };
 
-            // DATASET
-            // Sumber: Materi Kunjungan Kerja Komisi XII DPR RI, GMZ1, 25 Mei 2026 (slide 7-12)
-            // Field null = tidak disebutkan di ppt untuk wilayah kerja tsb.
-            // Kabupaten/Kota ditambahkan dari sumber terpisah (berita & dokumen resmi Pertamina/Pemda terkait wilayah kerja masing-masing field).
-            if (kode === 'nso') {
-                d = {
-                    nama_wilayah: "North Sumatra Offshore (NSO)",
-                    provinsi: "Aceh",
-                    kabupaten_kota: "3 - Lepas pantai Kab. Aceh Timur (Aceh), Kab. Aceh Utara (Aceh) & Kota Lhokseumawe (Aceh)",
-                    jenis_wk: "Gross Split",
-                    tahun_berdiri: "1998",
-                    luas_wilayah: "6.842,01 km²",
-                    part_interest: "100% - PT Pertamina Hulu Energi NSO (PHE NSO)",
-                    kkp: "Komitmen Pasti Tiga Tahun Pertama: USD 18,500,000. Komitmen Kerja Tiga Tahun Kedua: USD 24,500,000. Realisasi ITD Okt'24 USD 37,955,597 (88%). 100% selesai Komitmen Pasti.",
-                    produksi_minyak: null,
-                    produksi_gas: "18.42",
-                    tanggal_produksi: "2025-10-31",
-                    nama_fasilitas: null,
-                    jenis_fasilitas: null,
-                    jumlah: null,
-                    sumur_eksplorasi_active: "3",
-                    sumur_eksplorasi_non_active: null,
-                    sumur_eksplorasi_total: "32",
-                    producer_active: "5",
-                    producer_non_active: null,
-                    producer_total: "9",
-                    injector_active: null,
-                    injector_non_active: null,
-                    injector_total: null,
-                    sumur_total_active: "8",
-                    sumur_total_non_active: null,
-                    sumur_total_total: "41",
-                    process_facilities_active: "2",
-                    process_facilities_non_active: null,
-                    process_facilities_total: "2",
-                    offshore_platforms_active: "1",
-                    offshore_platforms_non_active: null,
-                    offshore_platforms_total: "1",
-                    swamp_platforms_active: null,
-                    swamp_platforms_non_active: null,
-                    swamp_platforms_total: null,
-                    gas_compressors_active: "2",
-                    gas_compressors_non_active: null,
-                    gas_compressors_total: "2",
-                    pipeline_active: "1",
-                    pipeline_non_active: null,
-                    pipeline_total: "1",
-                    drilling_rigs: null,
-                    workover_rigs: null,
-                };
-            } else if (kode === 'p-susu') {
-                d = {
-                    nama_wilayah: "Pangkalan Susu",
-                    provinsi: "Sumatera Utara",
-                    kabupaten_kota: "2 - Kab. Langkat (Sumatera Utara) & Kab. Deli Serdang (Sumatera Utara)",
-                    jenis_wk: "Cost Recovery",
-                    tahun_berdiri: "1885",
-                    luas_wilayah: "474,54 km²",
-                    part_interest: "100% - PT Pertamina EP",
-                    kkp: null,
-                    produksi_minyak: "0.23",
-                    produksi_gas: "3.00",
-                    tanggal_produksi: "2025-10-31",
-                    nama_fasilitas: null,
-                    jenis_fasilitas: null,
-                    jumlah: null,
-                    sumur_eksplorasi_active: null,
-                    sumur_eksplorasi_non_active: null,
-                    sumur_eksplorasi_total: null,
-                    producer_active: "26",
-                    producer_non_active: null,
-                    producer_total: "484",
-                    injector_active: "5",
-                    injector_non_active: null,
-                    injector_total: "9",
-                    sumur_total_active: "31",
-                    sumur_total_non_active: null,
-                    sumur_total_total: "493",
-                    process_facilities_active: "11",
-                    process_facilities_non_active: null,
-                    process_facilities_total: "14",
-                    offshore_platforms_active: null,
-                    offshore_platforms_non_active: null,
-                    offshore_platforms_total: null,
-                    swamp_platforms_active: null,
-                    swamp_platforms_non_active: null,
-                    swamp_platforms_total: null,
-                    gas_compressors_active: "6",
-                    gas_compressors_non_active: null,
-                    gas_compressors_total: "6",
-                    pipeline_active: ">1700 km",
-                    pipeline_non_active: null,
-                    pipeline_total: ">1700 km",
-                    drilling_rigs: null,
-                    workover_rigs: null,
-                };
-            } else if (kode === 'rantau') {
-                d = {
-                    nama_wilayah: "Rantau",
-                    provinsi: "Aceh & Sumatera Utara",
-                    kabupaten_kota: "2 - Kab. Aceh Tamiang (Aceh) & Kab. Langkat (Sumatera Utara)",
-                    jenis_wk: "Cost Recovery",
-                    tahun_berdiri: "1929",
-                    luas_wilayah: "58,3 km²",
-                    part_interest: "100% - PT Pertamina EP",
-                    kkp: null,
-                    produksi_minyak: "1.93",
-                    produksi_gas: "2.47",
-                    tanggal_produksi: "2025-10-31",
-                    nama_fasilitas: null,
-                    jenis_fasilitas: null,
-                    jumlah: null,
-                    sumur_eksplorasi_active: null,
-                    sumur_eksplorasi_non_active: null,
-                    sumur_eksplorasi_total: null,
-                    producer_active: "110",
-                    producer_non_active: null,
-                    producer_total: "942",
-                    injector_active: "21",
-                    injector_non_active: null,
-                    injector_total: "58",
-                    sumur_total_active: "131",
-                    sumur_total_non_active: null,
-                    sumur_total_total: "1000",
-                    process_facilities_active: "1",
-                    process_facilities_non_active: null,
-                    process_facilities_total: "1",
-                    offshore_platforms_active: null,
-                    offshore_platforms_non_active: null,
-                    offshore_platforms_total: null,
-                    swamp_platforms_active: null,
-                    swamp_platforms_non_active: null,
-                    swamp_platforms_total: null,
-                    gas_compressors_active: null,
-                    gas_compressors_non_active: null,
-                    gas_compressors_total: null,
-                    pipeline_active: null,
-                    pipeline_non_active: null,
-                    pipeline_total: null,
-                    drilling_rigs: null,
-                    workover_rigs: null,
-                };
-            } else if (kode === 'lirik') {
-                d = {
-                    nama_wilayah: "Lirik",
-                    provinsi: "Riau",
-                    kabupaten_kota: "3 - Kab. Indragiri Hulu (Riau), Kab. Pelalawan (Riau) & Kab. Siak (Riau)",
-                    jenis_wk: "Cost Recovery",
-                    tahun_berdiri: "1940",
-                    luas_wilayah: "433 km²",
-                    part_interest: "100% - PT Pertamina EP",
-                    kkp: null,
-                    produksi_minyak: "1.34",
-                    produksi_gas: null,
-                    tanggal_produksi: "2025-10-31",
-                    nama_fasilitas: null,
-                    jenis_fasilitas: null,
-                    jumlah: null,
-                    sumur_eksplorasi_active: null,
-                    sumur_eksplorasi_non_active: null,
-                    sumur_eksplorasi_total: null,
-                    producer_active: "96",
-                    producer_non_active: null,
-                    producer_total: "304",
-                    injector_active: "56",
-                    injector_non_active: null,
-                    injector_total: "64",
-                    sumur_total_active: "152",
-                    sumur_total_non_active: null,
-                    sumur_total_total: "368",
-                    process_facilities_active: "16",
-                    process_facilities_non_active: null,
-                    process_facilities_total: "16",
-                    offshore_platforms_active: null,
-                    offshore_platforms_non_active: null,
-                    offshore_platforms_total: null,
-                    swamp_platforms_active: null,
-                    swamp_platforms_non_active: null,
-                    swamp_platforms_total: null,
-                    gas_compressors_active: null,
-                    gas_compressors_non_active: null,
-                    gas_compressors_total: null,
-                    pipeline_active: ">1700 km",
-                    pipeline_non_active: null,
-                    pipeline_total: ">1700 km",
-                    drilling_rigs: "0 Swamp, 0 Offshore",
-                    workover_rigs: "2 Swamp, 0 Offshore",
-                };
-            } else if (kode === 'jambi') {
-                d = {
-                    nama_wilayah: "Jambi",
-                    provinsi: "Jambi",
-                    kabupaten_kota: "3 - Kota Jambi (Jambi), Kab. Muaro Jambi (Jambi) & Kab. Batanghari (Jambi)",
-                    jenis_wk: "Cost Recovery",
-                    tahun_berdiri: "1922",
-                    luas_wilayah: "5.751 km²",
-                    part_interest: "100% - PT Pertamina EP",
-                    kkp: null,
-                    produksi_minyak: "6.8",
-                    produksi_gas: "6.08",
-                    tanggal_produksi: "2025-10-31",
-                    nama_fasilitas: null,
-                    jenis_fasilitas: null,
-                    jumlah: null,
-                    sumur_eksplorasi_active: null,
-                    sumur_eksplorasi_non_active: null,
-                    sumur_eksplorasi_total: null,
-                    producer_active: "176",
-                    producer_non_active: null,
-                    producer_total: "626",
-                    injector_active: "63",
-                    injector_non_active: null,
-                    injector_total: "103",
-                    sumur_total_active: "239",
-                    sumur_total_non_active: null,
-                    sumur_total_total: "729",
-                    process_facilities_active: "9",
-                    process_facilities_non_active: null,
-                    process_facilities_total: "9",
-                    offshore_platforms_active: null,
-                    offshore_platforms_non_active: null,
-                    offshore_platforms_total: null,
-                    swamp_platforms_active: null,
-                    swamp_platforms_non_active: null,
-                    swamp_platforms_total: null,
-                    gas_compressors_active: null,
-                    gas_compressors_non_active: null,
-                    gas_compressors_total: "5",
-                    pipeline_active: ">375 km",
-                    pipeline_non_active: null,
-                    pipeline_total: ">375 km",
-                    drilling_rigs: "3 Rig",
-                    workover_rigs: "1 Rig WO, 3 Well Service",
-                };
-            } else if (kode === 'jambi-merang') {
-                d = {
-                    nama_wilayah: "Jambi Merang",
-                    provinsi: "Sumatera Selatan",
-                    kabupaten_kota: "1 - Kab. Musi Banyuasin (Sumatera Selatan)",
-                    jenis_wk: "Gross Split",
-                    tahun_berdiri: "2011",
-                    luas_wilayah: "1.028,38 km²",
-                    part_interest: "100% - PT Pertamina Hulu Energi Jambi Merang",
-                    kkp: "Komitmen Kerja Pasti 5 Tahun: USD 239,300,000. Realisasi ITD Okt'24 USD 145,388,726.",
-                    produksi_minyak: "5.00",
-                    produksi_gas: "126.78",
-                    tanggal_produksi: "2025-10-31",
-                    nama_fasilitas: "Sungai Kenawang Central Gas Processing Plant",
-                    jenis_fasilitas: "Central Gas Processing Plant (kapasitas 155 MMSCFD, design lifetime 25 tahun)",
-                    jumlah: "3",
-                    sumur_eksplorasi_active: null,
-                    sumur_eksplorasi_non_active: null,
-                    sumur_eksplorasi_total: null,
-                    producer_active: "9 (5 SKN + 4 PGD)",
-                    producer_non_active: null,
-                    producer_total: null,
-                    injector_active: "2 (water disposal)",
-                    injector_non_active: null,
-                    injector_total: null,
-                    sumur_total_active: null,
-                    sumur_total_non_active: null,
-                    sumur_total_total: null,
-                    process_facilities_active: null,
-                    process_facilities_non_active: null,
-                    process_facilities_total: null,
-                    offshore_platforms_active: null,
-                    offshore_platforms_non_active: null,
-                    offshore_platforms_total: null,
-                    swamp_platforms_active: null,
-                    swamp_platforms_non_active: null,
-                    swamp_platforms_total: null,
-                    gas_compressors_active: null,
-                    gas_compressors_non_active: null,
-                    gas_compressors_total: null,
-                    pipeline_active: null,
-                    pipeline_non_active: null,
-                    pipeline_total: null,
-                    drilling_rigs: null,
-                    workover_rigs: null,
-                };
-            }
+            const d: WilayahData = wilayahDataMap[kode] ?? emptyWilayahData;
 
             lastData = d;
             lastNama = namaWilayah;
@@ -1241,6 +981,15 @@ const ContentOverview = () => {
         document.addEventListener('mouseover', handleGlobalMouseOver);   // BARU
         document.addEventListener('mouseout', handleGlobalMouseOut);
 
+        refreshActivePanel = () => {
+            if (activeKey) {
+                loadWilayahKerja(activeKey, lastNama);
+            }
+        };
+
+        // Ambil data overview (teks) dari Supabase — INI YANG KEMARIN KELEWAT
+        loadOverviewData();
+        
         return () => {
             document.removeEventListener('click', handleGlobalClick);
             document.removeEventListener('mousedown', handleImagePanStart);
