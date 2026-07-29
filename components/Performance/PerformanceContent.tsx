@@ -27,13 +27,22 @@ const MONTH_NAMES = [
 
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
-const CATEGORY_TABS: { label: string; value: "weekly" | "biweekly" | "monthly" | "others" | null }[] = [
-    { label: "Semua", value: null },
-    { label: "Weekly", value: "weekly" },
-    { label: "Biweekly", value: "biweekly" },
-    { label: "Monthly", value: "monthly" },
-    { label: "Others", value: "others" },
-];
+const CATEGORY_TABS: {
+    label: string;
+    value: "weekly" | "biweekly" | "monthly" | "others" | null;
+    activeClass: string;
+    dotClass: string;
+}[] = [
+        { label: "Semua", value: null, activeClass: "bg-blue-900 text-white", dotClass: "bg-blue-900" },
+        { label: "Weekly", value: "weekly", activeClass: "bg-emerald-600 text-white", dotClass: "bg-emerald-600" },
+        { label: "Biweekly", value: "biweekly", activeClass: "bg-amber-600 text-white", dotClass: "bg-amber-600" },
+        { label: "Others", value: "others", activeClass: "bg-slate-600 text-white", dotClass: "bg-slate-600" },
+        { label: "Monthly", value: "monthly", activeClass: "bg-purple-600 text-white", dotClass: "bg-purple-600" },
+    ];
+
+function getCategoryDotClass(category: string) {
+    return CATEGORY_TABS.find((tab) => tab.value === category)?.dotClass ?? "bg-blue-900";
+}
 
 function toDateKey(year: number, month: number, day: number) {
     const mm = String(month + 1).padStart(2, "0");
@@ -711,15 +720,32 @@ const PerformanceContent = () => {
                         </form>
                     )}
 
-                    <div className="mx-auto flex w-full max-w-5xl gap-2">
-                        {CATEGORY_TABS.map((tab) => (
+                    <div className="mx-auto flex w-full max-w-5xl items-center gap-2">
+                        {CATEGORY_TABS.filter((tab) => tab.value !== "monthly").map((tab) => (
                             <button
                                 key={tab.label}
                                 onClick={() => setActiveCategory(tab.value)}
                                 className={[
                                     "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
                                     activeCategory === tab.value
-                                        ? "bg-blue-900 text-white"
+                                        ? tab.activeClass
+                                        : "bg-white text-slate-600 hover:bg-blue-50",
+                                ].join(" ")}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+
+                        <div className="h-5 w-px bg-slate-300" />
+
+                        {CATEGORY_TABS.filter((tab) => tab.value === "monthly").map((tab) => (
+                            <button
+                                key={tab.label}
+                                onClick={() => setActiveCategory(tab.value)}
+                                className={[
+                                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
+                                    activeCategory === tab.value
+                                        ? tab.activeClass
                                         : "bg-white text-slate-600 hover:bg-blue-50",
                                 ].join(" ")}
                             >
@@ -797,13 +823,11 @@ const PerformanceContent = () => {
                                                 ].join(" ")}
                                             >
                                                 {cell.label}
-                                                {hasReport && monthReports!.length === 1 && (
-                                                    <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                                )}
-                                                {hasReport && monthReports!.length > 1 && (
+                                                {hasReport && (
                                                     <span className="absolute bottom-1 flex gap-0.5">
-                                                        <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                                        <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
+                                                        {[...new Set(monthReports!.map((r) => r.category))].map((cat) => (
+                                                            <span key={cat} className={`h-1.5 w-1.5 rounded-full ${getCategoryDotClass(cat)}`} />
+                                                        ))}
                                                     </span>
                                                 )}
                                             </button>
@@ -836,13 +860,11 @@ const PerformanceContent = () => {
                                                 ].join(" ")}
                                             >
                                                 {cell.day}
-                                                {hasReport && dayReports!.length === 1 && (
-                                                    <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                                )}
-                                                {hasReport && dayReports!.length > 1 && (
+                                                {hasReport && (
                                                     <span className="absolute bottom-1 flex gap-0.5">
-                                                        <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                                        <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
+                                                        {[...new Set(dayReports!.map((r) => r.category))].map((cat) => (
+                                                            <span key={cat} className={`h-1.5 w-1.5 rounded-full ${getCategoryDotClass(cat)}`} />
+                                                        ))}
                                                     </span>
                                                 )}
                                             </button>
@@ -851,9 +873,13 @@ const PerformanceContent = () => {
                                 </div>
                             )}
 
-                            <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-400">
-                                <span className="h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                Tanggal dengan laporan tersedia
+                            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-400">
+                                {CATEGORY_TABS.filter((tab) => tab.value !== null).map((tab) => (
+                                    <div key={tab.label} className="flex items-center gap-1.5">
+                                        <span className={`h-1.5 w-1.5 rounded-full ${tab.dotClass}`} />
+                                        {tab.label}
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
@@ -863,6 +889,11 @@ const PerformanceContent = () => {
                                 {isMonthlyMode
                                     ? (selectedMonthIndex !== null ? `${MONTH_NAMES[selectedMonthIndex]} ${viewYear}` : `Laporan ${viewYear}`)
                                     : (selectedDateKey ? formatDateLong(selectedDateKey) : `Laporan ${MONTH_NAMES[viewMonth]} ${viewYear}`)}
+                                {reportsInCurrentMonth.length > 0 && (
+                                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] ms-2 font-bold text-blue-700">
+                                        {reportsInCurrentMonth.length} laporan
+                                    </span>
+                                )}
                             </h2>
 
                             {(() => {
@@ -904,7 +935,8 @@ const PerformanceContent = () => {
 
                                             return (
                                                 <div key={tab.label}>
-                                                    <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                                    <h3 className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                                        <span className={`h-1.5 w-1.5 rounded-full ${tab.dotClass}`} />
                                                         {tab.label}
                                                     </h3>
                                                     <ul className="flex flex-col gap-2">
