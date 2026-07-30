@@ -23,6 +23,16 @@ const MONTH_NAMES = [
     "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
 
+const ALLOWED_FILE_TYPES = [
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
+    "application/vnd.ms-powerpoint", // .ppt
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+    "application/msword", // .doc
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+    "application/vnd.ms-excel", // .xls
+];
+
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
 const CATEGORY_TABS: {
@@ -346,6 +356,11 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
         const droppedFile = e.dataTransfer.files?.[0];
         if (!droppedFile) return;
 
+        if (!ALLOWED_FILE_TYPES.includes(droppedFile.type)) {
+            setUploadError("Format file tidak didukung.");
+            return;
+        }
+
         setUploadError(null);
         setUploadFile(droppedFile);
     }
@@ -472,12 +487,6 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                             {showUploadForm ? "Tutup Form" : "+ Upload Laporan"}
                         </button>
                     )}
-                    <button
-                        onClick={onLogout}
-                        className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-100"
-                    >
-                        Logout
-                    </button>
                 </div>
             </div>
 

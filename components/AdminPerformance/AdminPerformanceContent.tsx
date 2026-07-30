@@ -185,9 +185,9 @@ const AdminPerformanceContent = () => {
                     </div>
 
                     {activeTab === "wilayah" && <OverviewTab />}
-                    {activeTab === "performance" && <PerformanceReportTab userEmail={""} role={"admin"} onLogout={function (): void {
-                        throw new Error("Function not implemented.");
-                    } } />}
+                    {activeTab === "performance" && (
+                        <PerformanceReportTab userEmail={user?.email ?? ""} role={role ?? "user"} onLogout={handleLogout} />
+                    )}
                 </div>
             )}
         </div>
