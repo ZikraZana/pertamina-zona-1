@@ -77,5 +77,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    await supabase.from("activity_logs").insert({
+        actor_id: user.id,
+        action: "update",
+        entity_type: "overview",
+        entity_label: data?.nama_wilayah
+    })
+
     return NextResponse.json({ wilayah: data });
 }

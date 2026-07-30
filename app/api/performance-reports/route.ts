@@ -112,6 +112,12 @@ export async function POST(request: Request) {
         await supabase.storage.from("performance-reports").remove([storagePath]);
         return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
+    await supabase.from("activity_logs").insert({
+        actor_id: user.id,
+        action: "insert",
+        entity_type: "performance_report",
+        entity_label: inserted?.title
+    })
 
     return NextResponse.json({ report: inserted }, { status: 201 });
 

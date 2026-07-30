@@ -30,7 +30,7 @@ export async function DELETE(
 
     const { data: report, error: fetchError } = await supabase
         .from("performance_reports")
-        .select("file_path")
+        .select("file_path, title")
         .eq("id", id)
         .single();
 
@@ -48,6 +48,13 @@ export async function DELETE(
     if (deleteError) {
         return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
+
+    await supabase.from("activity_logs").insert({
+        actor_id: user.id,
+        action: "delete",
+        entity_type: "performance_report",
+        entity_label: report.title
+    })
 
     return NextResponse.json({ success: true });
 }
@@ -173,6 +180,13 @@ export async function PATCH(
     if (oldFilePathToDelete) {
         await supabase.storage.from("performance-reports").remove([oldFilePathToDelete]);
     }
+
+    await supabase.from("activity_logs").insert({
+        actor_id: user.id,
+        action: "update",
+        entity_type: "performance_report",
+        entity_label: updated?.title
+    })
 
     return NextResponse.json({ report: updated });
 }

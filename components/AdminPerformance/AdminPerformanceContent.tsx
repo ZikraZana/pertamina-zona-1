@@ -5,6 +5,7 @@ import { User } from "@supabase/supabase-js";
 import { useEffect, useMemo, useState } from "react";
 import OverviewTab from "./OverviewTab";
 import PerformanceReportTab from "./PerformanceReportTab";
+import AdminLog from "./AdminLog";
 
 const AdminPerformanceContent = () => {
     const supabase = useMemo(() => createClient(), []);
@@ -15,7 +16,7 @@ const AdminPerformanceContent = () => {
     const [password, setPassword] = useState("");
     const [loginError, setLoginError] = useState<string | null>(null);
     const [role, setRole] = useState<"admin" | "user" | null>(null);
-    const [activeTab, setActiveTab] = useState<"wilayah" | "performance">("wilayah");
+    const [activeTab, setActiveTab] = useState<"wilayah" | "performance" | "adminLog">("wilayah");
 
     async function handleLogin(e: React.FormEvent) {
         e.preventDefault();
@@ -182,12 +183,24 @@ const AdminPerformanceContent = () => {
                         >
                             Performance Report
                         </button>
+                        <button
+                            onClick={() => setActiveTab("adminLog")}
+                            className={[
+                                "cursor-pointer border-b-2 px-4 py-2 text-sm font-semibold transition-colors",
+                                activeTab === "adminLog"
+                                    ? "border-blue-900 text-blue-900"
+                                    : "border-transparent text-slate-400 hover:text-slate-600",
+                            ].join(" ")}
+                        >
+                            Admin Log
+                        </button>
                     </div>
 
                     {activeTab === "wilayah" && <OverviewTab />}
                     {activeTab === "performance" && (
                         <PerformanceReportTab userEmail={user?.email ?? ""} role={role ?? "user"} onLogout={handleLogout} />
                     )}
+                    {activeTab === "adminLog" && <AdminLog />}
                 </div>
             )}
         </div>
