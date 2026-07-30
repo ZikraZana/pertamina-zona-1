@@ -459,7 +459,7 @@ const ContentOverview = () => {
             'jambi-merang': 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d137663.30282475293!2d103.74048923451154!3d-2.0099324989736123!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e2569a3b13978c5%3A0x6fa64a24f0a9976a!2sJetty%20Lalang%20Job%20Pertamina%20Talisman%20Jambi%20Merang!5e1!3m2!1sen!2sus!4v1783929340137!5m2!1sen!2sus',
         };
 
-        const CARD_HIDDEN = ['opacity-0', '-translate-y-2', 'pointer-events-none'];
+        const CARD_HIDDEN = ['opacity-0', '-translate-y-3', 'pointer-events-none'];
         const CARD_SHOWN = ['opacity-100', 'translate-y-0', 'pointer-events-auto'];
 
         // Kelas untuk pane peta (kiri) & pane detail (kanan) saat split-screen aktif
@@ -1261,7 +1261,7 @@ const ContentOverview = () => {
                         <div id="quick-cards-container" className="static mt-4 hidden max-h-none w-full flex-col overflow-y-auto pb-4 lg:absolute lg:right-6 lg:top-6 lg:mt-0 lg:max-h-[calc(100%-48px)] lg:w-72">
 
                             {/* CARD 1: Info Umum Lapangan */}
-                            <div id="card-info" className="relative -translate-y-2 pointer-events-none rounded-xl mb-3 border border-slate-200 bg-white p-4 opacity-0 shadow-lg transition-all duration-200 ease-in-out">
+                            <div id="card-info" className="relative -translate-y-2 pointer-events-none rounded-xl mb-3 border border-slate-200 bg-white p-4 opacity-0 shadow-lg transition-all duration-300 ease-out">
                                 {/* Header */}
                                 <div className="mb-3 flex items-start justify-between border-b border-slate-100 pb-2.5">
                                     <div className="flex items-start gap-2.5">
