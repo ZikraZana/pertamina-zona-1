@@ -1079,47 +1079,47 @@ const ContentOverview = () => {
 
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="nso" x="102" y="-1" width="96" height="24">
                                 <div className="text-center">
-                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md hover:bg-[#670010]" data-badge-click="nso" data-nama-click="NSO" data-provinsi-click="ID-AC">NSO</span>
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#670010] hover:shadow-lg" data-badge-click="nso" data-nama-click="NSO" data-provinsi-click="ID-AC">NSO</span>
                                 </div>
                             </foreignObject>
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="p-susu" x="170" y="71" width="96" height="24">
                                 <div className="text-center">
-                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md hover:bg-[#670010]" data-badge-click="p-susu" data-nama-click="Pangkalan Susu" data-provinsi-click="ID-SU">Pangkalan Susu</span>
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#670010] hover:shadow-lg" data-badge-click="p-susu" data-nama-click="Pangkalan Susu" data-provinsi-click="ID-SU">Pangkalan Susu</span>
                                 </div>
                             </foreignObject>
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="rantau" x="130" y="35" width="96" height="24">
                                 <div className="text-center">
-                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md hover:bg-[#670010]" data-badge-click="rantau" data-nama-click="Rantau" data-provinsi-click="ID-SU">Rantau</span>
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#670010] hover:shadow-lg" data-badge-click="rantau" data-nama-click="Rantau" data-provinsi-click="ID-SU">Rantau</span>
                                 </div>
                             </foreignObject>
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="lirik" x="267" y="159" width="96" height="24">
                                 <div className="text-center">
-                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md hover:bg-[#670010]" data-badge-click="lirik" data-nama-click="Lirik" data-provinsi-click="ID-RI">Lirik</span>
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#670010] hover:shadow-lg" data-badge-click="lirik" data-nama-click="Lirik" data-provinsi-click="ID-RI">Lirik</span>
                                 </div>
                             </foreignObject>
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="jambi" x="297" y="204" width="96" height="24">
                                 <div className="text-center">
-                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md hover:bg-[#670010]" data-badge-click="jambi" data-nama-click="Jambi" data-provinsi-click="ID-JA">Jambi</span>
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#670010] hover:shadow-lg" data-badge-click="jambi" data-nama-click="Jambi" data-provinsi-click="ID-JA">Jambi</span>
                                 </div>
                             </foreignObject>
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="jambi-merang" x="347" y="239" width="96" height="24">
                                 <div className="text-center">
-                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md hover:bg-[#670010]" data-badge-click="jambi-merang" data-nama-click="Jambi Merang" data-provinsi-click="ID-SS">Jambi Merang</span>
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#670010] hover:shadow-lg" data-badge-click="jambi-merang" data-nama-click="Jambi Merang" data-provinsi-click="ID-SS">Jambi Merang</span>
                                 </div>
                             </foreignObject>
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="tamiang" x="0" y="105" width="110" height="24">
                                 <div className="text-center">
-                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md hover:bg-gray-800" data-badge-click="tamiang" data-nama-click="Tamiang Raya Energy" data-provinsi-click="ID-AC">Tamiang Raya</span>
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-gray-800" data-badge-click="tamiang" data-nama-click="Tamiang Raya Energy" data-provinsi-click="ID-AC">Tamiang Raya</span>
                                 </div>
                             </foreignObject>
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="meruap" x="120" y="288" width="96" height="24">
                                 <div className="text-center">
-                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md hover:bg-gray-800" data-badge-click="meruap" data-nama-click="SEBWP Meruap" data-provinsi-click="ID-JA">SEBWP Meruap</span>
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-gray-800" data-badge-click="meruap" data-nama-click="SEBWP Meruap" data-provinsi-click="ID-JA">SEBWP Meruap</span>
                                 </div>
                             </foreignObject>
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="jabung" x="115" y="250" width="96" height="24">
                                 <div className="text-center">
-                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md hover:bg-gray-800" data-badge-click="jabung" data-nama-click="Jabung" data-provinsi-click="ID-JA">Jabung</span>
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-gray-800" data-badge-click="jabung" data-nama-click="Jabung" data-provinsi-click="ID-JA">Jabung</span>
                                 </div>
                             </foreignObject>
                         </svg>
