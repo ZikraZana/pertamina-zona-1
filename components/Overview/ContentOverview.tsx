@@ -555,6 +555,37 @@ const ContentOverview = () => {
             }
         }
 
+        // ===== ANIMASI COUNT-UP UNTUK ANGKA STATISTIK =====
+        function animateCountUp(elementId: string, target: number, formatter: (n: number) => string, duration = 1200) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+
+            const start = performance.now();
+
+            function tick(now: number) {
+                const elapsed = now - start;
+                const progress = Math.min(elapsed / duration, 1);
+                // easeOutCubic: cepat di awal, melambat di akhir — kesannya lebih halus
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = Math.round(target * eased);
+
+                if (el) el.textContent = formatter(current);
+
+                if (progress < 1) {
+                    requestAnimationFrame(tick);
+                }
+            }
+
+            requestAnimationFrame(tick);
+        }
+
+        function runStatCountUp() {
+            animateCountUp('statProvinsi', 5, (n) => `${n}`);
+            animateCountUp('statKabKota', 13, (n) => `${n}`);
+            animateCountUp('statBopd', 19431, (n) => n.toLocaleString('id-ID'));
+            animateCountUp('statMmscfd', 228010, (n) => (n / 1000).toFixed(3).replace('.', ','));
+        }
+
         function hideFirstTimeHint() {
             const hint = document.getElementById('first-time-hint');
             if (hint) {
@@ -989,6 +1020,8 @@ const ContentOverview = () => {
 
         // Ambil data overview (teks) dari Supabase — INI YANG KEMARIN KELEWAT
         loadOverviewData();
+
+        runStatCountUp();
         
         return () => {
             document.removeEventListener('click', handleGlobalClick);
@@ -1131,11 +1164,11 @@ const ContentOverview = () => {
 
                             <div className="mb-4 grid grid-cols-2 gap-2">
                                 <div className="rounded-lg bg-blue-50 p-2.5 text-center">
-                                    <p className="text-xl font-bold leading-tight text-blue-900">5</p>
+                                    <p id="statProvinsi" className="text-xl font-bold leading-tight text-blue-900">5</p>
                                     <p className="text-[10.5px] font-medium text-blue-700">Provinsi</p>
                                 </div>
                                 <div className="rounded-lg bg-blue-50 p-2.5 text-center">
-                                    <p className="text-xl font-bold leading-tight text-blue-900">13</p>
+                                    <p id="statKabKota" className="text-xl font-bold leading-tight text-blue-900">13</p>
                                     <p className="text-[10.5px] font-medium text-blue-700">Kab/Kota</p>
                                 </div>
                             </div>
@@ -1220,11 +1253,11 @@ const ContentOverview = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-2 text-center">
-                                        <p className="text-sm font-extrabold text-blue-900">19,431</p>
+                                        <p id="statBopd" className="text-sm font-extrabold text-blue-900">19431</p>
                                         <p className="text-[9.5px] font-semibold text-blue-700">BOPD (Minyak)</p>
                                     </div>
                                     <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-2 text-center">
-                                        <p className="text-sm font-extrabold text-blue-900">228.010</p>
+                                        <p id="statMmscfd" className="text-sm font-extrabold text-blue-900">228.010</p>
                                         <p className="text-[9.5px] font-semibold text-blue-700">MMSCFD (Gas)</p>
                                     </div>
                                 </div>
