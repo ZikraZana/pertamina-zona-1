@@ -80,19 +80,31 @@ const DEFAULT_WILAYAH_LIST: { kode: string; nama: string }[] = [
 ];
 
 const TEXT_FIELDS: { key: keyof WilayahData; label: string }[] = [
-    { key: "nama_wilayah", label: "Nama Wilayah" },
-    { key: "provinsi", label: "Provinsi" },
+    { key: "nama_wilayah", label: "Nama Wilayah Kerja" },
     { key: "kabupaten_kota", label: "Kabupaten/Kota" },
-    { key: "jenis_wk", label: "Jenis Wilayah Kerja" },
     { key: "tahun_berdiri", label: "Tahun Berdiri" },
     { key: "luas_wilayah", label: "Luas Wilayah" },
     { key: "part_interest", label: "Participating Interest" },
 ];
 
+const PROVINSI_SUMATERA: string[] = [
+    "Aceh",
+    "Sumatera Utara",
+    "Sumatera Barat",
+    "Riau",
+    "Kepulauan Riau",
+    "Jambi",
+    "Bengkulu",
+    "Sumatera Selatan",
+    "Kepulauan Bangka Belitung",
+    "Lampung",
+];
+
+const JENIS_WK_OPTIONS: string[] = ["Gross Split", "Cost Recovery"];
+
 const PRODUKSI_FIELDS: { key: keyof WilayahData; label: string; placeholder?: string }[] = [
-    { key: "tanggal_produksi", label: "Tanggal Data (YYYY-MM-DD)", placeholder: "2025-10-31" },
-    { key: "produksi_minyak", label: "Produksi Minyak (Mbopd)" },
-    { key: "produksi_gas", label: "Produksi Gas (MMscfd)" },
+    { key: "produksi_minyak", label: "Produksi Minyak (MBOPD)" },
+    { key: "produksi_gas", label: "Produksi Gas (MMSCFD)" },
 ];
 
 const FASILITAS_FIELDS: { key: keyof WilayahData; label: string }[] = [
@@ -267,14 +279,29 @@ const OverviewTab = () => {
                     <p className="text-sm text-slate-400">Pilih wilayah kerja di sebelah kiri untuk mulai mengedit.</p>
                 ) : (
                     <form onSubmit={handleSave} className="flex flex-col gap-6">
-                        <FieldSection title="Info Umum">
-                            {TEXT_FIELDS.map((f) => (
-                                <TextInput key={f.key} label={f.label} value={form[f.key]} onChange={(v) => updateField(f.key, v)} />
-                            ))}
+                        <FieldSection title="Informasi Umum">
+                            <TextInput label="Nama Wilayah Kerja" value={form.nama_wilayah} onChange={(v) => updateField("nama_wilayah", v)} />
+                            <SelectInput
+                                label="Provinsi"
+                                value={form.provinsi}
+                                onChange={(v) => updateField("provinsi", v)}
+                                options={PROVINSI_SUMATERA}
+                            />
+                            <TextInput label="Kabupaten/Kota" value={form.kabupaten_kota} onChange={(v) => updateField("kabupaten_kota", v)} />
+                            <SelectInput
+                                label="Jenis Wilayah Kerja"
+                                value={form.jenis_wk}
+                                onChange={(v) => updateField("jenis_wk", v)}
+                                options={JENIS_WK_OPTIONS}
+                            />
+                            <TextInput label="Tahun Berdiri" value={form.tahun_berdiri} onChange={(v) => updateField("tahun_berdiri", v)} />
+                            <TextInput label="Luas Wilayah" value={form.luas_wilayah} onChange={(v) => updateField("luas_wilayah", v)} />
+                            <TextInput label="Participating Interest" value={form.part_interest} onChange={(v) => updateField("part_interest", v)} />
                             <TextArea label="KKP / Komitmen Kerja Pasti" value={form.kkp} onChange={(v) => updateField("kkp", v)} />
                         </FieldSection>
 
                         <FieldSection title="Produksi">
+                            <DateInput label="Tanggal Data" value={form.tanggal_produksi} onChange={(v) => updateField("tanggal_produksi", v)} />
                             {PRODUKSI_FIELDS.map((f) => (
                                 <TextInput key={f.key} label={f.label} value={form[f.key]} onChange={(v) => updateField(f.key, v)} placeholder={f.placeholder} />
                             ))}
@@ -287,18 +314,25 @@ const OverviewTab = () => {
                         </FieldSection>
 
                         <FieldSection title="Number of Assets — Wells">
-                            {SUMUR_GROUPS.map((g) => (
-                                <TripleField key={g.prefix} label={g.label} prefix={g.prefix} form={form} updateField={updateField} />
-                            ))}
-                        </FieldSection>
+                        <AssetTable
+                            headerLabel="Wells"
+                            totalPrefix="sumur_total"
+                            groups={SUMUR_GROUPS}
+                            form={form}
+                            updateField={updateField}
+                        />
+                    </FieldSection>
 
-                        <FieldSection title="Number of Assets — Surface Facilities">
-                            {SURFACE_GROUPS.map((g) => (
-                                <TripleField key={g.prefix} label={g.label} prefix={g.prefix} form={form} updateField={updateField} />
-                            ))}
-                        </FieldSection>
+                    <FieldSection title="Number of Assets — Surface Facilities">
+                        <AssetTable
+                            headerLabel="Surface Facilities"
+                            groups={SURFACE_GROUPS}
+                            form={form}
+                            updateField={updateField}
+                        />
+                    </FieldSection>
 
-                        <FieldSection title="Rig">
+                        <FieldSection title="Rigs">
                             {RIG_FIELDS.map((f) => (
                                 <TextInput key={f.key} label={f.label} value={form[f.key]} onChange={(v) => updateField(f.key, v)} />
                             ))}
@@ -363,6 +397,43 @@ function TextArea({
     );
 }
 
+function SelectInput({
+    label, value, onChange, options,
+}: { label: string; value: string | null; onChange: (v: string) => void; options: string[] }) {
+    return (
+        <div>
+            <label className="mb-1 block text-xs font-semibold text-slate-600">{label}</label>
+            <select
+                value={value ?? ""}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+            >
+                {options.map((opt) => (
+                    <option key={opt} value={opt}>
+                        {opt}
+                    </option>
+                ))}
+            </select>
+        </div>
+    );
+}
+
+function DateInput({
+    label, value, onChange,
+}: { label: string; value: string | null; onChange: (v: string) => void }) {
+    return (
+        <div>
+            <label className="mb-1 block text-xs font-semibold text-slate-600">{label}</label>
+            <input
+                type="date"
+                value={value ?? ""}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+            />
+        </div>
+    );
+}
+
 function TripleField({
     label, prefix, form, updateField,
 }: {
@@ -401,6 +472,64 @@ function TripleField({
                     className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-blue-500"
                 />
             </div>
+        </div>
+    );
+}
+
+function AssetTable({
+    headerLabel, totalPrefix, groups, form, updateField,
+}: {
+    headerLabel: string;
+    totalPrefix?: string;
+    groups: { prefix: string; label: string }[];
+    form: WilayahData;
+    updateField: (key: keyof WilayahData, value: string) => void;
+}) {
+    function cellKey(prefix: string, suffix: "active" | "non_active" | "total") {
+        return `${prefix}_${suffix}` as keyof WilayahData;
+    }
+
+    return (
+        <div className="sm:col-span-2 overflow-x-auto rounded-lg border border-slate-200">
+            <table className="w-full border-collapse text-sm">
+                <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700">{headerLabel}</th>
+                        <th className="px-3 py-3 text-center text-xs font-semibold text-slate-700">Active</th>
+                        <th className="px-3 py-3 text-center text-xs font-semibold text-slate-700">Non-Active</th>
+                        <th className="px-3 py-3 text-center text-xs font-semibold text-slate-700">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {groups.map((g) => {
+                        const isTotal = g.prefix === totalPrefix;
+                        return (
+                            <tr
+                                key={g.prefix}
+                                className={[
+                                    "border-b border-slate-100 last:border-b-0",
+                                    isTotal ? "bg-slate-50 font-semibold" : "",
+                                ].join(" ")}
+                            >
+                                <td className="px-4 py-2 text-slate-600">{g.label}</td>
+                                {(["active", "non_active", "total"] as const).map((suffix) => {
+                                    const key = cellKey(g.prefix, suffix);
+                                    return (
+                                        <td key={suffix} className="px-2 py-2">
+                                            <input
+                                                type="text"
+                                                value={form[key] ?? ""}
+                                                onChange={(e) => updateField(key, e.target.value)}
+                                                className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-center text-sm outline-none focus:border-blue-500"
+                                            />
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
         </div>
     );
 }
