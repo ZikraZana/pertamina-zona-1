@@ -1115,7 +1115,7 @@ const ContentOverview = () => {
 
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="nso" x="102" y="-1" width="96" height="24">
                                 <div className="text-center">
-                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-80 hover:bg-[#670010] hover:shadow-lg" data-badge-click="nso" data-nama-click="NSO" data-provinsi-click="ID-AC">NSO</span>
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#670010] hover:shadow-lg" data-badge-click="nso" data-nama-click="NSO" data-provinsi-click="ID-AC">NSO</span>
                                 </div>
                             </foreignObject>
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="p-susu" x="170" y="71" width="96" height="24">
