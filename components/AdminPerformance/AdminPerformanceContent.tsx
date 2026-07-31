@@ -19,6 +19,7 @@ const AdminPerformanceContent = () => {
     const [role, setRole] = useState<"admin" | "user" | null>(null);
     const [activeTabMain, setActiveTabMain] = useState<"dashboard" | "adminProfile">("dashboard");
     const [activeTab, setActiveTab] = useState<"wilayah" | "performance" | "adminLog">("wilayah");
+    const [fullName, setFullName] = useState<string | null>(null);
 
     async function handleLogin(e: React.FormEvent) {
         e.preventDefault();
@@ -49,7 +50,7 @@ const AdminPerformanceContent = () => {
 
             const { data: profile } = await supabase
                 .from("profiles")
-                .select("role")
+                .select("role, full_name")
                 .eq("id", data.user?.id)
                 .single();
 
@@ -58,6 +59,7 @@ const AdminPerformanceContent = () => {
             } else {
                 setRole("user");
             }
+            setFullName(profile?.full_name ?? null);
 
             setAuthLoading(false);
         }
@@ -242,7 +244,7 @@ const AdminPerformanceContent = () => {
 
                     {activeTabMain === "adminProfile" && (
                         <>
-                            <AdminProfile />
+                            <AdminProfile userId={user!.id} userEmail={user!.email!} />
                         </>
                     )}
 
