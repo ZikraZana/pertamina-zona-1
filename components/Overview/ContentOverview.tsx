@@ -1,5 +1,6 @@
 "use client";
 
+import SplashScreen from "./SplashScreen";
 import { useEffect } from "react";
 
 type WilayahData = {
@@ -1036,7 +1037,8 @@ const ContentOverview = () => {
 
     return (
         <>
-            <div className="flex min-h-screen flex-col overflow-visible bg-slate-100 p-3 sm:p-4 lg:h-screen lg:overflow-hidden lg:p-6">
+            <SplashScreen />
+            <div className="flex min-h-screen flex-col overflow-visible bg-slate-100 p-3 sm:p-4 lg:h-screen lg:overflow-hidden lg:p-6 animate-page-fade-in">
                 <h1 className="group relative z-10 mb-2 shrink-0 w-fit mx-auto cursor-default bg-linear-to-b from-blue-900 to-blue-500 bg-clip-text text-xl sm:text-2xl lg:text-3xl text-center font-bold text-transparent transition-transform duration-300 ease-out hover:-translate-y-1">
                     Pertamina Hulu Rokan Zona 1
                     <span
@@ -1100,6 +1102,7 @@ const ContentOverview = () => {
                             <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="meruap" x1="255" y1="265" x2="200" y2="295" />
                             <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="Jabung" x1="285" y1="240" x2="170" y2="267" />
 
+                            <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="93" cy="25" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="nso" data-nama="NSO" data-provinsi="ID-AC" cx="93" cy="25" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="p-susu" data-nama="Pangkalan Susu" data-provinsi="ID-SU" cx="125" cy="85" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="rantau" data-nama="Rantau" data-provinsi="ID-SU" cx="110" cy="73" r="2.8" />

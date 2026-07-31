@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { usePageTransition } from "./PageTransition";
 
 // ============================================================
 // DAFTAR MENU NAVBAR
@@ -18,6 +19,14 @@ const navLinks = [
 const Navbar = () => {
     const pathname = usePathname();
     const [open, setOpen] = useState(false);
+
+    const { navigateWithSplash } = usePageTransition();
+
+    function handleNavClick(e: React.MouseEvent, href: string) {
+        e.preventDefault();
+        setOpen(false);
+        navigateWithSplash(href);
+    }
 
     const isActive = (href: string) =>
         pathname === href || pathname?.startsWith(`${href}/`);
@@ -55,9 +64,10 @@ const Navbar = () => {
                         <Link
                             key={link.href}
                             href={link.href}
+                            onClick={(e) => handleNavClick(e, link.href)}
                             className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${isActive(link.href)
-                                    ? "bg-blue-900 text-white shadow-sm"
-                                    : "text-slate-600 hover:bg-slate-100 hover:text-blue-900"
+                                ? "bg-blue-900 text-white shadow-sm"
+                                : "text-slate-600 hover:bg-slate-100 hover:text-blue-900"
                                 }`}
                         >
                             {link.label}
@@ -95,10 +105,10 @@ const Navbar = () => {
                         <Link
                             key={link.href}
                             href={link.href}
-                            onClick={() => setOpen(false)}
+                            onClick={(e) => handleNavClick(e, link.href)}
                             className={`rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${isActive(link.href)
-                                    ? "bg-blue-900 text-white"
-                                    : "text-slate-600 hover:bg-slate-100 hover:text-blue-900"
+                                ? "bg-blue-900 text-white"
+                                : "text-slate-600 hover:bg-slate-100 hover:text-blue-900"
                                 }`}
                         >
                             {link.label}
