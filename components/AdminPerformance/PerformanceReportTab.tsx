@@ -495,7 +495,7 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                 <form onSubmit={handleUpload} className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div>
                         <h3 className="text-sm font-bold text-blue-900">Unggah Laporan</h3>
-                        <p className="text-xs text-slate-400">Judul laporan akan otomatis mengikuti nama file PDF.</p>
+                        <p className="text-xs text-slate-400">Judul laporan akan otomatis mengikuti nama file yang diupload.</p>
                     </div>
 
                     {uploadError && (
@@ -898,7 +898,7 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                                 <form onSubmit={handleEdit} className="flex h-full flex-col gap-4 overflow-y-auto p-5">
                                     <div>
                                         <h3 className="text-sm font-bold text-blue-900">Edit Laporan</h3>
-                                        <p className="text-xs text-slate-400">Kosongkan file kalau tidak ingin mengganti PDF.</p>
+                                        <p className="text-xs text-slate-400">Kosongkan file kalau tidak ingin mengganti laporan.</p>
                                     </div>
 
                                     {editError && (
@@ -925,7 +925,7 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                                     </div>
 
                                     <div>
-                                        <label className="mb-1 block text-xs font-semibold text-slate-600">Ganti File PDF (opsional)</label>
+                                        <label className="mb-1 block text-xs font-semibold text-slate-600">Ganti File Laporan (opsional)</label>
                                         <input
                                             type="file"
                                             accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx"
