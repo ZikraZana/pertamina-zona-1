@@ -1069,7 +1069,7 @@ const ContentOverview = () => {
                             </button>
                         </div>
                     </div>
-                    <div id="map-pane" className="relative h-auto w-full transition-all duration-300 ease-in-out lg:h-full">
+                    <div id="map-pane" className="relative h-auto w-full transition-all duration-400 ease-out lg:h-full">
                         <svg id="map-svg" className="h-[42vh] min-h-60 w-full md:h-[52vh] lg:h-full" viewBox="0 -35 460 430" preserveAspectRatio="xMidYMid meet" role="img">
 
                             <path className="prov stroke-white stroke-[1px] transition-opacity duration-150 hover:opacity-[.85]" fill="#0e608d" data-p="ID-RI" data-nama="Riau" d="M 183.9,120.5 L 184.9,125.1 L 191.4,132.4 L 198.8,135.5 L 201.6,136.3 L 197.9,130.3 L 199.1,128.9 L 207.3,128.5 L 210.7,133.2 L 215.7,137.8 L 217.0,143.3 L 217.1,145.3 L 220.8,147.8 L 224.9,149.2 L 229.8,148.5 L 239.1,156.0 L 242.3,157.6 L 242.7,162.3 L 243.6,166.5 L 247.9,172.5 L 253.5,177.7 L 259.9,177.7 L 262.3,178.5 L 266.8,179.0 L 271.4,185.0 L 275.5,187.1 L 279.2,185.6 L 280.3,184.4 L 285.7,187.5 L 289.2,190.8 L 293.1,193.0 L 294.6,198.5 L 295.6,202.1 L 288.9,202.7 L 288.7,205.2 L 285.9,208.0 L 289.8,209.4 L 294.7,213.0 L 292.1,213.3 L 289.0,216.1 L 283.5,218.8 L 282.7,225.5 L 285.3,226.8 L 280.8,227.3 L 270.1,226.3 L 263.6,233.1 L 259.7,236.7 L 257.5,237.2 L 253.5,236.9 L 250.3,235.2 L 248.0,232.9 L 245.8,231.7 L 242.8,230.9 L 241.4,231.7 L 237.1,230.3 L 232.6,233.6 L 229.5,233.2 L 224.6,229.4 L 218.5,225.7 L 217.0,223.2 L 211.3,219.7 L 206.2,214.8 L 205.3,212.1 L 202.5,213.9 L 200.1,212.3 L 198.4,209.4 L 198.0,203.1 L 198.7,198.1 L 196.7,195.8 L 195.4,196.3 L 188.2,194.9 L 186.0,191.1 L 182.3,191.3 L 180.3,185.1 L 181.5,179.2 L 179.2,177.5 L 177.5,173.3 L 177.7,171.5 L 176.8,167.5 L 177.5,164.2 L 177.2,161.6 L 175.8,157.4 L 182.1,156.3 L 186.4,154.7 L 186.6,152.6 L 187.9,149.6 L 182.7,144.0 L 183.6,140.3 L 184.8,130.6 L 183.0,124.4 L 183.9,120.5 Z" />
@@ -1112,7 +1112,7 @@ const ContentOverview = () => {
 
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="nso" x="102" y="-1" width="96" height="24">
                                 <div className="text-center">
-                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#670010] hover:shadow-lg" data-badge-click="nso" data-nama-click="NSO" data-provinsi-click="ID-AC">NSO</span>
+                                    <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-80 hover:bg-[#670010] hover:shadow-lg" data-badge-click="nso" data-nama-click="NSO" data-provinsi-click="ID-AC">NSO</span>
                                 </div>
                             </foreignObject>
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="p-susu" x="170" y="71" width="96" height="24">
@@ -1349,7 +1349,7 @@ const ContentOverview = () => {
                     {/* DETAIL PANE: Pane splitview detail lengkap */}
                     <div
                         id="detail-pane"
-                        className="fixed inset-3 z-50 flex w-full items-center justify-end overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-in-out sm:inset-4 lg:absolute lg:inset-auto lg:bottom-6 lg:right-6 lg:top-6 lg:w-0 lg:pl-4"
+                        className="fixed inset-3 z-50 flex w-full items-center justify-end overflow-hidden opacity-0 pointer-events-none transition-all duration-400 ease-out sm:inset-4 lg:absolute lg:inset-auto lg:bottom-6 lg:right-6 lg:top-6 lg:w-0 lg:pl-4"
                     >
                         <div
                             id="card-detail"
