@@ -1,6 +1,5 @@
 "use client";
 
-import SplashScreen from "./SplashScreen";
 import { useEffect } from "react";
 
 type WilayahData = {
@@ -1019,17 +1018,33 @@ const ContentOverview = () => {
             }
         };
 
-        // Ambil data overview (teks) dari Supabase — INI YANG KEMARIN KELEWAT
+        // Ambil data overview (teks) dari Supabase
         loadOverviewData();
 
-        runStatCountUp();
+        // Jalankan animasi angka statistik SETELAH splash screen selesai,
+        // supaya animasinya kelihatan (tidak "kepotong" di balik splash).
+        let statsAnimated = false;
+        function triggerStatCountUp() {
+            if (statsAnimated) return;
+            statsAnimated = true;
+            runStatCountUp();
+        }
+
+        window.addEventListener("splash-finished", triggerStatCountUp);
+
+        // Fallback: kalau splash sudah lebih dulu selesai sebelum listener ini terpasang
+        // (mis. transisi Navbar sudah kelar duluan), tetap jalankan setelah jeda singkat.
+        const fallbackTimer = setTimeout(triggerStatCountUp, 2200);
         
         return () => {
+            cancelled = true;
+            window.removeEventListener("splash-finished", triggerStatCountUp);
+            clearTimeout(fallbackTimer);
             document.removeEventListener('click', handleGlobalClick);
             document.removeEventListener('mousedown', handleImagePanStart);
             document.removeEventListener('mousemove', handleImagePanMove);
             document.removeEventListener('mouseup', handleImagePanEnd);
-            document.removeEventListener('mouseover', handleGlobalMouseOver); // BARU
+            document.removeEventListener('mouseover', handleGlobalMouseOver);
             document.removeEventListener('mouseout', handleGlobalMouseOut);
         };
 
@@ -1037,7 +1052,6 @@ const ContentOverview = () => {
 
     return (
         <>
-            <SplashScreen />
             <div className="flex min-h-screen flex-col overflow-visible bg-slate-100 p-3 sm:p-4 lg:h-screen lg:overflow-hidden lg:p-6 animate-page-fade-in">
                 <h1 className="group relative z-10 mb-2 shrink-0 w-fit mx-auto cursor-default bg-linear-to-b from-blue-900 to-blue-500 bg-clip-text text-xl sm:text-2xl lg:text-3xl text-center font-bold text-transparent transition-transform duration-300 ease-out hover:-translate-y-1">
                     Pertamina Hulu Rokan Zona 1

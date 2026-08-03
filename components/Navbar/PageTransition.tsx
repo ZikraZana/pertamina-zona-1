@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 type PageTransitionContextValue = {
     navigateWithSplash: (href: string) => void;
@@ -20,19 +20,37 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
     const [visible, setVisible] = useState(false);
     const [fadingOut, setFadingOut] = useState(false);
 
+    useEffect(() => {
+            setVisible(true);
+            setFadingOut(false);
+
+            const fadeTimer = setTimeout(() => setFadingOut(true), 1400);
+            const removeTimer = setTimeout(() => {
+                setVisible(false);
+                window.dispatchEvent(new Event("splash-finished"));
+            }, 2000);
+
+            return () => {
+                clearTimeout(fadeTimer);
+                clearTimeout(removeTimer);
+            };
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, []);
+
     function navigateWithSplash(href: string) {
-        setVisible(true);
-        setFadingOut(false);
+            setVisible(true);
+            setFadingOut(false);
 
-        // Tahan splash screen sebentar, lalu pindah halaman di baliknya
-        setTimeout(() => {
-            router.push(href);
-        }, 500);
+            setTimeout(() => {
+                router.push(href);
+            }, 500);
 
-        // Mulai fade-out splash setelah halaman baru sempat dimuat
-        setTimeout(() => setFadingOut(true), 1400);
-        setTimeout(() => setVisible(false), 2000);
-    }
+            setTimeout(() => setFadingOut(true), 1400);
+            setTimeout(() => {
+                setVisible(false);
+                window.dispatchEvent(new Event("splash-finished"));
+            }, 2000);
+        }
 
     return (
         <PageTransitionContext.Provider value={{ navigateWithSplash }}>
