@@ -66,14 +66,20 @@ const AdminLog = () => {
     const [logs, setLogs] = useState<ActivityLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
 
     useEffect(() => {
         async function fetchLogs() {
+            setLoading(true);
             try {
-                const res = await fetch("/api/activity-logs");
+                const res = await fetch(`/api/activity-logs?page=${page}`);
                 const json = await res.json();
                 if (!res.ok) throw new Error(json.error ?? "Gagal memuat log.");
                 setLogs(json.logs);
+                setTotalCount(json.totalCount);
+                setPageSize(json.pageSize);
             } catch (err) {
                 setError(err instanceof Error ? err.message : "Gagal memuat log.");
             } finally {
@@ -81,7 +87,9 @@ const AdminLog = () => {
             }
         }
         fetchLogs();
-    }, []);
+    }, [page]);
+
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
     return (
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
@@ -90,9 +98,9 @@ const AdminLog = () => {
                     <h2 className="text-sm font-bold text-blue-900">Log Aktivitas Admin</h2>
                     <p className="text-xs text-slate-400">Riwayat perubahan pada Performance Report dan Wilayah Kerja.</p>
                 </div>
-                {!loading && logs.length > 0 && (
+                {!loading && totalCount > 0 && (
                     <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
-                        {logs.length} aktivitas
+                        {totalCount} aktivitas
                     </span>
                 )}
             </div>
@@ -164,6 +172,40 @@ const AdminLog = () => {
                         );
                     })}
                 </ul>
+            )}
+            {!loading && totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-center gap-1.5">
+                    <button
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        Sebelumnya
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                        <button
+                            key={n}
+                            onClick={() => setPage(n)}
+                            className={[
+                                "h-8 w-8 cursor-pointer rounded-lg text-xs font-semibold transition-colors",
+                                n === page
+                                    ? "bg-blue-900 text-white"
+                                    : "text-slate-600 hover:bg-slate-100",
+                            ].join(" ")}
+                        >
+                            {n}
+                        </button>
+                    ))}
+
+                    <button
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                        className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        Berikutnya
+                    </button>
+                </div>
             )}
         </div>
     );
