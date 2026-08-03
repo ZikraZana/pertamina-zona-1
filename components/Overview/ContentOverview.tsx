@@ -1144,15 +1144,15 @@ const ContentOverview = () => {
                             <text className="pointer-events-none select-none fill-white text-[9px] font-semibold [paint-order:stroke] stroke-[rgba(0,0,0,0.35)] stroke-[2px] [text-anchor:middle]" x="310" y="305">Sumatera Selatan</text>
                             <text className="pointer-events-none select-none fill-white text-[9px] font-semibold [paint-order:stroke] stroke-[rgba(0,0,0,0.35)] stroke-[2px] [text-anchor:middle]" x="337" y="360">Lampung</text>
 
-                            <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="nso" x1="93" y1="25" x2="150" y2="10" />
+                            <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="nso" points="93,25 93.3,10 150,10" />
                             <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="p-susu" x1="125" y1="85" x2="215" y2="85" />
-                            <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="rantau" x1="110" y1="73" x2="158" y2="50" />
-                            <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="lirik" x1="250" y1="210" x2="315" y2="170" />
-                            <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="jambi" x1="282" y1="250" x2="345" y2="210" />
-                            <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="jambi-merang" x1="299" y1="277" x2="395" y2="245" />
-                            <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="tamiang" x1="105" y1="60" x2="65" y2="120" />
-                            <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="meruap" x1="255" y1="265" x2="200" y2="295" />
-                            <line className="pointer-events-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="Jabung" x1="285" y1="240" x2="170" y2="267" />
+                            <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="rantau" points="110,73 110.4,50 158,50" />
+                            <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="lirik" points="250,210 250.75,170 315,170" />
+                            <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="jambi" points="282,250 281.65,210 345,210" />
+                            <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="jambi-merang" points="299,277 298.8,245 395,245" />
+                            <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="tamiang" points="105,60 83,120 65,120" />
+                            <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="meruap" points="255,265 224.75,295 200,295" />
+                            <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="Jabung" points="275,240 210.75,240 170,267" />
 
                             <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="93" cy="25" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="nso" data-nama="NSO" data-provinsi="ID-AC" cx="93" cy="25" r="2.8" />
@@ -1170,8 +1170,8 @@ const ContentOverview = () => {
                             <circle className="pointer-events-none fill-amber-500" data-dot="tamiang" data-nama="Tamiang Raya Energy" data-provinsi="ID-AC" cx="105" cy="60" r="2.8" />
                             <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="255" cy="265" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="meruap" data-nama="SEBWP Meruap" data-provinsi="ID-SS" cx="255" cy="265" r="2.8" />
-                            <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="285" cy="240" r="2.8" />
-                            <circle className="pointer-events-none fill-amber-500" data-dot="jabung" data-nama="Jabung" data-provinsi="ID-JA" cx="285" cy="240" r="2.8" />
+                            <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="275.5" cy="240" r="2.8" />
+                            <circle className="pointer-events-none fill-amber-500" data-dot="jabung" data-nama="Jabung" data-provinsi="ID-JA" cx="275" cy="240" r="2.8" />
 
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="nso" x="102" y="-1" width="96" height="24">
                                 <div className="text-center">
@@ -1188,32 +1188,32 @@ const ContentOverview = () => {
                                     <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#670010] hover:shadow-lg" data-badge-click="rantau" data-nama-click="Rantau" data-provinsi-click="ID-SU">Rantau</span>
                                 </div>
                             </foreignObject>
-                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="lirik" x="267" y="159" width="96" height="24">
+                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="lirik" x="267" y="155" width="96" height="24">
                                 <div className="text-center">
                                     <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#670010] hover:shadow-lg" data-badge-click="lirik" data-nama-click="Lirik" data-provinsi-click="ID-RI">Lirik</span>
                                 </div>
                             </foreignObject>
-                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="jambi" x="297" y="204" width="96" height="24">
+                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="jambi" x="297" y="195" width="96" height="24">
                                 <div className="text-center">
                                     <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#670010] hover:shadow-lg" data-badge-click="jambi" data-nama-click="Jambi" data-provinsi-click="ID-JA">Jambi</span>
                                 </div>
                             </foreignObject>
-                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="jambi-merang" x="347" y="239" width="96" height="24">
+                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="jambi-merang" x="347" y="230" width="96" height="24">
                                 <div className="text-center">
                                     <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#670010] hover:shadow-lg" data-badge-click="jambi-merang" data-nama-click="Jambi Merang" data-provinsi-click="ID-SS">Jambi Merang</span>
                                 </div>
                             </foreignObject>
-                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="tamiang" x="0" y="105" width="110" height="24">
+                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="tamiang" x="-15" y="105" width="110" height="24">
                                 <div className="text-center">
                                     <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-gray-800" data-badge-click="tamiang" data-nama-click="Tamiang Raya Energy" data-provinsi-click="ID-AC">Tamiang Raya</span>
                                 </div>
                             </foreignObject>
-                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="meruap" x="120" y="288" width="96" height="24">
+                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="meruap" x="116" y="279" width="96" height="24">
                                 <div className="text-center">
                                     <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-gray-800" data-badge-click="meruap" data-nama-click="SEBWP Meruap" data-provinsi-click="ID-JA">SEBWP Meruap</span>
                                 </div>
                             </foreignObject>
-                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="jabung" x="115" y="250" width="96" height="24">
+                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="jabung" x="108" y="247" width="96" height="24">
                                 <div className="text-center">
                                     <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-gray-800" data-badge-click="jabung" data-nama-click="Jabung" data-provinsi-click="ID-JA">Jabung</span>
                                 </div>
