@@ -1241,23 +1241,23 @@ const ContentOverview = () => {
                                 <ul className="divide-y divide-slate-100 text-xs text-slate-700">
                                     <li className="flex items-center justify-between py-1">
                                         <span>Aceh</span>
-                                        <span className="cursor-help font-semibold text-slate-500" data-kabkota-trigger="Aceh">4 Kab/Kota</span>
+                                        <span className="cursor-default font-semibold text-slate-500" data-kabkota-trigger="Aceh">4 Kab/Kota</span>
                                     </li>
                                     <li className="flex items-center justify-between py-1">
                                         <span>Sumatera Utara</span>
-                                        <span className="cursor-help font-semibold text-slate-500" data-kabkota-trigger="Sumatera Utara">2 Kab</span>
+                                        <span className="cursor-default font-semibold text-slate-500" data-kabkota-trigger="Sumatera Utara">2 Kab</span>
                                     </li>
                                     <li className="flex items-center justify-between py-1">
                                         <span>Riau</span>
-                                        <span className="cursor-help font-semibold text-slate-500" data-kabkota-trigger="Riau">3 Kab</span>
+                                        <span className="cursor-default font-semibold text-slate-500" data-kabkota-trigger="Riau">3 Kab</span>
                                     </li>
                                     <li className="flex items-center justify-between py-1">
                                         <span>Jambi</span>
-                                        <span className="cursor-help font-semibold text-slate-500" data-kabkota-trigger="Jambi">3 Kab/Kota</span>
+                                        <span className="cursor-default font-semibold text-slate-500" data-kabkota-trigger="Jambi">3 Kab/Kota</span>
                                     </li>
                                     <li className="flex items-center justify-between py-1">
                                         <span>Sumatera Selatan</span>
-                                        <span className="cursor-help font-semibold text-slate-500" data-kabkota-trigger="Sumatera Selatan">1 Kab</span>
+                                        <span className="cursor-default font-semibold text-slate-500" data-kabkota-trigger="Sumatera Selatan">1 Kab</span>
                                     </li>
                                 </ul>
                             </div>
