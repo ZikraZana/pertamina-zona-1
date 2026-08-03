@@ -71,23 +71,21 @@ const ContentOverview = () => {
         let refreshActivePanel: (() => void) | null = null;
 
         async function loadOverviewData() {
-    try {
-        const res = await fetch('/api/wilayah');
-        if (!res.ok) return;
-        const json = await res.json();
-        if (cancelled) {
-            console.log('FETCH DIBATALKAN karena cancelled=true');
-            return;
+            try {
+                const res = await fetch('/api/wilayah');
+                if (!res.ok) return;
+                const json = await res.json();
+                if (cancelled) return;
+                wilayahDataMap = json.data ?? {};
+                if (activeKey && refreshActivePanel) {
+                    refreshActivePanel();
+                }
+                // Data produksi baru masuk — hitung ulang total statistik
+                runStatCountUp();
+            } catch (err) {
+                console.error('Gagal memuat data overview:', err);
+            }
         }
-        wilayahDataMap = json.data ?? {};
-        console.log('DATA MASUK:', Object.keys(wilayahDataMap));
-        if (activeKey && refreshActivePanel) {
-            refreshActivePanel();
-        }
-    } catch (err) {
-        console.error('Gagal memuat data overview:', err);
-    }
-}
 
         // ===== STATE UNTUK FACILITY VIEWER (Fasilitas / Flow Diagram / Alur Penjualan) =====
         let facilityActiveIndex = 0;
@@ -579,11 +577,51 @@ const ContentOverview = () => {
             requestAnimationFrame(tick);
         }
 
+        function formatTanggalIndonesia(tanggalStr: string): string {
+            const bulanIndo = [
+                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+            ];
+            const d = new Date(tanggalStr);
+            if (isNaN(d.getTime())) return '-';
+            return `${d.getDate()} ${bulanIndo[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
         function runStatCountUp() {
             animateCountUp('statProvinsi', 5, (n) => `${n}`);
             animateCountUp('statKabKota', 13, (n) => `${n}`);
-            animateCountUp('statBopd', 19431, (n) => n.toLocaleString('id-ID'));
-            animateCountUp('statMmscfd', 228010, (n) => (n / 1000).toFixed(3).replace('.', ','));
+
+            // ===== HITUNG TOTAL PRODUKSI DARI SEMUA WILAYAH KERJA =====
+            let totalMinyakMbopd = 0;
+            let totalGasMmscfd = 0;
+            let tanggalTerbaru: string | null = null;
+
+            for (const kode of Object.keys(wilayahDataMap)) {
+                const w = wilayahDataMap[kode];
+
+                const minyak = parseFloat(w.produksi_minyak ?? '');
+                if (!isNaN(minyak)) totalMinyakMbopd += minyak;
+
+                const gas = parseFloat(w.produksi_gas ?? '');
+                if (!isNaN(gas)) totalGasMmscfd += gas;
+
+                if (w.tanggal_produksi) {
+                    if (!tanggalTerbaru || w.tanggal_produksi > tanggalTerbaru) {
+                        tanggalTerbaru = w.tanggal_produksi;
+                    }
+                }
+            }
+
+            // Mbopd -> BOPD (dikali 1000, karena input admin dalam satuan ribuan)
+            const totalBopd = Math.round(totalMinyakMbopd * 1000);
+
+            animateCountUp('statBopd', totalBopd, (n) => n.toLocaleString('id-ID'));
+            animateCountUp('statMmscfd', Math.round(totalGasMmscfd * 1000), (n) => (n / 1000).toFixed(3).replace('.', ','));
+
+            const tanggalEl = document.getElementById('statTanggalProduksi');
+            if (tanggalEl) {
+                tanggalEl.textContent = tanggalTerbaru ? formatTanggalIndonesia(tanggalTerbaru) : '-';
+            }
         }
 
         function hideFirstTimeHint() {
@@ -1118,13 +1156,21 @@ const ContentOverview = () => {
 
                             <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="93" cy="25" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="nso" data-nama="NSO" data-provinsi="ID-AC" cx="93" cy="25" r="2.8" />
+                            <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="125" cy="85" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="p-susu" data-nama="Pangkalan Susu" data-provinsi="ID-SU" cx="125" cy="85" r="2.8" />
+                            <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="110" cy="73" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="rantau" data-nama="Rantau" data-provinsi="ID-SU" cx="110" cy="73" r="2.8" />
+                            <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="250" cy="210" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="lirik" data-nama="Lirik" data-provinsi="ID-RI" cx="250" cy="210" r="2.8" />
+                            <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="282" cy="250" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="jambi" data-nama="Jambi" data-provinsi="ID-JA" cx="282" cy="250" r="2.8" />
+                            <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="299" cy="277" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="jambi-merang" data-nama="Jambi Merang" data-provinsi="ID-SS" cx="299" cy="277" r="2.8" />
+                            <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="105" cy="60" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="tamiang" data-nama="Tamiang Raya Energy" data-provinsi="ID-AC" cx="105" cy="60" r="2.8" />
+                            <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="255" cy="265" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="meruap" data-nama="SEBWP Meruap" data-provinsi="ID-SS" cx="255" cy="265" r="2.8" />
+                            <circle className="pointer-events-none fill-amber-400 map-dot-pulse" cx="285" cy="240" r="2.8" />
                             <circle className="pointer-events-none fill-amber-500" data-dot="jabung" data-nama="Jabung" data-provinsi="ID-JA" cx="285" cy="240" r="2.8" />
 
                             <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="nso" x="102" y="-1" width="96" height="24">
@@ -1266,7 +1312,7 @@ const ContentOverview = () => {
                             <div>
                                 <div className="mb-1.5 flex items-end justify-between">
                                     <h3 className="text-[10.5px] font-bold uppercase tracking-wide text-slate-400">Produksi</h3>
-                                    <span className="text-[9px] font-medium text-slate-400">17 Mei 2026</span>
+                                    <span id="statTanggalProduksi" className="text-[9px] font-medium text-slate-400">-</span>
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-2 text-center">
