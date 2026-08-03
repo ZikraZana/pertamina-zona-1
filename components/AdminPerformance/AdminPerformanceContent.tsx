@@ -78,7 +78,7 @@ const AdminPerformanceContent = () => {
         <div className="flex min-h-screen flex-col bg-slate-100 p-3 sm:p-4 lg:p-6">
             <div className="mx-auto mb-4 w-full max-w-5xl">
                 <h1 className="group relative z-10 mb-1 w-fit cursor-default bg-linear-to-b from-blue-900 to-blue-500 bg-clip-text text-xl font-bold text-transparent transition-transform duration-300 ease-out hover:-translate-y-1 sm:text-2xl lg:text-3xl">
-                    Admin
+                    {user ? `Selamat Datang, ${fullName ?? user.email}!` : "Admin"}
                 </h1>
                 <p className="text-sm text-blue-900/70">
                     Kelola data yang tampil di halaman Overview dan Performance Report.
