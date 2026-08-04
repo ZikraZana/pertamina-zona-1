@@ -1092,11 +1092,11 @@ const ContentOverview = () => {
         <>
             <div className="flex min-h-screen flex-col overflow-visible bg-slate-100 p-3 sm:p-4 lg:h-screen lg:overflow-hidden lg:p-6 animate-page-fade-in">
                 <h1 className="group relative z-10 mb-2 shrink-0 w-fit mx-auto cursor-default bg-linear-to-b from-blue-900 to-blue-500 bg-clip-text text-xl sm:text-2xl lg:text-3xl text-center font-bold text-transparent transition-transform duration-300 ease-out hover:-translate-y-1">
-                    Pertamina Hulu Rokan Zona 1
+                    Overview Zona 1
                     <span
                         aria-hidden="true"
                         className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-blue-900 to-blue-500 bg-clip-text text-transparent opacity-0 blur-sm transition-all duration-300 ease-out group-hover:opacity-30 group-hover:translate-y-2">
-                        Pertamina Hulu Rokan Zona 1
+                        Overview Zona 1
                     </span>
                 </h1>
 

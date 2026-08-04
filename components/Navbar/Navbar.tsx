@@ -13,6 +13,7 @@ import { usePageTransition } from "./PageTransition";
 const navLinks = [
     { href: "/overview", label: "Overview" },
     { href: "/performance", label: "Performance Report" },
+    { href: "/achievements", label: "Achievements" },
     // { href: "/produksi", label: "Produksi" },
 ];
 
