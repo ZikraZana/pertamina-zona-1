@@ -17,19 +17,58 @@ const TABS: { key: TabKey; label: string; icon: string }[] = [
 // SUB-KOMPONEN
 // ============================================================
 
-function StatCard({ title, percent, detail }: { title: string; percent: string; detail: string }) {
+function ProductionCard({
+    title, unit, realisasi, target, percentValue, periode, accentColor,
+}: {
+    title: string;
+    unit: string;
+    realisasi: string;
+    target: string;
+    percentValue: number;
+    periode: string;
+    accentColor: "amber" | "sky";
+}) {
+    const colors = {
+        amber: { bar: "bg-amber-500", text: "text-amber-600", chip: "bg-amber-50 text-amber-700" },
+        sky: { bar: "bg-sky-500", text: "text-sky-600", chip: "bg-sky-50 text-sky-700" },
+    }[accentColor];
+
     return (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{title}</p>
-            <p className="mt-2 text-4xl font-extrabold text-blue-900">{percent}</p>
-            <p className="mt-1 text-sm text-slate-500">{detail}</p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
+            <div className="flex items-start justify-between">
+                <div>
+                    <p className="text-sm font-semibold text-slate-500">{title}</p>
+                    <p className="mt-0.5 text-xs text-slate-400">{periode}</p>
+                </div>
+                <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${colors.chip}`}>
+                    {percentValue}% RKAP
+                </span>
+            </div>
+
+            <div className="mt-5 flex items-baseline gap-2">
+                <span className="text-4xl font-extrabold tracking-tight text-slate-900">{realisasi}</span>
+                <span className="text-sm font-medium text-slate-400">{unit}</span>
+            </div>
+
+            <div className="mt-4">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                        className={`h-full rounded-full ${colors.bar} transition-all duration-1000 ease-out`}
+                        style={{ width: `${percentValue}%` }}
+                    />
+                </div>
+                <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
+                    <span>Realisasi</span>
+                    <span>Target: <span className={`font-semibold ${colors.text}`}>{target} {unit}</span></span>
+                </div>
+            </div>
         </div>
     );
 }
 
 function ListCard({ title, items }: { title: string; items: string[] }) {
     return (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
             <p className="mb-3 text-sm font-bold text-blue-900">{title}</p>
             <ul className="list-outside list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-700">
                 {items.map((item, i) => (
@@ -43,7 +82,7 @@ function ListCard({ title, items }: { title: string; items: string[] }) {
 function AccordionCard({ title, items, defaultOpen = false }: { title: string; items: string[]; defaultOpen?: boolean }) {
     return (
         <details
-            className="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm open:pb-5"
+            className="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 open:pb-5 hover:-translate-y-1 hover:shadow-lg"
             open={defaultOpen}
         >
             <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-bold text-blue-900 [&::-webkit-details-marker]:hidden">
@@ -95,7 +134,6 @@ const AchievementsContent = () => {
             </div>
 
             {/* Tab navigasi */}
-            {/* Tab navigasi */}
             <div className="flex flex-wrap justify-center gap-2">
                 {TABS.map((tab) => (
                     <button
@@ -118,15 +156,23 @@ const AchievementsContent = () => {
             <div className="animate-page-fade-in" key={activeTab}>
                 {activeTab === "produksi" && (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <StatCard
+                        <ProductionCard
                             title="Produksi Minyak"
-                            percent="91%"
-                            detail="19.899 BOPD realisasi / 21.845 BOPD target RKAP (YTD November 2025, AR Nov 2025)"
+                            unit="BOPD"
+                            realisasi="19.899"
+                            target="21.845"
+                            percentValue={91}
+                            periode="YTD November 2025 · AR Nov 2025"
+                            accentColor="amber"
                         />
-                        <StatCard
+                        <ProductionCard
                             title="Produksi Gas"
-                            percent="91%"
-                            detail="223.94 MMSCFD realisasi / 246.15 MMSCFD target RKAP (YTD November 2025, AR Nov 2025)"
+                            unit="MMSCFD"
+                            realisasi="223,94"
+                            target="246,15"
+                            percentValue={91}
+                            periode="YTD November 2025 · AR Nov 2025"
+                            accentColor="sky"
                         />
                     </div>
                 )}

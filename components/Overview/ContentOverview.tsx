@@ -705,8 +705,8 @@ const ContentOverview = () => {
 
             // Card 2: produksi saja
             produksiBody.innerHTML = `
-                ${row('Produksi Minyak', `${d.produksi_minyak ?? '-'} Mbopd`)}
-                ${row('Produksi Gas', `${d.produksi_gas ?? '-'} MMscfd`)}
+                ${row('Produksi Minyak', `${d.produksi_minyak ?? '-'} MBOPD`)}
+                ${row('Produksi Gas', `${d.produksi_gas ?? '-'} MMSCFD`)}
                 ${row('Tanggal Produksi', d.tanggal_produksi)}
             `
         }
