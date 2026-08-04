@@ -91,7 +91,7 @@ const AchievementsContent = () => {
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-4 sm:p-6">
             <div className="text-center">
                 <h1 className="group relative z-10 mb-2 shrink-0 w-fit mx-auto cursor-default bg-linear-to-b from-blue-900 to-blue-500 bg-clip-text text-xl sm:text-2xl lg:text-3xl text-center font-bold text-transparent transition-transform duration-300 ease-out hover:-translate-y-1">Achievements Zona 1</h1>
-                <p className="mt-1 text-sm text-slate-500">Temukan berbagai pencapaian terbaik Pertamina Zona 1 melalui enam kategori utama di bawah ini.</p>
+                <p className="mt-1 text-sm text-slate-500">Temukan berbagai pencapaian terbaik Pertamina Zona 1 melalui enam kategori capaian di bawah ini.</p>
             </div>
 
             {/* Tab navigasi */}
