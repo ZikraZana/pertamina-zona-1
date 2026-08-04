@@ -127,23 +127,56 @@ function AccordionCard({ title, items, defaultOpen = false }: { title: string; i
         </details>
     );
 }
+type AwardItem = {
+    text: string;
+    medal: "gold" | "silver" | "bronze";
+    imageUrl?: string;
+};
 
-function FieldAwardCard({ field, awards }: { field: string; awards: string[] }) {
-    return (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="mb-3 text-sm font-bold text-blue-900">{field}</p>
-            <ul className="space-y-2">
-                {awards.map((award, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
-                        {award}
-                    </li>
-                ))}
-            </ul>
+const MEDAL_ICON: Record<AwardItem["medal"], string> = {
+    gold: "🥇",
+    silver: "🥈",
+    bronze: "🥉",
+};
+
+function AwardPhoto({ imageUrl, alt }: { imageUrl?: string; alt: string }) {
+    return imageUrl ? (
+        <img
+            src={imageUrl}
+            alt={alt}
+            className="mt-3 h-64 w-full rounded-lg object-cover"
+        />
+    ) : (
+        <div className="mt-3 flex h-64 w-full flex-col items-center justify-center gap-1.5 rounded-lg bg-slate-100 text-slate-400">
+            <svg
+                className="h-8 w-8"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}
+            >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 3l18 18M4.5 4.5v15h15v-4.5" />
+            </svg>
+            <span className="text-sm font-medium">Gambar belum tersedia</span>
         </div>
     );
 }
 
+function FieldAwardCard({ field, awards }: { field: string; awards: AwardItem[] }) {
+    return (
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-base font-bold text-blue-900">{field}</p>
+            <div className="mt-4 flex flex-col divide-y divide-slate-100">
+                {awards.map((award, i) => (
+                    <div key={i} className={i > 0 ? "pt-5" : ""}>
+                        <p className="flex items-start gap-2 text-sm font-medium text-blue-900">
+                            <span className="shrink-0">{MEDAL_ICON[award.medal]}</span>
+                            {award.text}
+                        </p>
+                        <AwardPhoto imageUrl={award.imageUrl} alt={award.text} />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
 // ============================================================
 // KOMPONEN UTAMA
 // ============================================================
@@ -393,47 +426,68 @@ const AchievementsContent = () => {
 
                 {activeTab === "kehumasan" && (
                     <div className="flex flex-col gap-4">
-                        {/* Ringkasan medali */}
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-center">
+                      {/* Ringkasan medali (podium) */}
+                        <div className="grid grid-cols-3 items-end gap-4">
+                            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-center transition-transform duration-300 ease-out hover:-translate-y-2">
                                 <p className="text-3xl font-extrabold text-amber-600">2</p>
                                 <p className="mt-1 text-xs font-semibold text-amber-700">Gold Winner</p>
                             </div>
-                            <div className="rounded-2xl border border-slate-200 bg-slate-100 p-5 text-center">
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center transition-transform duration-300 ease-out hover:-translate-y-2">
                                 <p className="text-3xl font-extrabold text-slate-500">1</p>
                                 <p className="mt-1 text-xs font-semibold text-slate-600">Silver Winner</p>
                             </div>
-                            <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5 text-center">
+                            <div className="rounded-2xl border border-orange-200 bg-orange-50 p-4 text-center transition-transform duration-300 ease-out hover:-translate-y-2">
                                 <p className="text-3xl font-extrabold text-orange-700">2</p>
                                 <p className="mt-1 text-xs font-semibold text-orange-700">Bronze Winner</p>
                             </div>
                         </div>
 
                         {/* Detail per field */}
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {/* Detail per field */}
+                        <div className="flex flex-col gap-4">
                             <FieldAwardCard
                                 field="PT Pertamina EP Rantau Field"
                                 awards={[
-                                    "Kategori Manajemen Krisis Sub Kategori Krisis & Pasca Krisis — GOLD WINNER",
-                                    "Kategori Program Komunikasi Social Responsibility Sub Kategori Community Based Development — BRONZE WINNER",
+                                    {
+                                        text: "Kategori Manajemen Krisis Sub Kategori Krisis & Pasca Krisis",
+                                        medal: "gold",
+                                        //imageUrl: "/images/kehumasan/rantau-gold.jpg",
+                                    },
+                                    {
+                                        text: "Kategori Program Komunikasi Social Responsibility Sub Kategori Community Based Development",
+                                        medal: "bronze",
+                                        //imageUrl: "/images/kehumasan/rantau-bronze.jpg",
+                                    },
                                 ]}
                             />
                             <FieldAwardCard
                                 field="PT Pertamina EP Jambi Field"
                                 awards={[
-                                    "Kategori Program Komunikasi Social Responsibility Sub Kategori Community Based Development — SILVER WINNER",
+                                    {
+                                        text: "Kategori Program Komunikasi Social Responsibility Sub Kategori Community Based Development",
+                                        medal: "silver",
+                                        // imageUrl belum diisi -> tampil placeholder (Foto)
+                                    },
                                 ]}
                             />
                             <FieldAwardCard
                                 field="PT Pertamina EP Lirik Field"
                                 awards={[
-                                    "Kategori Manajemen Krisis Sub Kategori Krisis & Pasca Krisis — GOLD WINNER",
+                                    {
+                                        text: "Kategori Manajemen Krisis Sub Kategori Krisis & Pasca Krisis",
+                                        medal: "gold",
+                                        
+                                    },
                                 ]}
                             />
                             <FieldAwardCard
                                 field="PT Pertamina EP Pangkalan Susu Field"
                                 awards={[
-                                    "Kategori Program Komunikasi Social Responsibility Sub Kategori Community Based Development — BRONZE WINNER",
+                                    {
+                                        text: "Kategori Program Komunikasi Social Responsibility Sub Kategori Community Based Development",
+                                        medal: "bronze",
+                                
+                                    },
                                 ]}
                             />
                         </div>
