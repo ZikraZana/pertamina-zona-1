@@ -64,6 +64,34 @@ function getCategoryLabel(category: string) {
     return CATEGORY_TABS.find((tab) => tab.value === category)?.label ?? category;
 }
 
+// ============================================================
+// HELPER FUNCTION UNTUK GROUPING MINGGUAN / DUA MINGGUAN
+// ============================================================
+function groupReportsForDisplay(reports: PerformanceReport[], activeCat: string | null) {
+    const map = new Map<string, PerformanceReport[]>();
+    for (const report of reports) {
+        let label = getCategoryLabel(report.category);
+
+        if (activeCat === "weekly" && report.category === "weekly" || activeCat === "others" && report.category === "others") {
+            const d = new Date(`${report.report_date}T00:00:00`).getDate();
+            if (d <= 7) label = "Week 1 (Tgl 1-7)";
+            else if (d <= 14) label = "Week 2 (Tgl 8-14)";
+            else if (d <= 21) label = "Week 3 (Tgl 15-21)";
+            else if (d <= 28) label = "Week 4 (Tgl 22-28)";
+            else label = "Week 5 (Tgl 29+)";
+        } else if (activeCat === "biweekly" && report.category === "biweekly") {
+            const d = new Date(`${report.report_date}T00:00:00`).getDate();
+            if (d <= 14) label = "Bi-Weekly 1 (Tgl 1-14)";
+            else label = "Bi-Weekly 2 (Tgl 15+)";
+        }
+
+        const list = map.get(label) ?? [];
+        list.push(report);
+        map.set(label, list);
+    }
+    return map;
+}
+
 const PerformanceContent = () => {
     // ============================================================
     // STATE & LOGIC AUTH — tetap ada, karena halaman ini tetap
@@ -133,6 +161,7 @@ const PerformanceContent = () => {
     const [previewError, setPreviewError] = useState<string | null>(null);
     const [downloadLoading, setDownloadLoading] = useState(false);
     const [activeCategory, setActiveCategory] = useState<"weekly" | "biweekly" | "monthly" | "others" | null>(null);
+    const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
     const isMonthlyMode = activeCategory === "monthly";
 
 
@@ -212,41 +241,11 @@ const PerformanceContent = () => {
         });
     }, [reports, viewYear]);
 
-    const currentYearReportsByCategory = useMemo(() => {
-        const map = new Map<string, PerformanceReport[]>();
-        for (const report of reportsInCurrentYear) {
-            const list = map.get(report.category) ?? [];
-            list.push(report);
-            map.set(report.category, list);
-        }
-        return map;
-    }, [reportsInCurrentYear]);
-
     const selectedMonthReports = selectedMonthIndex !== null
         ? reportsByMonth.get(selectedMonthIndex) ?? []
         : [];
 
-    const selectedMonthReportsByCategory = useMemo(() => {
-        const map = new Map<string, PerformanceReport[]>();
-        for (const report of selectedMonthReports) {
-            const list = map.get(report.category) ?? [];
-            list.push(report);
-            map.set(report.category, list);
-        }
-        return map;
-    }, [selectedMonthReports]);
-
     const selectedDateReports = selectedDateKey ? reportsByDate.get(selectedDateKey) ?? [] : [];
-
-    const selectedDateReportsByCategory = useMemo(() => {
-        const map = new Map<string, PerformanceReport[]>();
-        for (const report of selectedDateReports) {
-            const list = map.get(report.category) ?? [];
-            list.push(report);
-            map.set(report.category, list);
-        }
-        return map;
-    }, [selectedDateReports]);
 
     function goToPrevMonth() {
         if (viewMonth === 0) {
@@ -431,38 +430,73 @@ const PerformanceContent = () => {
                         </button>
                     </div>
 
-                    <div className="mx-auto flex w-full max-w-5xl items-center gap-2">
-                        {CATEGORY_TABS.filter((tab) => tab.value !== "monthly").map((tab) => (
+                    {/* Filter Kategori & View Mode */}
+                    <div className="flex justify-between items-center">
+                        <div className="mx-auto flex w-full max-w-5xl items-center gap-2">
+                            {CATEGORY_TABS.filter((tab) => tab.value !== "monthly").map((tab) => (
+                                <button
+                                    key={tab.label}
+                                    onClick={() => setActiveCategory(tab.value)}
+                                    className={[
+                                        "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
+                                        activeCategory === tab.value
+                                            ? tab.activeClass
+                                            : "bg-white text-slate-600 hover:bg-blue-50",
+                                    ].join(" ")}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+
+                            <div className="h-5 w-px bg-slate-300" />
+
+                            {CATEGORY_TABS.filter((tab) => tab.value === "monthly").map((tab) => (
+                                <button
+                                    key={tab.label}
+                                    onClick={() => setActiveCategory(tab.value)}
+                                    className={[
+                                        "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
+                                        activeCategory === tab.value
+                                            ? tab.activeClass
+                                            : "bg-white text-slate-600 hover:bg-blue-50",
+                                    ].join(" ")}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Visual KalenderView/ListView Toggle */}
+                        <div className="flex gap-2">
                             <button
-                                key={tab.label}
-                                onClick={() => setActiveCategory(tab.value)}
+                                onClick={() => setViewMode("list")}
+                                aria-label="Tampilan list"
                                 className={[
-                                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
-                                    activeCategory === tab.value
-                                        ? tab.activeClass
-                                        : "bg-white text-slate-600 hover:bg-blue-50",
+                                    "flex items-center gap-1.5 w-30 justify-center rounded-lg px-3 text-xs font-semibold transition-colors cursor-pointer",
+                                    viewMode === "list" ? "bg-blue-900 text-white" : "border border-slate-300 text-slate-600 font-semibold hover:bg-slate-100",
                                 ].join(" ")}
                             >
-                                {tab.label}
+                                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                                List View
                             </button>
-                        ))}
 
-                        <div className="h-5 w-px bg-slate-300" />
-
-                        {CATEGORY_TABS.filter((tab) => tab.value === "monthly").map((tab) => (
                             <button
-                                key={tab.label}
-                                onClick={() => setActiveCategory(tab.value)}
+                                onClick={() => setViewMode("calendar")}
+                                aria-label="Tampilan kalender"
                                 className={[
-                                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
-                                    activeCategory === tab.value
-                                        ? tab.activeClass
-                                        : "bg-white text-slate-600 hover:bg-blue-50",
+                                    "flex items-center gap-1.5 w-35 justify-center rounded-lg px-3 py-1 text-xs font-semibold transition-colors cursor-pointer",
+                                    viewMode === "calendar" ? "bg-blue-900 text-white" : "border border-slate-300 text-slate-600 font-semibold hover:bg-slate-100",
                                 ].join(" ")}
                             >
-                                {tab.label}
+                                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}>
+                                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                                    <path strokeLinecap="round" d="M3 10h18M8 2v4M16 2v4" />
+                                </svg>
+                                Calendar View
                             </button>
-                        ))}
+                        </div>
                     </div>
 
                     <div ref={calendarPanelRef} className="flex flex-col gap-4 lg:flex-row">
@@ -499,85 +533,124 @@ const PerformanceContent = () => {
                                 </button>
                             </div>
 
-                            {!isMonthlyMode && (
-                                <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-slate-400">
-                                    {DAY_NAMES.map((d) => (
-                                        <div key={d}>{d}</div>
-                                    ))}
-                                </div>
+                            {viewMode === "calendar" && (
+                                <>
+                                    {!isMonthlyMode && (
+                                        <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-slate-400">
+                                            {DAY_NAMES.map((d) => (
+                                                <div key={d}>{d}</div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {isMonthlyMode ? (
+                                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                                            {monthCells.map((cell) => {
+                                                const monthReports = reportsByMonth.get(cell.monthIndex);
+                                                const hasReport = !!monthReports?.length;
+                                                const isCurrentMonth = cell.monthIndex === today.getMonth() && viewYear === today.getFullYear();
+                                                const isSelected = cell.monthIndex === selectedMonthIndex;
+
+                                                return (
+                                                    <button
+                                                        key={cell.monthIndex}
+                                                        onClick={() => {
+                                                            setViewMonth(cell.monthIndex);
+                                                            setSelectedMonthIndex(cell.monthIndex);
+                                                        }}
+                                                        disabled={!hasReport}
+                                                        className={[
+                                                            "relative flex aspect-square flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors sm:text-sm",
+                                                            hasReport
+                                                                ? "cursor-pointer bg-blue-50 text-blue-900 hover:bg-blue-100"
+                                                                : "cursor-default text-slate-400",
+                                                            isSelected ? "ring-2 ring-blue-900" : "",
+                                                            isCurrentMonth ? "border border-blue-900" : "",
+                                                        ].join(" ")}
+                                                    >
+                                                        {cell.label}
+                                                        {hasReport && (
+                                                            <span className="absolute bottom-1 flex gap-0.5">
+                                                                {[...new Set(monthReports!.map((r) => r.category))].map((cat) => (
+                                                                    <span key={cat} className={`h-1.5 w-1.5 rounded-full ${getCategoryDotClass(cat)}`} />
+                                                                ))}
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-7 gap-1">
+                                            {calendarCells.map((cell, idx) => {
+                                                if (!cell.day || !cell.dateKey) {
+                                                    return <div key={idx} className="aspect-square" />;
+                                                }
+                                                const dayReports = reportsByDate.get(cell.dateKey);
+                                                const hasReport = !!dayReports?.length;
+                                                const isToday = cell.dateKey === todayKey;
+                                                const isSelected = cell.dateKey === selectedDateKey;
+
+                                                return (
+                                                    <button
+                                                        key={idx}
+                                                        onClick={() => handleDateClick(cell.dateKey!)}
+                                                        disabled={!hasReport}
+                                                        className={[
+                                                            "relative flex aspect-square flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors sm:text-sm",
+                                                            hasReport
+                                                                ? "cursor-pointer bg-blue-50 text-blue-900 hover:bg-blue-100"
+                                                                : "cursor-default text-slate-400",
+                                                            isSelected ? "ring-2 ring-blue-900" : "",
+                                                            isToday ? "border border-blue-900" : "",
+                                                        ].join(" ")}
+                                                    >
+                                                        {cell.day}
+                                                        {hasReport && (
+                                                            <span className="absolute bottom-1 flex gap-0.5">
+                                                                {[...new Set(dayReports!.map((r) => r.category))].map((cat) => (
+                                                                    <span key={cat} className={`h-1.5 w-1.5 rounded-full ${getCategoryDotClass(cat)}`} />
+                                                                ))}
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </>
                             )}
 
-                            {isMonthlyMode ? (
-                                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                                    {monthCells.map((cell) => {
-                                        const monthReports = reportsByMonth.get(cell.monthIndex);
-                                        const hasReport = !!monthReports?.length;
-                                        const isCurrentMonth = cell.monthIndex === today.getMonth() && viewYear === today.getFullYear();
-                                        const isSelected = cell.monthIndex === selectedMonthIndex;
+                            {viewMode === "list" && (
+                                <div className="flex flex-col gap-3">
+                                    {reportsInCurrentMonth.length === 0 && (
+                                        <p className="py-8 text-center text-xs text-slate-400">Belum ada laporan pada bulan ini.</p>
+                                    )}
+                                    {CATEGORY_TABS.filter((tab) => tab.value !== null).map((tab) => {
+                                        const group = currentMonthReportsByCategory.get(tab.value as string) ?? [];
+                                        if (group.length === 0) return null;
 
                                         return (
-                                            <button
-                                                key={cell.monthIndex}
-                                                onClick={() => {
-                                                    setViewMonth(cell.monthIndex);
-                                                    setSelectedMonthIndex(cell.monthIndex);
-                                                }}
-                                                disabled={!hasReport}
-                                                className={[
-                                                    "relative flex aspect-square flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors sm:text-sm",
-                                                    hasReport
-                                                        ? "cursor-pointer bg-blue-50 text-blue-900 hover:bg-blue-100"
-                                                        : "cursor-default text-slate-400",
-                                                    isSelected ? "ring-2 ring-blue-900" : "",
-                                                    isCurrentMonth ? "border border-blue-900" : "",
-                                                ].join(" ")}
-                                            >
-                                                {cell.label}
-                                                {hasReport && (
-                                                    <span className="absolute bottom-1 flex gap-0.5">
-                                                        {[...new Set(monthReports!.map((r) => r.category))].map((cat) => (
-                                                            <span key={cat} className={`h-1.5 w-1.5 rounded-full ${getCategoryDotClass(cat)}`} />
-                                                        ))}
-                                                    </span>
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-7 gap-1">
-                                    {calendarCells.map((cell, idx) => {
-                                        if (!cell.day || !cell.dateKey) {
-                                            return <div key={idx} className="aspect-square" />;
-                                        }
-                                        const dayReports = reportsByDate.get(cell.dateKey);
-                                        const hasReport = !!dayReports?.length;
-                                        const isToday = cell.dateKey === todayKey;
-                                        const isSelected = cell.dateKey === selectedDateKey;
-
-                                        return (
-                                            <button
-                                                key={idx}
-                                                onClick={() => handleDateClick(cell.dateKey!)}
-                                                disabled={!hasReport}
-                                                className={[
-                                                    "relative flex aspect-square flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors sm:text-sm",
-                                                    hasReport
-                                                        ? "cursor-pointer bg-blue-50 text-blue-900 hover:bg-blue-100"
-                                                        : "cursor-default text-slate-400",
-                                                    isSelected ? "ring-2 ring-blue-900" : "",
-                                                    isToday ? "border border-blue-900" : "",
-                                                ].join(" ")}
-                                            >
-                                                {cell.day}
-                                                {hasReport && (
-                                                    <span className="absolute bottom-1 flex gap-0.5">
-                                                        {[...new Set(dayReports!.map((r) => r.category))].map((cat) => (
-                                                            <span key={cat} className={`h-1.5 w-1.5 rounded-full ${getCategoryDotClass(cat)}`} />
-                                                        ))}
-                                                    </span>
-                                                )}
-                                            </button>
+                                            <div key={tab.label}>
+                                                <h3 className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                                    <span className={`h-1.5 w-1.5 rounded-full ${tab.dotClass}`} />
+                                                    {tab.label}
+                                                </h3>
+                                                <ul className="flex flex-col gap-2">
+                                                    {group.map((report) => (
+                                                        <li key={report.id}>
+                                                            <button
+                                                                onClick={() => openPreview(report)}
+                                                                className="cursor-pointer relative flex w-full items-center justify-between rounded-lg border border-slate-200 pl-4 pr-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
+                                                            >
+                                                                <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-lg ${getCategoryDotClass(report.category)}`} />
+                                                                <span className="text-sm font-semibold text-blue-900">{report.title}</span>
+                                                                <span className="text-xs text-slate-400">{formatDateLong(report.report_date)}</span>
+                                                            </button>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
                                         );
                                     })}
                                 </div>
@@ -593,90 +666,94 @@ const PerformanceContent = () => {
                             </div>
                         </div>
 
-                        {/* Panel laporan tanggal terpilih */}
-                        <div className="flex max-h-125 flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-lg lg:w-72">
-                            <h2 className="mb-3 text-sm font-bold text-blue-900">
-                                {isMonthlyMode
-                                    ? (selectedMonthIndex !== null ? `${MONTH_NAMES[selectedMonthIndex]} ${viewYear}` : `Laporan ${viewYear}`)
-                                    : (selectedDateKey ? formatDateLong(selectedDateKey) : `Laporan ${MONTH_NAMES[viewMonth]} ${viewYear}`)}
-                                {reportsInCurrentMonth.length > 0 && (
-                                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] ms-2 font-bold text-blue-700">
-                                        {reportsInCurrentMonth.length} laporan
-                                    </span>
-                                )}
-                            </h2>
+                        {/* Panel laporan tanggal terpilih (cuma mode kalender) */}
+                        {viewMode === "calendar" && (
+                            <div className="flex max-h-125 flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-lg lg:w-72">
+                                <h2 className="mb-3 text-sm font-bold text-blue-900">
+                                    {isMonthlyMode
+                                        ? (selectedMonthIndex !== null ? `${MONTH_NAMES[selectedMonthIndex]} ${viewYear}` : `Laporan ${viewYear}`)
+                                        : (selectedDateKey ? formatDateLong(selectedDateKey) : `Laporan ${MONTH_NAMES[viewMonth]} ${viewYear}`)}
+                                    {reportsInCurrentMonth.length > 0 && (
+                                        <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] ms-2 font-bold text-blue-700">
+                                            {reportsInCurrentMonth.length} laporan
+                                        </span>
+                                    )}
+                                </h2>
 
-                            {(() => {
-                                let activeReports: PerformanceReport[];
-                                let activeGroups: Map<string, PerformanceReport[]>;
-                                let emptyMessage: string;
+                                {(() => {
+                                    let activeReports: PerformanceReport[];
+                                    let emptyMessage: string;
 
-                                if (isMonthlyMode) {
-                                    if (selectedMonthIndex !== null) {
-                                        activeReports = selectedMonthReports;
-                                        activeGroups = selectedMonthReportsByCategory;
-                                        emptyMessage = "Tidak ada laporan di bulan ini.";
+                                    if (isMonthlyMode) {
+                                        if (selectedMonthIndex !== null) {
+                                            activeReports = selectedMonthReports;
+                                            emptyMessage = "Tidak ada laporan di bulan ini.";
+                                        } else {
+                                            activeReports = reportsInCurrentYear;
+                                            emptyMessage = "Belum ada laporan pada tahun ini.";
+                                        }
                                     } else {
-                                        activeReports = reportsInCurrentYear;
-                                        activeGroups = currentYearReportsByCategory;
-                                        emptyMessage = "Belum ada laporan pada tahun ini.";
+                                        if (selectedDateKey) {
+                                            activeReports = selectedDateReports;
+                                            emptyMessage = "Tidak ada laporan di tanggal ini.";
+                                        } else {
+                                            activeReports = reportsInCurrentMonth;
+                                            emptyMessage = "Belum ada laporan pada bulan ini.";
+                                        }
                                     }
-                                } else {
-                                    if (selectedDateKey) {
-                                        activeReports = selectedDateReports;
-                                        activeGroups = selectedDateReportsByCategory;
-                                        emptyMessage = "Tidak ada laporan di tanggal ini.";
-                                    } else {
-                                        activeReports = reportsInCurrentMonth;
-                                        activeGroups = currentMonthReportsByCategory;
-                                        emptyMessage = "Belum ada laporan pada bulan ini.";
+
+                                    if (activeReports.length === 0) {
+                                        return <p className="text-xs text-slate-400">{emptyMessage}</p>;
                                     }
-                                }
 
-                                if (activeReports.length === 0) {
-                                    return <p className="text-xs text-slate-400">{emptyMessage}</p>;
-                                }
+                                    const groups = groupReportsForDisplay(activeReports, activeCategory);
+                                    const sortedLabels = Array.from(groups.keys()).sort((a, b) => {
+                                        const indexA = CATEGORY_TABS.findIndex((t) => t.label === a);
+                                        const indexB = CATEGORY_TABS.findIndex((t) => t.label === b);
+                                        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                                        return a.localeCompare(b);
+                                    });
 
-                                return (
-                                    <div className="flex flex-col gap-3 overflow-y-auto">
-                                        {CATEGORY_TABS.filter((tab) => tab.value !== null).map((tab) => {
-                                            const group = activeGroups.get(tab.value as string) ?? [];
-                                            if (group.length === 0) return null;
-
-                                            return (
-                                                <div key={tab.label}>
-                                                    <h3 className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                                                        <span className={`h-1.5 w-1.5 rounded-full ${tab.dotClass}`} />
-                                                        {tab.label}
-                                                    </h3>
-                                                    <ul className="flex flex-col gap-2">
-                                                        {group.map((report) => (
-                                                            <li
-                                                                key={report.id}
-                                                                ref={(el) => {
-                                                                    if (el) reportRefs.current.set(report.id, el);
-                                                                    else reportRefs.current.delete(report.id);
-                                                                }}
-                                                            >
-                                                                <button
-                                                                    onClick={() => openPreview(report)}
-                                                                    className="cursor-pointer flex w-full flex-col items-start rounded-lg border border-slate-200 px-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
+                                    return (
+                                        <div className="flex flex-col gap-3 overflow-y-auto">
+                                            {sortedLabels.map((label) => {
+                                                const group = groups.get(label)!;
+                                                return (
+                                                    <div key={label}>
+                                                        <h3 className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                                            <span className={`h-1.5 w-1.5 rounded-full ${getCategoryDotClass(group[0].category)}`} />
+                                                            {label}
+                                                        </h3>
+                                                        <ul className="flex flex-col gap-2">
+                                                            {group.map((report) => (
+                                                                <li
+                                                                    key={report.id}
+                                                                    ref={(el) => {
+                                                                        if (el) reportRefs.current.set(report.id, el);
+                                                                        else reportRefs.current.delete(report.id);
+                                                                    }}
                                                                 >
-                                                                    <span className="text-xs font-semibold text-blue-900">{report.title}</span>
-                                                                    {!(selectedDateKey || (isMonthlyMode && selectedMonthIndex !== null)) && (
-                                                                        <span className="text-[10px] text-slate-400">{formatDateLong(report.report_date)}</span>
-                                                                    )}
-                                                                </button>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                );
-                            })()}
-                        </div>
+                                                                    <button
+                                                                        onClick={() => openPreview(report)}
+                                                                        className="cursor-pointer relative flex w-full flex-col items-start rounded-lg border border-slate-200 pl-4 pr-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
+                                                                    >
+                                                                        <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-lg ${getCategoryDotClass(report.category)}`} />
+                                                                        <span className="text-xs font-semibold text-blue-900">{report.title}</span>
+                                                                        {!(selectedDateKey || (isMonthlyMode && selectedMonthIndex !== null)) && (
+                                                                            <span className="text-[10px] text-slate-400">{formatDateLong(report.report_date)}</span>
+                                                                        )}
+                                                                    </button>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
