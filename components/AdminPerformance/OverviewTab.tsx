@@ -243,34 +243,6 @@ const OverviewTab = () => {
                         {w.nama}
                     </button>
                 ))}
-
-                {!showAddForm ? (
-                    <button
-                        onClick={() => setShowAddForm(true)}
-                        className="mt-2 cursor-pointer rounded-lg border border-dashed border-slate-300 px-3 py-2 text-left text-xs font-semibold text-slate-500 hover:bg-slate-50"
-                    >
-                        + Tambah Wilayah Kerja
-                    </button>
-                ) : (
-                    <form onSubmit={handleAddWilayah} className="mt-2 flex flex-col gap-2 rounded-lg border border-slate-200 p-2">
-                        <input
-                            type="text"
-                            value={newKode}
-                            onChange={(e) => setNewKode(e.target.value)}
-                            placeholder="mis. sungai-gerong"
-                            className="rounded-md border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-blue-500"
-                            required
-                        />
-                        <div className="flex gap-2">
-                            <button type="submit" className="flex-1 cursor-pointer rounded-md bg-blue-900 px-2 py-1.5 text-xs font-semibold text-white hover:bg-blue-800">
-                                Tambah
-                            </button>
-                            <button type="button" onClick={() => setShowAddForm(false)} className="cursor-pointer rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-600 hover:bg-slate-100">
-                                Batal
-                            </button>
-                        </div>
-                    </form>
-                )}
             </div>
 
             {/* ---------- Form edit ---------- */}
