@@ -24,11 +24,11 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
             setVisible(true);
             setFadingOut(false);
 
-            const fadeTimer = setTimeout(() => setFadingOut(true), 1400);
+            const fadeTimer = setTimeout(() => setFadingOut(true), 2300);
             const removeTimer = setTimeout(() => {
                 setVisible(false);
                 window.dispatchEvent(new Event("splash-finished"));
-            }, 2000);
+            }, 3000);
 
             return () => {
                 clearTimeout(fadeTimer);
@@ -65,13 +65,13 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
                     <img
                         src="/images/logo-pertamina.png"
                         alt="Logo Pertamina"
-                        className="h-20 w-20 animate-splash-logo sm:h-24 sm:w-24"
+                        className="h-16 w-16 animate-splash-logo sm:h-20 sm:w-auto"
                     />
-                    <h1 className="mt-4 animate-splash-text text-lg font-bold text-blue-900 sm:text-xl">
+                    <h1 className="mt-3 animate-splash-text text-xl font-bold text-blue-900 sm:text-2xl">
                         Pertamina Hulu Rokan Zona 1
                     </h1>
-                    <p className="mt-1 animate-splash-text text-sm font-medium text-slate-500">
-                        Melayani Sepenuh Hati
+                    <p className="mt-1 animate-splash-text text-sm font-medium text-slate-500 sm:text-base">
+                        Safer, Faster, Better
                     </p>
                 </div>
             )}

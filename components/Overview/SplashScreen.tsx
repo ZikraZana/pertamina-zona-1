@@ -8,7 +8,7 @@ const SplashScreen = () => {
 
     useEffect(() => {
         // Logo & tagline tampil ~1.8 detik, lalu mulai fade-out selama 0.6 detik
-        const fadeTimer = setTimeout(() => setFadingOut(true), 1800);
+        const fadeTimer = setTimeout(() => setFadingOut(true), 3800);
         const removeTimer = setTimeout(() => setVisible(false), 2400);
 
         return () => {
@@ -36,7 +36,7 @@ const SplashScreen = () => {
                 Pertamina Hulu Rokan Zona 1
             </h1>
             <p className="mt-1 animate-splash-text text-sm font-medium text-slate-500 sm:text-base">
-                Melayani Sepenuh Hati
+                Safer, Faster, Better
             </p>
         </div>
     );
