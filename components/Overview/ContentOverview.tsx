@@ -1150,7 +1150,7 @@ const ContentOverview = () => {
                             <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="lirik" points="250,210 250.75,170 315,170" />
                             <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="jambi" points="282,250 281.65,210 345,210" />
                             <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="jambi-merang" points="299,277 298.8,245 395,245" />
-                            <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="tamiang" points="105,60 83,120 65,120" />
+                            <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="tamiang" points="105,60 85,105 65,105" />
                             <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="meruap" points="255,265 224.75,295 200,295" />
                             <polyline className="pointer-events-none fill-none stroke-[1.2px] stroke-slate-800 opacity-100" data-line="Jabung" points="275,240 210.75,240 170,267" />
 
@@ -1203,7 +1203,7 @@ const ContentOverview = () => {
                                     <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-[#fd0017] px-2.5 py-0.75 text-[10.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#670010] hover:shadow-lg" data-badge-click="jambi-merang" data-nama-click="Jambi Merang" data-provinsi-click="ID-SS">Jambi Merang</span>
                                 </div>
                             </foreignObject>
-                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="tamiang" x="-15" y="105" width="110" height="24">
+                            <foreignObject className="pointer-events-auto overflow-visible opacity-100 transition-opacity duration-150 ease-in-out" data-badge="tamiang" x="-23" y="90" width="110" height="24">
                                 <div className="text-center">
                                     <span className="inline-block cursor-pointer whitespace-nowrap rounded-full bg-gray-500 px-2.5 py-0.75 text-[7.5px] font-semibold text-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-gray-800" data-badge-click="tamiang" data-nama-click="Tamiang Raya Energy" data-provinsi-click="ID-AC">Tamiang Raya</span>
                                 </div>
