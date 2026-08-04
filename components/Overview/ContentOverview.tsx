@@ -735,8 +735,8 @@ const ContentOverview = () => {
                   <hr class="col-span-3 my-3">
                   <p class="col-span-3 font-semibold text-blue-900">Produksi</p>
                   ${row('Tanggal Data', d.tanggal_produksi)}
-                  ${row('Produksi Minyak', `${d.produksi_minyak ?? '-'} Mbopd`)}
-                  ${row('Produksi Gas', `${d.produksi_gas ?? '-'} MMscfd`)}
+                  ${row('Produksi Minyak', `${d.produksi_minyak ?? '-'} MBOPD`)}
+                  ${row('Produksi Gas', `${d.produksi_gas ?? '-'} MMSCFD`)}
                   <div class="col-span-3 mt-4 text-xs italic text-slate-400">
                     <p>Keterangan:</p>
                     <p>MBOPD: Million Barrels of Oil per Day </p>
