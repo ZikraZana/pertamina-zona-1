@@ -4,13 +4,13 @@ import { useState } from "react";
 
 type TabKey = "produksi" | "rencana-kerja" | "hsse" | "inovasi" | "top-project" | "kehumasan";
 
-const TABS: { key: TabKey; label: string }[] = [
-    { key: "produksi", label: "Capaian Produksi" },
-    { key: "rencana-kerja", label: "Capaian Rencana Kerja" },
-    { key: "hsse", label: "Capaian HSSE" },
-    { key: "inovasi", label: "Capaian Inovasi" },
-    { key: "top-project", label: "Capaian Top Project" },
-    { key: "kehumasan", label: "Capaian Kehumasan" },
+const TABS: { key: TabKey; label: string; icon: string }[] = [
+    { key: "produksi", label: "Produksi", icon: "🛢️" },
+    { key: "rencana-kerja", label: "Rencana Kerja", icon: "🏗️" },
+    { key: "hsse", label: "HSSE", icon: "🍃" },
+    { key: "inovasi", label: "Inovasi", icon: "💡" },
+    { key: "top-project", label: "Top Project", icon: "🚀" },
+    { key: "kehumasan", label: "Kehumasan", icon: "🤝" },
 ];
 
 // ============================================================
@@ -90,10 +90,11 @@ const AchievementsContent = () => {
     return (
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-4 sm:p-6">
             <div className="text-center">
-                <h1 className="text-2xl font-bold text-blue-900 sm:text-3xl">Achievements Zona 1</h1>
-                <p className="mt-1 text-sm text-slate-500">Capaian dan pencapaian Pertamina Hulu Rokan Zona 1</p>
+                <h1 className="group relative z-10 mb-2 shrink-0 w-fit mx-auto cursor-default bg-linear-to-b from-blue-900 to-blue-500 bg-clip-text text-xl sm:text-2xl lg:text-3xl text-center font-bold text-transparent transition-transform duration-300 ease-out hover:-translate-y-1">Achievements Zona 1</h1>
+                <p className="mt-1 text-sm text-slate-500">Temukan berbagai pencapaian terbaik Pertamina Zona 1 melalui enam kategori utama di bawah ini.</p>
             </div>
 
+            {/* Tab navigasi */}
             {/* Tab navigasi */}
             <div className="flex flex-wrap justify-center gap-2">
                 {TABS.map((tab) => (
@@ -101,12 +102,13 @@ const AchievementsContent = () => {
                         key={tab.key}
                         onClick={() => setActiveTab(tab.key)}
                         className={[
-                            "cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition-colors",
+                            "flex cursor-pointer items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-semibold transition-all duration-300 ease-out",
                             activeTab === tab.key
-                                ? "bg-blue-900 text-white shadow-sm"
-                                : "bg-white text-slate-600 hover:bg-slate-100",
+                                ? "border-[#0D366D] bg-[#0D366D] text-white shadow-sm -translate-y-1"
+                                : "border-[#0D366D]/30 bg-white text-slate-600 hover:border-[#0D366D]/70 hover:text-[#0D366D]/70",
                         ].join(" ")}
                     >
+                        <span className="text-base">{tab.icon}</span>
                         {tab.label}
                     </button>
                 ))}
