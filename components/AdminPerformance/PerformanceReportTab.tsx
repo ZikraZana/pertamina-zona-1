@@ -63,11 +63,6 @@ function formatDateLong(dateStr: string) {
     return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 }
 
-function formatDateTime(dateStr: string) {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-}
-
 function formatFileSize(bytes: number | null) {
     if (!bytes) return "";
     const kb = bytes / 1024;
@@ -80,8 +75,38 @@ function getCategoryLabel(category: string) {
 }
 
 // ============================================================
-// PROPS — auth ditangani oleh parent (AdminPerformanceContent),
-// component ini tinggal terima hasilnya.
+// HELPER FUNCTION UNTUK GROUPING MINGGUAN / DUA MINGGUAN
+// ============================================================
+function groupReportsForDisplay(reports: PerformanceReport[], activeCat: string | null) {
+    const map = new Map<string, PerformanceReport[]>();
+    for (const report of reports) {
+        let label = getCategoryLabel(report.category);
+
+        // Jika filter aktif adalah weekly, pisah berdasarkan tanggal
+        if (activeCat === "weekly" && report.category === "weekly" || activeCat === "others" && report.category === "others") {
+            const d = new Date(`${report.report_date}T00:00:00`).getDate();
+            if (d <= 7) label = "Week 1 (Tgl 1-7)";
+            else if (d <= 14) label = "Week 2 (Tgl 8-14)";
+            else if (d <= 21) label = "Week 3 (Tgl 15-21)";
+            else if (d <= 28) label = "Week 4 (Tgl 22-28)";
+            else label = "Week 5 (Tgl 29+)";
+        }
+        // Jika filter aktif adalah biweekly, pisah berdasarkan rentang 14 hari
+        else if (activeCat === "biweekly" && report.category === "biweekly") {
+            const d = new Date(`${report.report_date}T00:00:00`).getDate();
+            if (d <= 14) label = "Bi-Weekly 1 (Tgl 1-14)";
+            else label = "Bi-Weekly 2 (Tgl 15+)";
+        }
+
+        const list = map.get(label) ?? [];
+        list.push(report);
+        map.set(label, list);
+    }
+    return map;
+}
+
+// ============================================================
+// PROPS
 // ============================================================
 type Props = {
     userEmail: string;
@@ -90,32 +115,64 @@ type Props = {
 };
 
 const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
-    // ============================================================
-    // STATE — untuk kalender, panel, dan modal preview.
-    // ============================================================
+    // State Kalender & View
     const today = useMemo(() => new Date(), []);
     const [viewYear, setViewYear] = useState(today.getFullYear());
     const [viewMonth, setViewMonth] = useState(today.getMonth());
     const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
     const [selectedMonthIndex, setSelectedMonthIndex] = useState<number | null>(null);
-    const [previewReport, setPreviewReport] = useState<PerformanceReport | null>(null);
-    const [showUploadForm, setShowUploadForm] = useState(false);
+    const [viewMode, setViewMode] = useState<"calendar" | "list">("list");
+    const [activeCategory, setActiveCategory] = useState<"weekly" | "biweekly" | "monthly" | "others" | null>(null);
+    const isMonthlyMode = activeCategory === "monthly";
+
+    // State Data & Fetching
     const [reports, setReports] = useState<PerformanceReport[]>([]);
+    const [isFetching, setIsFetching] = useState(true);
+
+    // State Modal Preview
+    const [previewReport, setPreviewReport] = useState<PerformanceReport | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [previewLoading, setPreviewLoading] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
     const [downloadLoading, setDownloadLoading] = useState(false);
-    const [activeCategory, setActiveCategory] = useState<"weekly" | "biweekly" | "monthly" | "others" | null>(null);
-    const [viewMode, setViewMode] = useState<"calendar" | "list">("list");
-    const isMonthlyMode = activeCategory === "monthly";
 
+    // State Formulir (Upload/Edit)
+    const [showUploadForm, setShowUploadForm] = useState(false);
+    const [uploadDate, setUploadDate] = useState("");
+    const [uploadFile, setUploadFile] = useState<File | null>(null);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const [uploadLoading, setUploadLoading] = useState(false);
+    const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [category, setCategory] = useState<"weekly" | "biweekly" | "monthly" | "others">("weekly");
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [editDate, setEditDate] = useState("");
+    const [editFile, setEditFile] = useState<File | null>(null);
+    const [editCategory, setEditCategory] = useState<"weekly" | "biweekly" | "monthly" | "others">("weekly");
+    const [editLoading, setEditLoading] = useState(false);
+    const [editError, setEditError] = useState<string | null>(null);
+
+    const reportRefs = useRef<Map<string, HTMLLIElement>>(new Map());
+    const calendarPanelRef = useRef<HTMLDivElement>(null);
+
+    // ============================================================
+    // FETCH DATA
+    // ============================================================
     async function fetchReports() {
-        const url = activeCategory
-            ? `/api/performance-reports?category=${activeCategory}`
-            : "/api/performance-reports";
-        const res = await fetch(url);
-        const json = await res.json();
-        setReports(json.reports)
+        setIsFetching(true);
+        try {
+            const url = activeCategory
+                ? `/api/performance-reports?category=${activeCategory}`
+                : "/api/performance-reports";
+            const res = await fetch(url);
+            const json = await res.json();
+            setReports(json.reports);
+        } catch (error) {
+            console.error("Gagal mengambil laporan", error);
+        } finally {
+            setIsFetching(false);
+        }
     }
 
     useEffect(() => {
@@ -137,6 +194,9 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
         };
     }, [previewReport]);
 
+    // ============================================================
+    // MEMOIZED DATA UNTUK FILTERING
+    // ============================================================
     const reportsByMonth = useMemo(() => {
         const map = new Map<number, PerformanceReport[]>();
         for (const report of reports) {
@@ -149,7 +209,6 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
         return map;
     }, [reports, viewYear]);
 
-    // Peta tanggal -> laporan, untuk lookup cepat di kalender
     const reportsByDate = useMemo(() => {
         const map = new Map<string, PerformanceReport[]>();
         for (const report of reports) {
@@ -184,42 +243,15 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
         });
     }, [reports, viewYear]);
 
-    const currentYearReportsByCategory = useMemo(() => {
-        const map = new Map<string, PerformanceReport[]>();
-        for (const report of reportsInCurrentYear) {
-            const list = map.get(report.category) ?? [];
-            list.push(report);
-            map.set(report.category, list);
-        }
-        return map;
-    }, [reportsInCurrentYear]);
-
     const selectedMonthReports = selectedMonthIndex !== null
         ? reportsByMonth.get(selectedMonthIndex) ?? []
         : [];
 
-    const selectedMonthReportsByCategory = useMemo(() => {
-        const map = new Map<string, PerformanceReport[]>();
-        for (const report of selectedMonthReports) {
-            const list = map.get(report.category) ?? [];
-            list.push(report);
-            map.set(report.category, list);
-        }
-        return map;
-    }, [selectedMonthReports]);
-
     const selectedDateReports = selectedDateKey ? reportsByDate.get(selectedDateKey) ?? [] : [];
 
-    const selectedDateReportsByCategory = useMemo(() => {
-        const map = new Map<string, PerformanceReport[]>();
-        for (const report of selectedDateReports) {
-            const list = map.get(report.category) ?? [];
-            list.push(report);
-            map.set(report.category, list);
-        }
-        return map;
-    }, [selectedDateReports]);
-
+    // ============================================================
+    // FUNGSI KALENDER
+    // ============================================================
     function goToPrevMonth() {
         if (viewMonth === 0) {
             setViewMonth(11);
@@ -276,6 +308,9 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
         setSelectedDateKey(dateKey);
     }
 
+    // ============================================================
+    // FUNGSI PREVIEW & DOWNLOAD
+    // ============================================================
     async function openPreview(report: PerformanceReport) {
         setPreviewReport(report);
         setPreviewUrl(null);
@@ -324,24 +359,11 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
         setIsEditing(false);
     }
 
-    const [uploadDate, setUploadDate] = useState("");
-    const [uploadFile, setUploadFile] = useState<File | null>(null);
-    const [uploadError, setUploadError] = useState<string | null>(null);
-    const [uploadLoading, setUploadLoading] = useState(false)
-    const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [editDate, setEditDate] = useState("");
-    const [editFile, setEditFile] = useState<File | null>(null);
-    const [editCategory, setEditCategory] = useState<"weekly" | "biweekly" | "monthly" | "others">("weekly");
-    const [editLoading, setEditLoading] = useState(false);
-    const [editError, setEditError] = useState<string | null>(null);
-    const [category, setCategory] = useState<"weekly" | "biweekly" | "monthly" | "others">("weekly");
-    const reportRefs = useRef<Map<string, HTMLLIElement>>(new Map());
-    const calendarPanelRef = useRef<HTMLDivElement>(null);
-
+    // ============================================================
+    // FUNGSI UPLOAD, EDIT, DELETE (ADMIN ONLY)
+    // ============================================================
     function handleDragOver(e: React.DragEvent<HTMLLabelElement>) {
-        e.preventDefault();   // wajib, biar browser tidak buka file-nya sendiri
+        e.preventDefault();
         setIsDragging(true);
     }
 
@@ -473,11 +495,11 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
     }
 
     // ============================================================
-    // RENDER — tidak ada lagi pengecekan auth, karena parent
-    // (AdminPerformanceContent) sudah memastikan user login & admin.
+    // RENDER UI
     // ============================================================
     return (
         <div className="flex flex-col gap-4">
+            {/* Header Control Panel */}
             <div className="flex flex-col items-start justify-end gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center">
                 <div className="flex items-center gap-2">
                     {role === "admin" && (
@@ -581,6 +603,7 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                 </form>
             )}
 
+            {/* Filter Kategori & View Mode */}
             <div className="flex justify-between items-center">
                 <div className="mx-auto flex w-full max-w-5xl items-center gap-2">
                     {CATEGORY_TABS.filter((tab) => tab.value !== "monthly").map((tab) => (
@@ -615,7 +638,8 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                         </button>
                     ))}
                 </div>
-                {/* Visual KalenderView/ListView */}
+
+                {/* Visual KalenderView/ListView Toggle */}
                 <div className="flex gap-2">
                     <button
                         onClick={() => setViewMode("list")}
@@ -645,12 +669,13 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                         </svg>
                         Calendar View
                     </button>
-
                 </div>
             </div>
 
+            {/* Layout Utama (Kalender / List) */}
             <div ref={calendarPanelRef} className="flex flex-col gap-4 lg:flex-row">
-                {/* Kalender */}
+
+                {/* Panel Utama (Kalender / List View) */}
                 <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-lg lg:flex-1">
                     <div className="mb-4 flex items-center justify-between">
                         <button
@@ -666,7 +691,7 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                             <span className="text-sm font-bold text-blue-900 sm:text-base">
                                 {isMonthlyMode ? viewYear : `${MONTH_NAMES[viewMonth]} ${viewYear}`}
                             </span>
-                            {reportsInCurrentMonth.length > 0 && (
+                            {reportsInCurrentMonth.length > 0 && !isFetching && (
                                 <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">
                                     {reportsInCurrentMonth.length} laporan
                                 </span>
@@ -685,7 +710,6 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
 
                     {viewMode === "calendar" && (
                         <>
-
                             {!isMonthlyMode && (
                                 <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-slate-400">
                                     {DAY_NAMES.map((d) => (
@@ -720,7 +744,7 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                                                 ].join(" ")}
                                             >
                                                 {cell.label}
-                                                {hasReport && (
+                                                {hasReport && !isFetching && (
                                                     <span className="absolute bottom-1 flex gap-0.5">
                                                         {[...new Set(monthReports!.map((r) => r.category))].map((cat) => (
                                                             <span key={cat} className={`h-1.5 w-1.5 rounded-full ${getCategoryDotClass(cat)}`} />
@@ -757,7 +781,7 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                                                 ].join(" ")}
                                             >
                                                 {cell.day}
-                                                {hasReport && (
+                                                {hasReport && !isFetching && (
                                                     <span className="absolute bottom-1 flex gap-0.5">
                                                         {[...new Set(dayReports!.map((r) => r.category))].map((cat) => (
                                                             <span key={cat} className={`h-1.5 w-1.5 rounded-full ${getCategoryDotClass(cat)}`} />
@@ -774,36 +798,54 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
 
                     {viewMode === "list" && (
                         <div className="flex flex-col gap-3">
-                            {reportsInCurrentMonth.length === 0 && (
-                                <p className="py-8 text-center text-xs text-slate-400">Belum ada laporan pada bulan ini.</p>
-                            )}
-                            {CATEGORY_TABS.filter((tab) => tab.value !== null).map((tab) => {
-                                const group = currentMonthReportsByCategory.get(tab.value as string) ?? [];
-                                if (group.length === 0) return null;
+                            {isFetching ? (
+                                <div className="flex flex-col gap-4 py-2">
+                                    {[1, 2].map((groupIndex) => (
+                                        <div key={groupIndex} className="animate-pulse">
+                                            <div className="mb-3 h-2.5 w-32 rounded-full bg-slate-200"></div>
+                                            <div className="flex flex-col gap-2">
+                                                {[1, 2, 3].map((itemIndex) => (
+                                                    <div key={itemIndex} className="h-14 w-full rounded-lg border border-slate-100 bg-slate-50"></div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <>
+                                    {reportsInCurrentMonth.length === 0 && (
+                                        <p className="py-8 text-center text-xs text-slate-400">Belum ada laporan pada bulan ini.</p>
+                                    )}
 
-                                return (
-                                    <div key={tab.label}>
-                                        <h3 className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                                            <span className={`h-1.5 w-1.5 rounded-full ${tab.dotClass}`} />
-                                            {tab.label}
-                                        </h3>
-                                        <ul className="flex flex-col gap-2">
-                                            {group.map((report) => (
-                                                <li key={report.id}>
-                                                    <button
-                                                        onClick={() => openPreview(report)}
-                                                        className="cursor-pointer relative flex w-full items-center justify-between rounded-lg border border-slate-200 pl-4 pr-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
-                                                    >
-                                                        <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-lg ${getCategoryDotClass(report.category)}`} />
-                                                        <span className="text-sm font-semibold text-blue-900">{report.title}</span>
-                                                        <span className="text-xs text-slate-400">{formatDateLong(report.report_date)}</span>
-                                                    </button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                );
-                            })}
+                                    {CATEGORY_TABS.filter((tab) => tab.value !== null).map((tab) => {
+                                        const group = currentMonthReportsByCategory.get(tab.value as string) ?? [];
+                                        if (group.length === 0) return null;
+
+                                        return (
+                                            <div key={tab.label}>
+                                                <h3 className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                                    <span className={`h-1.5 w-1.5 rounded-full ${tab.dotClass}`} />
+                                                    {tab.label}
+                                                </h3>
+                                                <ul className="flex flex-col gap-2">
+                                                    {group.map((report) => (
+                                                        <li key={report.id}>
+                                                            <button
+                                                                onClick={() => openPreview(report)}
+                                                                className="cursor-pointer relative flex w-full items-center justify-between rounded-lg border border-slate-200 pl-4 pr-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
+                                                            >
+                                                                <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-lg ${getCategoryDotClass(report.category)}`} />
+                                                                <span className="text-sm font-semibold text-blue-900">{report.title}</span>
+                                                                <span className="text-xs text-slate-400">{formatDateLong(report.report_date)}</span>
+                                                            </button>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        );
+                                    })}
+                                </>
+                            )}
                         </div>
                     )}
 
@@ -817,7 +859,7 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                     </div>
                 </div>
 
-                {/* Panel laporan tanggal terpilih */}
+                {/* Panel laporan tanggal terpilih (Samping Kalender) */}
                 {viewMode === "calendar" && (
                     <>
                         <div className="flex max-h-125 flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-lg lg:w-72">
@@ -825,84 +867,100 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                                 {isMonthlyMode
                                     ? (selectedMonthIndex !== null ? `${MONTH_NAMES[selectedMonthIndex]} ${viewYear}` : `Laporan ${viewYear}`)
                                     : (selectedDateKey ? formatDateLong(selectedDateKey) : `Laporan ${MONTH_NAMES[viewMonth]} ${viewYear}`)}
-                                {reportsInCurrentMonth.length > 0 && (
+                                {reportsInCurrentMonth.length > 0 && !isFetching && (
                                     <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] ms-2 font-bold text-blue-700">
                                         {reportsInCurrentMonth.length} laporan
                                     </span>
                                 )}
                             </h2>
 
-                            {(() => {
-                                let activeReports: PerformanceReport[];
-                                let activeGroups: Map<string, PerformanceReport[]>;
-                                let emptyMessage: string;
+                            {isFetching ? (
+                                <div className="flex flex-col gap-4 py-2">
+                                    {[1, 2].map((groupIndex) => (
+                                        <div key={groupIndex} className="animate-pulse">
+                                            <div className="mb-3 h-2.5 w-24 rounded-full bg-slate-200"></div>
+                                            <div className="flex flex-col gap-2">
+                                                {[1, 2].map((itemIndex) => (
+                                                    <div key={itemIndex} className="h-12 w-full rounded-lg border border-slate-100 bg-slate-50"></div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                (() => {
+                                    let activeReports: PerformanceReport[];
+                                    let emptyMessage: string;
 
-                                if (isMonthlyMode) {
-                                    if (selectedMonthIndex !== null) {
-                                        activeReports = selectedMonthReports;
-                                        activeGroups = selectedMonthReportsByCategory;
-                                        emptyMessage = "Tidak ada laporan di bulan ini.";
+                                    if (isMonthlyMode) {
+                                        if (selectedMonthIndex !== null) {
+                                            activeReports = selectedMonthReports;
+                                            emptyMessage = "Tidak ada laporan di bulan ini.";
+                                        } else {
+                                            activeReports = reportsInCurrentYear;
+                                            emptyMessage = "Belum ada laporan pada tahun ini.";
+                                        }
                                     } else {
-                                        activeReports = reportsInCurrentYear;
-                                        activeGroups = currentYearReportsByCategory;
-                                        emptyMessage = "Belum ada laporan pada tahun ini.";
+                                        if (selectedDateKey) {
+                                            activeReports = selectedDateReports;
+                                            emptyMessage = "Tidak ada laporan di tanggal ini.";
+                                        } else {
+                                            activeReports = reportsInCurrentMonth;
+                                            emptyMessage = "Belum ada laporan pada bulan ini.";
+                                        }
                                     }
-                                } else {
-                                    if (selectedDateKey) {
-                                        activeReports = selectedDateReports;
-                                        activeGroups = selectedDateReportsByCategory;
-                                        emptyMessage = "Tidak ada laporan di tanggal ini.";
-                                    } else {
-                                        activeReports = reportsInCurrentMonth;
-                                        activeGroups = currentMonthReportsByCategory;
-                                        emptyMessage = "Belum ada laporan pada bulan ini.";
+
+                                    if (activeReports.length === 0) {
+                                        return <p className="text-xs text-slate-400">{emptyMessage}</p>;
                                     }
-                                }
 
-                                if (activeReports.length === 0) {
-                                    return <p className="text-xs text-slate-400">{emptyMessage}</p>;
-                                }
+                                    const groups = groupReportsForDisplay(activeReports, activeCategory);
+                                    const sortedLabels = Array.from(groups.keys()).sort((a, b) => {
+                                        const indexA = CATEGORY_TABS.findIndex(t => t.label === a);
+                                        const indexB = CATEGORY_TABS.findIndex(t => t.label === b);
+                                        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                                        return a.localeCompare(b);
+                                    });
 
-                                return (
-                                    <div className="flex flex-col gap-3 overflow-y-auto">
-                                        {CATEGORY_TABS.filter((tab) => tab.value !== null).map((tab) => {
-                                            const group = activeGroups.get(tab.value as string) ?? [];
-                                            if (group.length === 0) return null;
-
-                                            return (
-                                                <div key={tab.label}>
-                                                    <h3 className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                                                        <span className={`h-1.5 w-1.5 rounded-full ${tab.dotClass}`} />
-                                                        {tab.label}
-                                                    </h3>
-                                                    <ul className="flex flex-col gap-2">
-                                                        {group.map((report) => (
-                                                            <li
-                                                                key={report.id}
-                                                                ref={(el) => {
-                                                                    if (el) reportRefs.current.set(report.id, el);
-                                                                    else reportRefs.current.delete(report.id);
-                                                                }}
-                                                            >
-                                                                <button
-                                                                    onClick={() => openPreview(report)}
-                                                                    className="cursor-pointer relative flex w-full flex-col items-start rounded-lg border border-slate-200 pl-4 pr-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
+                                    return (
+                                        <div className="flex flex-col gap-3 overflow-y-auto">
+                                            {sortedLabels.map((label) => {
+                                                const group = groups.get(label)!;
+                                                return (
+                                                    <div key={label}>
+                                                        <h3 className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                                            <span className={`h-1.5 w-1.5 rounded-full ${getCategoryDotClass(group[0].category)}`} />
+                                                            {label}
+                                                        </h3>
+                                                        <ul className="flex flex-col gap-2">
+                                                            {group.map((report) => (
+                                                                <li
+                                                                    key={report.id}
+                                                                    ref={(el) => {
+                                                                        if (el) reportRefs.current.set(report.id, el);
+                                                                        else reportRefs.current.delete(report.id);
+                                                                    }}
                                                                 >
-                                                                    <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-lg ${getCategoryDotClass(report.category)}`} />
-                                                                    <span className="text-xs font-semibold text-blue-900">{report.title}</span>
-                                                                    {!(selectedDateKey || (isMonthlyMode && selectedMonthIndex !== null)) && (
-                                                                        <span className="text-[10px] text-slate-400">{formatDateLong(report.report_date)}</span>
-                                                                    )}
-                                                                </button>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                );
-                            })()}
+                                                                    <button
+                                                                        onClick={() => openPreview(report)}
+                                                                        className="cursor-pointer relative flex w-full flex-col items-start rounded-lg border border-slate-200 pl-4 pr-3 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-50"
+                                                                    >
+                                                                        <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-lg ${getCategoryDotClass(report.category)}`} />
+                                                                        <span className="text-xs font-semibold text-blue-900">{report.title}</span>
+                                                                        {!(selectedDateKey || (isMonthlyMode && selectedMonthIndex !== null)) && (
+                                                                            <span className="text-[10px] text-slate-400">{formatDateLong(report.report_date)}</span>
+                                                                        )}
+                                                                    </button>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })()
+                            )}
                         </div>
                     </>
                 )}
@@ -1037,8 +1095,10 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                             ) : (
                                 <>
                                     {previewLoading && (
-                                        <div className="flex h-full items-center justify-center text-sm text-slate-400">
-                                            Memuat pratinjau...
+                                        <div className="flex h-full flex-col gap-4 p-5 animate-pulse">
+                                            <div className="h-8 w-3/4 rounded-lg bg-slate-200"></div>
+                                            <div className="h-4 w-1/2 rounded-md bg-slate-200"></div>
+                                            <div className="mt-4 flex-1 rounded-xl bg-slate-200"></div>
                                         </div>
                                     )}
                                     {previewError && (
@@ -1071,4 +1131,4 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
     );
 };
 
-export default PerformanceReportTab
+export default PerformanceReportTab;
