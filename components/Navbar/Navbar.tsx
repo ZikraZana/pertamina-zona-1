@@ -40,20 +40,19 @@ const Navbar = () => {
                     className="flex items-center gap-2.5"
                     onClick={() => setOpen(false)}
                 >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-900 shadow-sm">
-                        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-                            <path
-                                d="M12 2c0 0-6 7.5-6 12a6 6 0 0 0 12 0c0-4.5-6-12-6-12Z"
-                                fill="#f59e0b"
-                            />
-                        </svg>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm">
+                        <img
+                            src="/images/logo-pertamina-v.png"
+                            alt="Logo Pertamina"
+                            className="h-8 w-8 object-contain"
+                        />
                     </span>
                     <span className="flex flex-col leading-tight">
                         <span className="text-sm font-bold text-blue-900 sm:text-base">
-                            Pertamina Zona 1
+                            Pertamina Hulu Rokan Zona 1
                         </span>
                         <span className="text-[10px] font-medium tracking-wide text-slate-400 sm:text-xs">
-                            Dashboard Magang
+                            Dashboard
                         </span>
                     </span>
                 </Link>
