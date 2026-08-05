@@ -7,6 +7,7 @@ import OverviewTab from "./OverviewTab";
 import PerformanceReportTab from "./PerformanceReportTab";
 import AdminLog from "./AdminLog";
 import AdminProfile from "./AdminProfile";
+import AchievementTab from "./AchievementTab";
 
 const AdminPerformanceContent = () => {
     const supabase = useMemo(() => createClient(), []);
@@ -18,7 +19,7 @@ const AdminPerformanceContent = () => {
     const [loginError, setLoginError] = useState<string | null>(null);
     const [role, setRole] = useState<"admin" | "user" | null>(null);
     const [activeTabMain, setActiveTabMain] = useState<"dashboard" | "adminProfile">("dashboard");
-    const [activeTab, setActiveTab] = useState<"wilayah" | "performance" | "adminLog">("wilayah");
+    const [activeTab, setActiveTab] = useState<"wilayah" | "performance" | "adminLog" | "achievement">("wilayah");
     const [fullName, setFullName] = useState<string | null>(null);
 
     async function handleLogin(e: React.FormEvent) {
@@ -222,6 +223,17 @@ const AdminPerformanceContent = () => {
                                     Performance Report
                                 </button>
                                 <button
+                                    onClick={() => setActiveTab("achievement")}
+                                    className={[
+                                        "cursor-pointer border-b-2 px-4 py-2 text-sm font-semibold transition-colors",
+                                        activeTab === "achievement"
+                                            ? "border-blue-900 text-blue-900"
+                                            : "border-transparent text-slate-400 hover:text-slate-600",
+                                    ].join(" ")}
+                                >
+                                    Achievement
+                                </button>
+                                <button
                                     onClick={() => setActiveTab("adminLog")}
                                     className={[
                                         "cursor-pointer border-b-2 px-4 py-2 text-sm font-semibold transition-colors",
@@ -238,6 +250,7 @@ const AdminPerformanceContent = () => {
                             {activeTab === "performance" && (
                                 <PerformanceReportTab userEmail={user?.email ?? ""} role={role ?? "user"} onLogout={handleLogout} />
                             )}
+                            {activeTab === "achievement" && <AchievementTab />}
                             {activeTab === "adminLog" && <AdminLog />}
                         </>
                     )}

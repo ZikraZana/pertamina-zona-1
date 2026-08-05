@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type TabKey = "produksi" | "rencana-kerja" | "hsse" | "inovasi" | "top-project" | "kehumasan";
 
@@ -181,8 +181,41 @@ function FieldAwardCard({ field, awards }: { field: string; awards: AwardItem[] 
 // KOMPONEN UTAMA
 // ============================================================
 
+type ProduksiData = {
+    jenis: "minyak" | "gas";
+    realisasi: number;
+    target: number;
+    periode: string;
+    unit: string;
+}
+
+function formatAngkaID(n: number) {
+    return n.toLocaleString('id-ID');
+}
+
+
 const AchievementsContent = () => {
     const [activeTab, setActiveTab] = useState<TabKey>("produksi");
+    const [produksiData, setProduksiData] = useState<Record<string, ProduksiData>>({});
+
+    useEffect(() => {
+        async function fetchProduksi() {
+
+            try {
+                const res = await fetch('api/achievement/produksi');
+                const json = await res.json();
+                const map: Record<string, ProduksiData> = {};
+                for (const row of json.data ?? []) {
+                    map[row.jenis] = row
+                }
+                setProduksiData(map);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data produksi:", err);
+            }
+        }
+        fetchProduksi()
+    }, []);
 
     return (
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-4 sm:p-6">
@@ -214,64 +247,71 @@ const AchievementsContent = () => {
             <div className="animate-page-fade-in" key={activeTab}>
                 {activeTab === "produksi" && (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <ProductionCard
-                            title="Produksi Minyak"
-                            unit="BOPD"
-                            realisasi="19.899"
-                            target="21.845"
-                            percentValue={91}
-                            periode="YTD November 2025 · AR Nov 2025"
-                            accentColor="amber"
-                        />
-                        <ProductionCard
-                            title="Produksi Gas"
-                            unit="MMSCFD"
-                            realisasi="223,94"
-                            target="246,15"
-                            percentValue={91}
-                            periode="YTD November 2025 · AR Nov 2025"
-                            accentColor="sky"
-                        />
+                        {produksiData.minyak && (
+                            <>
+                                <ProductionCard
+                                    title="Produksi Minyak"
+                                    unit={produksiData.minyak.unit ?? "-"}
+                                    realisasi={formatAngkaID(produksiData.minyak.realisasi ?? "-")}
+                                    target={formatAngkaID(produksiData.minyak.target ?? "-")}
+                                    percentValue={Math.round((produksiData.minyak.realisasi / produksiData.minyak.target) * 100) || 0}
+                                    periode={produksiData.minyak.periode ?? "-"}
+                                    accentColor="amber"
+                                />
+                            </>
+                        )}
+                        {produksiData.gas && (
+                            <ProductionCard
+                                title="Produksi Gas"
+                                unit={produksiData.gas.unit ?? "-"}
+                                realisasi={formatAngkaID(produksiData.gas.realisasi ?? "-")}
+                                target={formatAngkaID(produksiData.gas.target ?? "-")}
+                                percentValue={Math.round((produksiData.gas.realisasi / produksiData.gas.target) * 100) || 0}
+                                periode={produksiData.gas.periode ?? "-"}
+                                accentColor="sky"
+                            />
+                        )}
+
                     </div>
                 )}
 
                 {activeTab === "rencana-kerja" && (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <RankedListCard
-                        title="Top 5 Capaian RK Bor"
-                        subtitle="Realisasi produksi sumur terbaik"
-                        accentColor="amber"
-                        items={[
-                            { label: "PPS-015A", field: "Field Jambi", value: "848,35 BOPD" },
-                            { label: "PPS-020", field: "Field Jambi", value: "330,31 BOPD" },
-                            { label: "PPJ-068", field: "Field Pangkalan Susu", value: "179,19 BOPD" },
-                            { label: "PPJ-067", field: "Field Pangkalan Susu", value: "129,44 BOPD" },
-                            { label: "P-474", field: "Field Rantau", value: "70 BOPD" },
-                        ]}
-                    />
-                    <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <RankedListCard
-                            title="Pencapaian RK Workover"
-                            subtitle="Realisasi produksi hasil workover"
-                            accentColor="sky"
+                            title="Top 5 Capaian RK Bor"
+                            subtitle="Realisasi produksi sumur terbaik"
+                            accentColor="amber"
                             items={[
-                                { label: "PPS-015B", field: "Field Jambi", value: "317,04 BOPD" },
-                                { label: "PPS-12", field: "Field Jambi", value: "135,46 BOPD" },
+                                { label: "PPS-015A", field: "Field Jambi", value: "848,35 BOPD" },
+                                { label: "PPS-020", field: "Field Jambi", value: "330,31 BOPD" },
+                                { label: "PPJ-068", field: "Field Pangkalan Susu", value: "179,19 BOPD" },
+                                { label: "PPJ-067", field: "Field Pangkalan Susu", value: "129,44 BOPD" },
+                                { label: "P-474", field: "Field Rantau", value: "70 BOPD" },
                             ]}
                         />
-                        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
-                            <p className="text-sm font-semibold text-slate-500">Capaian OPTIMUS</p>
-                            <div className="mt-3 flex items-baseline gap-2">
-                                <span className="text-4xl font-extrabold tracking-tight text-slate-900">8,2</span>
-                                <span className="text-sm font-medium text-slate-400">Juta USD</span>
+                        <div className="flex flex-col gap-4">
+                            <RankedListCard
+                                title="Pencapaian RK Workover"
+                                subtitle="Realisasi produksi hasil workover"
+                                accentColor="sky"
+                                items={[
+                                    { label: "PPS-015B", field: "Field Jambi", value: "317,04 BOPD" },
+                                    { label: "PPS-12", field: "Field Jambi", value: "135,46 BOPD" },
+                                ]}
+                            />
+                            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
+                                <p className="text-sm font-semibold text-slate-500">Capaian OPTIMUS</p>
+                                <div className="mt-3 flex items-baseline gap-2">
+                                    <span className="text-4xl font-extrabold tracking-tight text-slate-900">8,2</span>
+                                    <span className="text-sm font-medium text-slate-400">Juta USD</span>
+                                </div>
+                                <span className="mt-2 inline-block rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                                    120% dari Target
+                                </span>
                             </div>
-                            <span className="mt-2 inline-block rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
-                                120% dari Target
-                            </span>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
                 {activeTab === "hsse" && (
                     <div className="flex flex-col gap-4">
@@ -426,7 +466,7 @@ const AchievementsContent = () => {
 
                 {activeTab === "kehumasan" && (
                     <div className="flex flex-col gap-4">
-                      {/* Ringkasan medali (podium) */}
+                        {/* Ringkasan medali (podium) */}
                         <div className="grid grid-cols-3 items-end gap-4">
                             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-center transition-transform duration-300 ease-out hover:-translate-y-2">
                                 <p className="text-3xl font-extrabold text-amber-600">2</p>
@@ -476,7 +516,7 @@ const AchievementsContent = () => {
                                     {
                                         text: "Kategori Manajemen Krisis Sub Kategori Krisis & Pasca Krisis",
                                         medal: "gold",
-                                        
+
                                     },
                                 ]}
                             />
@@ -486,7 +526,7 @@ const AchievementsContent = () => {
                                     {
                                         text: "Kategori Program Komunikasi Social Responsibility Sub Kategori Community Based Development",
                                         medal: "bronze",
-                                
+
                                     },
                                 ]}
                             />
