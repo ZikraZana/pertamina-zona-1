@@ -541,18 +541,41 @@ const AchievementsContent = () => {
                 {activeTab === "kehumasan" && (
                     <div className="flex flex-col gap-4">
                         {/* Ringkasan medali (podium) */}
-                        <div className="grid grid-cols-3 items-end gap-4">
-                            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-center transition-transform duration-300 ease-out hover:-translate-y-2">
-                                <p className="text-3xl font-extrabold text-amber-600">2</p>
-                                <p className="mt-1 text-xs font-semibold text-amber-700">Gold Winner</p>
+                        <div className="grid grid-cols-3 items-end gap-3">
+                            {/* Silver */}
+                            <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-linear-to-b from-slate-50 to-white p-5 text-center shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
+                                <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-slate-200/40 blur-xl" />
+                                <span className="text-3xl">🥈</span>
+                                <p className="mt-2 flex items-center justify-center gap-1.5">
+                                    {/* <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-400 text-sm font-extrabold text-white">
+                                        1
+                                    </span> */}
+                                </p>
+                                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-slate-500">1 Silver Winner</p>
                             </div>
-                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center transition-transform duration-300 ease-out hover:-translate-y-2">
-                                <p className="text-3xl font-extrabold text-slate-500">1</p>
-                                <p className="mt-1 text-xs font-semibold text-slate-600">Silver Winner</p>
+
+                            {/* Gold */}
+                            <div className="group relative -mt-8 overflow-hidden rounded-2xl border border-amber-300 bg-linear-to-b from-amber-50 to-white p-5 text-center shadow-lg ring-1 ring-amber-200 transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl">
+                                <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-amber-300/30 blur-xl" />
+                                <span className="text-4xl drop-shadow-sm">🥇</span>
+                                <p className="mt-2 flex items-center justify-center gap-1.5">
+                                    {/* <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 text-base font-extrabold text-white shadow-sm">
+                                        2
+                                    </span> */}
+                                </p>
+                                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-amber-700">2 Gold Winner</p>
                             </div>
-                            <div className="rounded-2xl border border-orange-200 bg-orange-50 p-4 text-center transition-transform duration-300 ease-out hover:-translate-y-2">
-                                <p className="text-3xl font-extrabold text-orange-700">2</p>
-                                <p className="mt-1 text-xs font-semibold text-orange-700">Bronze Winner</p>
+
+                            {/* Bronze */}
+                            <div className="group relative overflow-hidden rounded-2xl border border-orange-200 bg-linear-to-b from-orange-50 to-white p-5 text-center shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
+                                <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-orange-200/40 blur-xl" />
+                                <span className="text-3xl">🥉</span>
+                                <p className="mt-2 flex items-center justify-center gap-1.5">
+                                    {/* <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-sm font-extrabold text-white">
+                                        2
+                                    </span> */}
+                                </p>
+                                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-orange-700">2 Bronze Winner</p>
                             </div>
                         </div>
 
@@ -607,6 +630,7 @@ const AchievementsContent = () => {
                         </div>
                     </div>
                 )}
+                
             </div>
         </div>
     );
