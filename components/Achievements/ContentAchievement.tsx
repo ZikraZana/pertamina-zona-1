@@ -180,6 +180,9 @@ function FieldAwardCard({ field, awards }: { field: string; awards: AwardItem[] 
 // ============================================================
 // KOMPONEN UTAMA
 // ============================================================
+function formatAngkaID(n: number) {
+    return n.toLocaleString('id-ID');
+}
 
 type ProduksiData = {
     jenis: "minyak" | "gas";
@@ -189,20 +192,33 @@ type ProduksiData = {
     unit: string;
 }
 
-function formatAngkaID(n: number) {
-    return n.toLocaleString('id-ID');
+type RencanaKerja = {
+    jenis_rk: string;
+    nama_rk: string;
+    jenis_produksi: "minyak" | "gas";
+    jumlah_produksi: number;
+    wilayah_kerja: string;
+}
+
+type Inovasi = {
+    pencapaian: string;
+    nama_inovasi: string;
+    nama_acara: string;
+    wilayah_kerja: string;
 }
 
 
 const AchievementsContent = () => {
     const [activeTab, setActiveTab] = useState<TabKey>("produksi");
     const [produksiData, setProduksiData] = useState<Record<string, ProduksiData>>({});
+    const [rencanaKerja, setRencanaKerja] = useState<Record<string, RencanaKerja[]>>({});
+    const [inovasi, setInovasi] = useState<Inovasi[]>([]);
 
     useEffect(() => {
         async function fetchProduksi() {
 
             try {
-                const res = await fetch('api/achievement/produksi');
+                const res = await fetch('/api/achievement/produksi');
                 const json = await res.json();
                 const map: Record<string, ProduksiData> = {};
                 for (const row of json.data ?? []) {
@@ -214,7 +230,41 @@ const AchievementsContent = () => {
                 console.error("Gagal mengambil data produksi:", err);
             }
         }
+        async function fetchRencanaKerja() {
+
+            try {
+                const res = await fetch('/api/achievement/rencana-kerja');
+                const json = await res.json();
+                const map: Record<string, RencanaKerja[]> = {};
+                for (const row of json.data ?? []) {
+
+                    if (!map[row.jenis_rk]) {
+                        map[row.jenis_rk] = [];
+                    }
+                    // Masukkan data ke dalam array tersebut
+                    map[row.jenis_rk].push(row);
+                }
+                setRencanaKerja(map);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data rencana kerja:", err);
+            }
+        }
+        async function fetchInovasi() {
+
+            try {
+                const res = await fetch('/api/achievement/inovasi');
+                const json = await res.json();
+                setInovasi(json.data ?? []);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data inovasi:", err);
+            }
+        }
+
         fetchProduksi()
+        fetchRencanaKerja()
+        fetchInovasi()
     }, []);
 
     return (
@@ -277,28 +327,47 @@ const AchievementsContent = () => {
 
                 {activeTab === "rencana-kerja" && (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <RankedListCard
-                            title="Top 5 Capaian RK Bor"
-                            subtitle="Realisasi produksi sumur terbaik"
-                            accentColor="amber"
-                            items={[
-                                { label: "PPS-015A", field: "Field Jambi", value: "848,35 BOPD" },
-                                { label: "PPS-020", field: "Field Jambi", value: "330,31 BOPD" },
-                                { label: "PPJ-068", field: "Field Pangkalan Susu", value: "179,19 BOPD" },
-                                { label: "PPJ-067", field: "Field Pangkalan Susu", value: "129,44 BOPD" },
-                                { label: "P-474", field: "Field Rantau", value: "70 BOPD" },
-                            ]}
-                        />
+                        {rencanaKerja.Bor && (
+                            <>
+                                <RankedListCard
+                                    title="Top 5 Capaian RK Bor"
+                                    subtitle="Realisasi produksi sumur terbaik"
+                                    accentColor="amber"
+                                    items={
+                                        rencanaKerja.Bor
+                                            .sort((a, b) => b.jumlah_produksi - a.jumlah_produksi)
+                                            .slice(0, 5)
+                                            .map((item) => ({
+                                                label: item.nama_rk,
+                                                field: item.wilayah_kerja,
+                                                value: formatAngkaID(item.jumlah_produksi)
+                                            }))
+                                    }
+                                />
+                            </>
+                        )}
+
                         <div className="flex flex-col gap-4">
-                            <RankedListCard
-                                title="Pencapaian RK Workover"
-                                subtitle="Realisasi produksi hasil workover"
-                                accentColor="sky"
-                                items={[
-                                    { label: "PPS-015B", field: "Field Jambi", value: "317,04 BOPD" },
-                                    { label: "PPS-12", field: "Field Jambi", value: "135,46 BOPD" },
-                                ]}
-                            />
+                            {rencanaKerja.Workover && (
+                                <>
+                                    <RankedListCard
+                                        title="Pencapaian RK Workover"
+                                        subtitle="Realisasi produksi hasil workover"
+                                        accentColor="sky"
+                                        items={
+                                            rencanaKerja.Workover
+                                                .sort((a, b) => b.jumlah_produksi - a.jumlah_produksi)
+                                                .slice(0, 5)
+                                                .map((item) => ({
+                                                    label: item.nama_rk,
+                                                    field: item.wilayah_kerja,
+                                                    value: formatAngkaID(item.jumlah_produksi)
+                                                }))
+                                        }
+                                    />
+                                </>
+                            )}
+
                             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
                                 <p className="text-sm font-semibold text-slate-500">Capaian OPTIMUS</p>
                                 <div className="mt-3 flex items-baseline gap-2">
@@ -394,12 +463,17 @@ const AchievementsContent = () => {
                         title="Capaian Inovasi"
                         subtitle="Penghargaan dan pencapaian inovasi Zona 1"
                         accentColor="sky"
-                        items={[
-                            { label: "Best Presentation", field: "PC Prove Velocity - Zona 1", value: "" },
-                            { label: "Best Impact on Productivity", field: "Asia Pacific Quality Organization (APQO) - PC Prove Energy, Jambi Merang Field", value: "" },
-                            { label: "Four Stars ★★★★", field: "Asia Pacific Quality Organization (APQO) - PC Prove Energy, Jambi Merang Field", value: "" },
-                            { label: "2 Sertifikat Paten", field: "Kementrian Hukum RI - Finding Oil Losses Field Jambi (2025-2035)", value: "" },
-                        ]}
+                        items={inovasi.map((item) => ({
+                            label: item.pencapaian,
+                            field: `${item.nama_inovasi} - ${item.nama_acara}, ${item.wilayah_kerja}`,
+                            value: ""
+                        }))}
+                        // items={[
+                        //     { label: "Best Presentation", field: "PC Prove Velocity - Zona 1", value: "" },
+                        //     { label: "Best Impact on Productivity", field: "Asia Pacific Quality Organization (APQO) - PC Prove Energy, Jambi Merang Field", value: "" },
+                        //     { label: "Four Stars ★★★★", field: "Asia Pacific Quality Organization (APQO) - PC Prove Energy, Jambi Merang Field", value: "" },
+                        //     { label: "2 Sertifikat Paten", field: "Kementrian Hukum RI - Finding Oil Losses Field Jambi (2025-2035)", value: "" },
+                        // ]}
                     />
                 )}
 
