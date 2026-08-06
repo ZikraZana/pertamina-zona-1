@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 
 // DELETE /api/performance-reports/[id]
 export async function DELETE(
@@ -9,24 +10,8 @@ export async function DELETE(
     const { id } = await params;
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
-    }
-
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-
-    if (profile?.role !== "admin") {
-        return NextResponse.json(
-            { error: "Hanya admin yang bisa menghapus laporan." },
-            { status: 403 }
-        );
-    }
+    const { user, err } = await requireAdmin(supabase);
+    if (err) return err;
 
     const { data: report, error: fetchError } = await supabase
         .from("performance_reports")
@@ -67,24 +52,8 @@ export async function PATCH(
     const { id } = await params;
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
-    }
-
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-
-    if (profile?.role !== "admin") {
-        return NextResponse.json(
-            { error: "Hanya admin yang bisa mengedit laporan." },
-            { status: 403 }
-        );
-    }
+    const { user, err } = await requireAdmin(supabase);
+    if (err) return err;
 
     const { data: existingReport, error: fetchError } = await supabase
         .from("performance_reports")

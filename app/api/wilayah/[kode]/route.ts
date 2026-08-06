@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -19,33 +20,15 @@ const EDITABLE_FIELDS = [
 
 type RouteParams = { params: Promise<{ kode: string }> };
 
-async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
-    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
-        return { user: null, errorResponse: NextResponse.json({ error: "Silahkan login terlebih dahulu." }, { status: 401 }) };
-    }
-
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-
-    if (profile?.role !== "admin") {
-        return { user, errorResponse: NextResponse.json({ error: "Hanya admin yang bisa mengubah data overview." }, { status: 403 }) };
-    }
-
-    return { user, errorResponse: null };
-}
 
 // PATCH /api/wilayah/[kode] — admin only. Simpan perubahan data.
 export async function PATCH(request: Request, { params }: RouteParams) {
     const { kode } = await params;
     const supabase = await createClient();
 
-    const { user, errorResponse } = await requireAdmin(supabase);
-    if (errorResponse) return errorResponse;
+    const { user, err } = await requireAdmin(supabase);
+    if (err) return err;
 
     const body = await request.json().catch(() => null);
     if (!body || typeof body !== "object") {
