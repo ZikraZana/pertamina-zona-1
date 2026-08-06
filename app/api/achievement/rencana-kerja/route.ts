@@ -7,7 +7,8 @@ export async function GET() {
 
     const { data, error } = await supabase
         .from("achievement_rencana_kerja")
-        .select('id, jenis_rk, nama_rk, jenis_produksi, jumlah_produksi, wilayah_kerja');
+        .select('id, jenis_rk, nama_rk, jumlah_minyak, jumlah_gas, wilayah_kerja, urutan')
+        .order('urutan', { ascending: true });
 
     if (error) {
         return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 })
@@ -31,11 +32,23 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: `Field "${field}" wajib diisi.`, code: "VALIDATION_ERROR" }, { status: 400 });
         }
     }
-    if (!["minyak", "gas"].includes(body.jenis_produksi)) {
-        return NextResponse.json({ error: 'Field "jenis_produksi" harus "minyak" atau "gas".', code: "VALIDATION_ERROR" }, { status: 400 });
+
+    const { jumlah_minyak, jumlah_gas, urutan } = body;
+
+    const isValidAmount = (value: unknown) =>
+        value === null || value === undefined || (typeof value === "number" && Number.isFinite(value) && value >= 0);
+
+    if (!isValidAmount(jumlah_minyak)) {
+        return NextResponse.json({ error: 'Field "jumlah_minyak" harus berupa angka dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
-    if (typeof body.jumlah_produksi !== "number" || !Number.isFinite(body.jumlah_produksi) || body.jumlah_produksi < 0) {
-        return NextResponse.json({ error: 'Field "jumlah_produksi" harus berupa angka dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
+    if (!isValidAmount(jumlah_gas)) {
+        return NextResponse.json({ error: 'Field "jumlah_gas" harus berupa angka dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
+    }
+    if ((jumlah_minyak === null || jumlah_minyak === undefined) && (jumlah_gas === null || jumlah_gas === undefined)) {
+        return NextResponse.json({ error: 'Isi minimal salah satu dari "jumlah_minyak" atau "jumlah_gas".', code: "VALIDATION_ERROR" }, { status: 400 });
+    }
+    if (urutan !== undefined && (typeof urutan !== "number" || !Number.isInteger(urutan) || urutan < 0)) {
+        return NextResponse.json({ error: 'Field "urutan" harus berupa bilangan bulat dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
 
     const { data, error } = await supabase
@@ -43,9 +56,10 @@ export async function POST(request: Request) {
         .insert({
             jenis_rk: body.jenis_rk,
             nama_rk: body.nama_rk,
-            jenis_produksi: body.jenis_produksi,
-            jumlah_produksi: body.jumlah_produksi,
+            jumlah_minyak: jumlah_minyak ?? null,
+            jumlah_gas: jumlah_gas ?? null,
             wilayah_kerja: body.wilayah_kerja,
+            urutan: urutan ?? 0,
         })
         .select()
         .single();

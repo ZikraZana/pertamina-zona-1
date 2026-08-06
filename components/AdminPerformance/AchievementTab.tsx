@@ -13,12 +13,12 @@ type ProduksiData = {
 
 type RKItem = {
     id: string;
-    jenis_rk:
-    string;
+    jenis_rk: string;
     nama_rk: string;
-    jenis_produksi: string;
-    jumlah_produksi: number;
-    wilayah_kerja: string
+    jumlah_minyak: number | null;
+    jumlah_gas: number | null;
+    wilayah_kerja: string;
+    urutan: number;
 };
 
 type InovasiItem = {
@@ -144,9 +144,10 @@ const AchievementTab = () => {
     const [rkItems, setRkItems] = useState<RKItem[]>([]);
     const [rkListLoading, setRkListLoading] = useState(true);
     const [rkFormOpen, setRkFormOpen] = useState(false);
-    const [rkForm, setRkForm] = useState({ jenis_rk: "Bor", nama_rk: "", jenis_produksi: "minyak", jumlah_produksi: "", wilayah_kerja: "" });
+    const [rkForm, setRkForm] = useState({ jenis_rk: "Bor", nama_rk: "", jumlah_minyak: "", jumlah_gas: "", wilayah_kerja: "", urutan: "" });
     const [rkEditingId, setRkEditingId] = useState<string | null>(null);
     const [rkLoading, setRkLoading] = useState(false);
+    const [rkError, setRkError] = useState<string | null>(null);
 
     // ---------- State Inovasi ----------
     const [inovasiItems, setInovasiItems] = useState<InovasiItem[]>([]);
@@ -190,24 +191,55 @@ const AchievementTab = () => {
     }
 
     function resetRkForm() {
-        setRkForm({ jenis_rk: "Bor", nama_rk: "", jenis_produksi: "minyak", jumlah_produksi: "", wilayah_kerja: "" });
+        setRkForm({ jenis_rk: "Bor", nama_rk: "", jumlah_minyak: "", jumlah_gas: "", wilayah_kerja: "", urutan: "" });
         setRkEditingId(null);
         setRkFormOpen(false);
+        setRkError(null);
     }
 
     function startEditRk(item: RKItem) {
-        setRkForm({ jenis_rk: item.jenis_rk, nama_rk: item.nama_rk, jenis_produksi: item.jenis_produksi, jumlah_produksi: String(item.jumlah_produksi), wilayah_kerja: item.wilayah_kerja });
+        setRkForm({
+            jenis_rk: item.jenis_rk,
+            nama_rk: item.nama_rk,
+            jumlah_minyak: item.jumlah_minyak !== null ? String(item.jumlah_minyak) : "",
+            jumlah_gas: item.jumlah_gas !== null ? String(item.jumlah_gas) : "",
+            wilayah_kerja: item.wilayah_kerja,
+            urutan: String(item.urutan),
+        });
         setRkEditingId(item.id);
         setRkFormOpen(true);
+        setRkError(null);
     }
 
     async function handleSubmitRk(e: React.FormEvent) {
         e.preventDefault();
+        setRkError(null);
+
+        if (!rkForm.jumlah_minyak.trim() && !rkForm.jumlah_gas.trim()) {
+            setRkError("Isi minimal salah satu: Jumlah Minyak atau Jumlah Gas.");
+            return;
+        }
+
         setRkLoading(true);
-        const payload = { ...rkForm, jumlah_produksi: Number(rkForm.jumlah_produksi) };
+        const payload = {
+            jenis_rk: rkForm.jenis_rk,
+            nama_rk: rkForm.nama_rk,
+            jumlah_minyak: rkForm.jumlah_minyak.trim() ? Number(rkForm.jumlah_minyak) : null,
+            jumlah_gas: rkForm.jumlah_gas.trim() ? Number(rkForm.jumlah_gas) : null,
+            wilayah_kerja: rkForm.wilayah_kerja,
+            urutan: rkForm.urutan.trim() ? Number(rkForm.urutan) : 0,
+        };
         const url = rkEditingId ? `/api/achievement/rencana-kerja/${rkEditingId}` : "/api/achievement/rencana-kerja";
         const method = rkEditingId ? "PATCH" : "POST";
-        await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const json = await res.json();
+
+        if (!res.ok) {
+            setRkError(json.error ?? "Gagal menyimpan data.");
+            setRkLoading(false);
+            return;
+        }
+
         await fetchRkItems();
         resetRkForm();
         setRkLoading(false);
@@ -405,13 +437,18 @@ const AchievementTab = () => {
                             <option value="Bor">Bor</option>
                             <option value="Workover">Workover</option>
                         </select>
-                        <select value={rkForm.jenis_produksi} onChange={(e) => setRkForm({ ...rkForm, jenis_produksi: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500">
-                            <option value="minyak">Minyak</option>
-                            <option value="gas">Gas</option>
-                        </select>
+                        <input placeholder="Urutan Tampil (misal 1)" type="number" step="1" min="0" value={rkForm.urutan} onChange={(e) => setRkForm({ ...rkForm, urutan: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
                         <input placeholder="Nama RK (misal PPS-015A)" value={rkForm.nama_rk} onChange={(e) => setRkForm({ ...rkForm, nama_rk: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                        <input placeholder="Jumlah Produksi (BOPD)" type="number" step="any" value={rkForm.jumlah_produksi} onChange={(e) => setRkForm({ ...rkForm, jumlah_produksi: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                        <input placeholder="Wilayah Kerja (misal Field Jambi)" value={rkForm.wilayah_kerja} onChange={(e) => setRkForm({ ...rkForm, wilayah_kerja: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                        <input placeholder="Jumlah Minyak (BOPD, opsional)" type="number" step="any" min="0" value={rkForm.jumlah_minyak} onChange={(e) => setRkForm({ ...rkForm, jumlah_minyak: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
+                        <input placeholder="Jumlah Gas (MMSCFD, opsional)" type="number" step="any" min="0" value={rkForm.jumlah_gas} onChange={(e) => setRkForm({ ...rkForm, jumlah_gas: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
+                        <input placeholder="Wilayah Kerja (misal Field Jambi)" value={rkForm.wilayah_kerja} onChange={(e) => setRkForm({ ...rkForm, wilayah_kerja: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+
+                        <p className="col-span-2 -mt-1 text-[11px] text-slate-400">Isi minimal salah satu: Jumlah Minyak atau Jumlah Gas.</p>
+
+                        {rkError && (
+                            <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{rkError}</p>
+                        )}
+
                         <div className="col-span-2 flex gap-2">
                             <button type="submit" disabled={rkLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
                                 {rkLoading ? "Menyimpan..." : rkEditingId ? "Simpan Perubahan" : "Tambah"}
@@ -431,11 +468,15 @@ const AchievementTab = () => {
                             <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
                                 <div className="min-w-0">
                                     <div className="flex flex-wrap items-center gap-1.5">
+                                        <span className="shrink-0 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">#{item.urutan}</span>
                                         <span className="truncate font-semibold text-blue-900">{item.nama_rk}</span>
                                         <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-800">{item.jenis_rk}</span>
-                                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-500">{item.jenis_produksi}</span>
                                     </div>
-                                    <p className="mt-0.5 text-xs text-slate-400">{item.wilayah_kerja} · {item.jumlah_produksi.toLocaleString("id-ID")} BOPD</p>
+                                    <p className="mt-0.5 text-xs text-slate-400">
+                                        {item.wilayah_kerja}
+                                        {item.jumlah_minyak !== null && ` · ${item.jumlah_minyak.toLocaleString("id-ID")} BOPD`}
+                                        {item.jumlah_gas !== null && ` · ${item.jumlah_gas.toLocaleString("id-ID")} MMSCFD`}
+                                    </p>
                                 </div>
                                 <div className="flex shrink-0 gap-1">
                                     <button onClick={() => startEditRk(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
