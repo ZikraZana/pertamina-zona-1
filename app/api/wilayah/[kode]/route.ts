@@ -39,6 +39,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     for (const field of EDITABLE_FIELDS) {
         if (field in body) {
             const value = (body as Record<string, unknown>)[field];
+            if (value !== null && typeof value !== "string") {
+                return NextResponse.json(
+                    { error: `Field "${field}" harus berupa teks.`, code: "VALIDATION_ERROR" },
+                    { status: 400 }
+                );
+            }
             updatePayload[field] = value === "" ? null : value;
         }
     }
