@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 
 async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { user: null, err: NextResponse.json({ error: "Silakan login." }, { status: 401 }) };
+    if (!user) return { user: null, err: NextResponse.json({ error: "Silakan login.", code: "UNAUTHORIZED" }, { status: 401 }) };
     const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-    if (profile?.role !== "admin") return { user, err: NextResponse.json({ error: "Hanya admin." }, { status: 403 }) };
+    if (profile?.role !== "admin") return { user, err: NextResponse.json({ error: "Hanya admin.", code: "FORBIDDEN" }, { status: 403 }) };
     return { user, err: null };
 }
 
@@ -16,7 +16,20 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (err) return err;
 
     const body = await request.json().catch(() => null);
-    if (!body) return NextResponse.json({ error: "Body tidak valid." }, { status: 400 });
+    if (!body) return NextResponse.json({ error: "Body tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
+
+    const stringFields = ["jenis_rk", "nama_rk", "wilayah_kerja"] as const;
+    for (const field of stringFields) {
+        if (typeof body[field] !== "string" || !body[field].trim()) {
+            return NextResponse.json({ error: `Field "${field}" wajib diisi.`, code: "VALIDATION_ERROR" }, { status: 400 });
+        }
+    }
+    if (!["minyak", "gas"].includes(body.jenis_produksi)) {
+        return NextResponse.json({ error: 'Field "jenis_produksi" harus "minyak" atau "gas".', code: "VALIDATION_ERROR" }, { status: 400 });
+    }
+    if (typeof body.jumlah_produksi !== "number" || !Number.isFinite(body.jumlah_produksi) || body.jumlah_produksi < 0) {
+        return NextResponse.json({ error: 'Field "jumlah_produksi" harus berupa angka dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
+    }
 
     const { data, error } = await supabase
         .from("achievement_rencana_kerja")
@@ -31,7 +44,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         .select()
         .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
 
     await supabase.from("activity_logs").insert({
         actor_id: user!.id, action: "update", entity_type: "achievement_rencana_kerja", entity_label: body.nama_rk,

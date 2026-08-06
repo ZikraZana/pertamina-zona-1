@@ -22,7 +22,7 @@ export async function PATCH(request: Request) {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
+        if (!user) return NextResponse.json({ error: "Silakan login.", code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     const { data: profile } = await supabase
@@ -31,19 +31,27 @@ export async function PATCH(request: Request) {
         .eq("id", user.id)
         .single();
 
-    if (profile?.role !== "admin") {
-        return NextResponse.json({ error: "Hanya admin yang bisa mengubah data ini." }, { status: 403 });
-    }
+    if (profile?.role !== "admin") return NextResponse.json({ error: "Hanya admin.", code: "FORBIDDEN" }, { status: 403 });
 
     const body = await request.json().catch(() => null);
-    if (!body || typeof body !== "object") {
-        return NextResponse.json({ error: "Body request tidak valid." }, { status: 400 });
-    }
+    if (!body) return NextResponse.json({ error: "Body tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
 
     const { jenis, realisasi, target, periode, unit } = body;
 
     if (!["minyak", "gas"].includes(jenis)) {
-        return NextResponse.json({ error: "Jenis tidak valid." }, { status: 400 });
+        return NextResponse.json({ error: "Jenis tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
+    }
+    if (typeof realisasi !== "number" || !Number.isFinite(realisasi) || realisasi < 0) {
+        return NextResponse.json({ error: 'Field "realisasi" harus berupa angka dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
+    }
+    if (typeof target !== "number" || !Number.isFinite(target) || target < 0) {
+        return NextResponse.json({ error: 'Field "target" harus berupa angka dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
+    }
+    if (typeof periode !== "string" || !periode.trim()) {
+        return NextResponse.json({ error: 'Field "periode" wajib diisi.', code: "VALIDATION_ERROR" }, { status: 400 });
+    }
+    if (typeof unit !== "string" || !unit.trim()) {
+        return NextResponse.json({ error: 'Field "unit" wajib diisi.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
 
     const { data, error } = await supabase
@@ -60,16 +68,15 @@ export async function PATCH(request: Request) {
         .select()
         .single();
 
-    if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    if (error) return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
 
-    await supabase.from("activity_logs").insert({
+    const { error: logError } = await supabase.from("activity_logs").insert({
         actor_id: user.id,
         action: "update",
         entity_type: "achievement_produksi",
         entity_label: `Produksi ${jenis}`,
     });
+    if (logError) console.error("Gagal mencatat activity log:", logError.message);
 
     return NextResponse.json({ data });
 }
