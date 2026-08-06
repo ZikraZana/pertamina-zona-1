@@ -9,7 +9,7 @@ export async function GET() {
         .select('id, pencapaian, nama_inovasi, nama_acara, wilayah_kerja')
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 })
     }
 
     return NextResponse.json({ data })

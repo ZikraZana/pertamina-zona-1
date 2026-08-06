@@ -53,9 +53,10 @@ export async function POST(request: Request) {
 
     if (error) return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
 
-    await supabase.from("activity_logs").insert({
+    const { error: logError } = await supabase.from("activity_logs").insert({
         actor_id: user.id, action: "insert", entity_type: "achievement_rencana_kerja", entity_label: body.nama_rk,
     });
+    if (logError) console.error("Gagal mencatat activity log:", logError.message);
 
     return NextResponse.json({ data }, { status: 201 });
 }

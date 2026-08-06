@@ -46,9 +46,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     if (error) return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
 
-    await supabase.from("activity_logs").insert({
+    const { error: logError } = await supabase.from("activity_logs").insert({
         actor_id: user!.id, action: "update", entity_type: "achievement_rencana_kerja", entity_label: body.nama_rk,
     });
+    if (logError) console.error("Gagal mencatat activity log:", logError.message);
 
     return NextResponse.json({ data });
 }
@@ -62,11 +63,12 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const { data: existing } = await supabase.from("achievement_rencana_kerja").select("nama_rk").eq("id", id).single();
 
     const { error } = await supabase.from("achievement_rencana_kerja").delete().eq("id", id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
 
-    await supabase.from("activity_logs").insert({
+    const { error: logError } = await supabase.from("activity_logs").insert({
         actor_id: user!.id, action: "delete", entity_type: "achievement_rencana_kerja", entity_label: existing?.nama_rk ?? id,
     });
+    if (logError) console.error("Gagal mencatat activity log:", logError.message);
 
     return NextResponse.json({ success: true });
 }

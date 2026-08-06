@@ -10,7 +10,7 @@ export async function GET() {
         .select("jenis, realisasi, target, periode, unit");
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
     }
 
     return NextResponse.json({ data });
@@ -21,9 +21,7 @@ export async function PATCH(request: Request) {
     const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        if (!user) return NextResponse.json({ error: "Silakan login.", code: "UNAUTHORIZED" }, { status: 401 });
-    }
+    if (!user) return NextResponse.json({ error: "Silakan login.", code: "UNAUTHORIZED" }, { status: 401 });
 
     const { data: profile } = await supabase
         .from("profiles")
