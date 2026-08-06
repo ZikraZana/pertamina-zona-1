@@ -465,7 +465,7 @@ const AchievementsContent = () => {
                         accentColor="sky"
                         items={inovasi.map((item) => ({
                             label: item.pencapaian,
-                            field: `${item.nama_inovasi} - ${item.nama_acara}, ${item.wilayah_kerja}`,
+                            field: [item.nama_inovasi, item.nama_acara].filter(Boolean).join(" - ") + `, ${item.wilayah_kerja}`,
                             value: ""
                         }))}
                         // items={[
