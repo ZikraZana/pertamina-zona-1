@@ -27,7 +27,7 @@ export async function GET() {
         .select(WILAYAH_FIELDS.join(", "));
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
     }
 
     // Susun jadi Record<kode, WilayahData> biar gampang dipakai di frontend

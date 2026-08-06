@@ -20,7 +20,7 @@ export async function DELETE(
         .single();
 
     if (fetchError || !report) {
-        return NextResponse.json({ error: "Laporan tidak ditemukan." }, { status: 404 });
+        return NextResponse.json({ error: "Laporan tidak ditemukan.", code: "NOT_FOUND" }, { status: 404 });
     }
 
     await supabase.storage.from("performance-reports").remove([report.file_path]);
@@ -31,17 +31,19 @@ export async function DELETE(
         .eq("id", id);
 
     if (deleteError) {
-        return NextResponse.json({ error: deleteError.message }, { status: 500 });
+        return NextResponse.json({ error: deleteError.message, code: "SERVER_ERROR" }, { status: 500 });
     }
 
-    await supabase.from("activity_logs").insert({
+    const { error: logError } = await supabase.from("activity_logs").insert({
         actor_id: user.id,
         action: "delete",
         entity_type: "performance_report",
         entity_label: report.title
     })
+    if (logError) console.error("Gagal mencatat activity log:", logError.message);
 
     return NextResponse.json({ success: true });
+
 }
 
 // PATCH /api/performance-reports/[id]
@@ -62,7 +64,7 @@ export async function PATCH(
         .single();
 
     if (fetchError || !existingReport) {
-        return NextResponse.json({ error: "Laporan tidak ditemukan." }, { status: 404 });
+        return NextResponse.json({ error: "Laporan tidak ditemukan.", code: "NOT_FOUND" }, { status: 404 });
     }
 
     const formData = await request.formData();
@@ -91,7 +93,7 @@ export async function PATCH(
     const VALID_CATEGORIES = ["weekly", "biweekly", "monthly", "others"];
     if (typeof category === "string" && category) {
         if (!VALID_CATEGORIES.includes(category)) {
-            return NextResponse.json({ error: "Kategori laporan tidak valid." }, { status: 400 });
+            return NextResponse.json({ error: "Kategori laporan tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
         }
         updateData.category = category;
     }
@@ -110,7 +112,7 @@ export async function PATCH(
         ];
 
         if (!ALLOWED_TYPES.includes(file.type)) {
-            return NextResponse.json({ error: "Format file tidak didukung." }, { status: 400 });
+            return NextResponse.json({ error: "Format file tidak didukung.", code: "VALIDATION_ERROR" }, { status: 400 });
         }
 
         const safeFileName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
@@ -125,7 +127,7 @@ export async function PATCH(
             });
 
         if (uploadError) {
-            return NextResponse.json({ error: uploadError.message }, { status: 500 });
+            return NextResponse.json({ error: uploadError.message, code: "SERVER_ERROR" }, { status: 500 });
         }
 
         updateData.title = file.name.replace(/\.[^.]+$/i, "");
@@ -143,19 +145,20 @@ export async function PATCH(
         .single();
 
     if (updateError) {
-        return NextResponse.json({ error: updateError.message }, { status: 500 });
+        return NextResponse.json({ error: updateError.message, code: "SERVER_ERROR" }, { status: 500 });
     }
 
     if (oldFilePathToDelete) {
         await supabase.storage.from("performance-reports").remove([oldFilePathToDelete]);
     }
 
-    await supabase.from("activity_logs").insert({
+    const { error: logError } = await supabase.from("activity_logs").insert({
         actor_id: user.id,
         action: "update",
         entity_type: "performance_report",
         entity_label: updated?.title
     })
+    if (logError) console.error("Gagal mencatat activity log:", logError.message);
 
     return NextResponse.json({ report: updated });
 }

@@ -11,7 +11,7 @@ export async function GET(
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        return NextResponse.json({ error: "Silakan login terlebih dahulu." }, { status: 401 });
+        return NextResponse.json({ error: "Silakan login terlebih dahulu.", code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     const { data: report, error: fetchError } = await supabase
@@ -21,7 +21,7 @@ export async function GET(
         .single();
 
     if (fetchError || !report) {
-        return NextResponse.json({ error: "Laporan tidak ditemukan." }, { status: 404 });
+        return NextResponse.json({ error: "Laporan tidak ditemukan.", code: "NOT_FOUND" }, { status: 404 });
     }
 
     const { data: signed, error: signError } = await supabase.storage
@@ -30,7 +30,7 @@ export async function GET(
 
     if (signError || !signed) {
         return NextResponse.json(
-            { error: signError?.message ?? "Gagal membuat link file." },
+            { error: signError?.message ?? "Gagal membuat link file.", code: "SERVER_ERROR" },
             { status: 500 }
         );
     }

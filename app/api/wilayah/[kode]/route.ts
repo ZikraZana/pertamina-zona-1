@@ -32,7 +32,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const body = await request.json().catch(() => null);
     if (!body || typeof body !== "object") {
-        return NextResponse.json({ error: "Body request tidak valid." }, { status: 400 });
+        return NextResponse.json({ error: "Body request tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
     }
 
     const updatePayload: Record<string, unknown> = {};
@@ -44,7 +44,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     }
 
     if (Object.keys(updatePayload).length === 0) {
-        return NextResponse.json({ error: "Tidak ada field yang diubah." }, { status: 400 });
+        return NextResponse.json({ error: "Tidak ada field yang diubah.", code: "VALIDATION_ERROR" }, { status: 400 });
     }
 
     updatePayload.updated_at = new Date().toISOString();
@@ -57,15 +57,16 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         .single();
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
     }
 
-    await supabase.from("activity_logs").insert({
+    const { error: logError } = await supabase.from("activity_logs").insert({
         actor_id: user.id,
         action: "update",
         entity_type: "overview",
         entity_label: data?.nama_wilayah
     })
+    if (logError) console.error("Gagal mencatat activity log:", logError.message);
 
     return NextResponse.json({ wilayah: data });
 }

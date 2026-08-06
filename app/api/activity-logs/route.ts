@@ -21,7 +21,7 @@ export async function GET(request: Request) {
         .range(start, end);
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
     }
 
     return NextResponse.json({ logs: data, totalCount: count ?? 0, page, pageSize });

@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     const { data, error } = await query;
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
     }
 
     return NextResponse.json({ reports: data });
@@ -39,11 +39,11 @@ export async function POST(request: Request) {
 
     const VALID_CATEGORIES = ["weekly", "biweekly", "monthly", "others"];
     if (typeof category !== "string" || !VALID_CATEGORIES.includes(category)) {
-        return NextResponse.json({ error: "Kategori laporan tidak valid." }, { status: 400 });
+        return NextResponse.json({ error: "Kategori laporan tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
     }
 
     if (!(file instanceof File)) {
-        return NextResponse.json({ error: "File PDF Wajib diisi." }, { status: 400 })
+        return NextResponse.json({ error: "File Wajib diisi.", code: "VALIDATION_ERROR" }, { status: 400 })
     }
     const ALLOWED_TYPES = [
         "application/pdf",
@@ -56,13 +56,13 @@ export async function POST(request: Request) {
     ];
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-        return NextResponse.json({ error: "Format file tidak didukung." }, { status: 400 });
+        return NextResponse.json({ error: "Format file tidak didukung.", code: "VALIDATION_ERROR" }, { status: 400 });
     }
 
     const title = file.name.replace(/\.[^.]+$/i, "");
 
     if (typeof reportDate !== "string" || !reportDate) {
-        return NextResponse.json({ error: "Tanggal laporan wajib diisi." }, { status: 400 });
+        return NextResponse.json({ error: "Tanggal laporan wajib diisi.", code: "VALIDATION_ERROR" }, { status: 400 });
     }
 
     const safeFileName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
         });
 
     if (uploadError) {
-        return NextResponse.json({ error: uploadError.message }, { status: 500 })
+        return NextResponse.json({ error: uploadError.message, code: "SERVER_ERROR" }, { status: 500 })
     }
 
     const { data: inserted, error: insertError } = await supabase
@@ -95,14 +95,15 @@ export async function POST(request: Request) {
 
     if (insertError) {
         await supabase.storage.from("performance-reports").remove([storagePath]);
-        return NextResponse.json({ error: insertError.message }, { status: 500 });
+        return NextResponse.json({ error: insertError.message, code: "SERVER_ERROR" }, { status: 500 });
     }
-    await supabase.from("activity_logs").insert({
+    const { error: logError } = await supabase.from("activity_logs").insert({
         actor_id: user.id,
         action: "insert",
         entity_type: "performance_report",
         entity_label: inserted?.title
     })
+    if (logError) console.error("Gagal mencatat activity log:", logError.message);
 
     return NextResponse.json({ report: inserted }, { status: 201 });
 
