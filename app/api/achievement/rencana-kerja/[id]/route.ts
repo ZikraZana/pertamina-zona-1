@@ -1,13 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { NextResponse } from "next/server";
-
-async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { user: null, err: NextResponse.json({ error: "Silakan login.", code: "UNAUTHORIZED" }, { status: 401 }) };
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-    if (profile?.role !== "admin") return { user, err: NextResponse.json({ error: "Hanya admin.", code: "FORBIDDEN" }, { status: 403 }) };
-    return { user, err: null };
-}
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -30,6 +23,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (typeof body.jumlah_produksi !== "number" || !Number.isFinite(body.jumlah_produksi) || body.jumlah_produksi < 0) {
         return NextResponse.json({ error: 'Field "jumlah_produksi" harus berupa angka dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
+
+    const { data: existing } = await supabase.from("achievement_rencana_kerja").select("id").eq("id", id).single();
+    if (!existing) return NextResponse.json({ error: "Data tidak ditemukan.", code: "NOT_FOUND" }, { status: 404 });
 
     const { data, error } = await supabase
         .from("achievement_rencana_kerja")
@@ -61,6 +57,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     if (err) return err;
 
     const { data: existing } = await supabase.from("achievement_rencana_kerja").select("nama_rk").eq("id", id).single();
+    if (!existing) return NextResponse.json({ error: "Data tidak ditemukan.", code: "NOT_FOUND" }, { status: 404 });
 
     const { error } = await supabase.from("achievement_rencana_kerja").delete().eq("id", id);
     if (error) return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
