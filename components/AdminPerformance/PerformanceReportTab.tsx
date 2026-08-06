@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
+import JSZip from "jszip"
 
 // ============================================================
 // TIPE DATA LAPORAN
@@ -32,6 +33,77 @@ const ALLOWED_FILE_TYPES = [
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
     "application/vnd.ms-excel", // .xls
 ];
+
+// ============================================================
+// BACA TANGGAL "LAST MODIFIED" DARI METADATA FILE
+// ============================================================
+
+/** Format tanggal Date jadi string "YYYY-MM-DD" untuk <input type="date"> */
+function toDateInputValue(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+/** Baca tanggal modified dari docProps/core.xml (format .docx/.pptx/.xlsx) */
+async function readOfficeModifiedDate(file: File): Promise<Date | null> {
+    try {
+        const zip = await JSZip.loadAsync(file);
+        const coreXmlFile = zip.file("docProps/core.xml");
+        if (!coreXmlFile) return null;
+
+        const xmlText = await coreXmlFile.async("text");
+        const match = xmlText.match(/<dcterms:modified[^>]*>([^<]+)<\/dcterms:modified>/);
+        if (!match) return null;
+
+        const parsed = new Date(match[1]);
+        if (isNaN(parsed.getTime())) return null;
+
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
+/** Baca tanggal ModDate dari metadata PDF (format "D:YYYYMMDDHHmmSS...") */
+async function readPdfModifiedDate(file: File): Promise<Date | null> {
+    try {
+        const text = await file.text();
+        const match = text.match(/\/ModDate\s*\(D:(\d{4})(\d{2})(\d{2})/);
+        if (!match) return null;
+
+        const [, year, month, day] = match;
+        const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+        if (isNaN(parsed.getTime())) return null;
+
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Coba baca tanggal "terakhir diedit" dari metadata internal file.
+ * Return null kalau format tidak didukung atau metadata tidak ditemukan —
+ * pemanggil harus fallback ke pengisian tanggal manual.
+ */
+async function readFileModifiedDate(file: File): Promise<Date | null> {
+    const officeTypes = [
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ];
+
+    if (file.type === "application/pdf") {
+        return readPdfModifiedDate(file);
+    }
+    if (officeTypes.includes(file.type)) {
+        return readOfficeModifiedDate(file);
+    }
+    // .doc/.ppt/.xls (format biner lama) — tidak didukung, biarkan null
+    return null;
+}
 
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
@@ -548,7 +620,16 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                                 type="file"
                                 accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx"
                                 className="sr-only"
-                                onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
+                                onChange={async (e) => {
+                                    const selected = e.target.files?.[0] ?? null;
+                                    setUploadFile(selected);
+                                    if (!selected) return;
+
+                                    const modifiedDate = await readFileModifiedDate(selected);
+                                    if (modifiedDate) {
+                                        setUploadDate(toDateInputValue(modifiedDate));
+                                    }
+                                }}
                             />
                             <svg viewBox="0 0 24 24" className="h-7 w-7 text-blue-900/60 transition-transform group-hover:-translate-y-0.5" fill="none" stroke="currentColor" strokeWidth={1.5}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 13.5l3-3.5 3 3.5M12 10.5V19M6.75 19h10.5a3.75 3.75 0 001.28-7.28 5.25 5.25 0 00-9.9-1.4A4.5 4.5 0 006.75 19z" />
@@ -575,6 +656,9 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                                     value={uploadDate}
                                     onChange={(e) => setUploadDate(e.target.value)}
                                 />
+                                <span className="mt-1 block text-[10px] text-slate-400">
+                                    Terisi otomatis dari file bila tersedia, dapat diubah manual
+                                </span>
                             </div>
                             <div>
                                 <label className="mb-1 block text-xs font-semibold text-slate-600">Kategori</label>
