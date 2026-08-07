@@ -63,6 +63,24 @@ function ValueCard({
     );
 }
 
+function VideoCard({ title, embedSrc }: { title: string; embedSrc: string }) {
+    return (
+        <div className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ring-sky-200 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg">
+            <div className="relative aspect-video w-full bg-slate-900">
+                <iframe
+                    src={embedSrc}
+                    className="h-full w-full"
+                    allow="autoplay; encrypted-media; fullscreen"
+                    allowFullScreen
+                />
+            </div>
+            <div className="p-4">
+                <p className="text-sm font-bold text-slate-900">{title}</p>
+            </div>
+        </div>
+    );
+}
+
 // ============================================================
 // KOMPONEN UTAMA
 // ============================================================
@@ -92,7 +110,7 @@ const AboutUsContent = () => {
                     Mengenal lebih dekat Pertamina Zona 1 — profil, visi, dan misi perusahaan.
                 </p>
             </div>
-            
+
             {/* Deskripsi Perusahaan */}
             <section>
                 <SectionHeading title="Profil Perusahaan" />
@@ -182,6 +200,15 @@ const AboutUsContent = () => {
                         detail="Pengembangan geothermal, ekosistem biofuel, green energy, dan low carbon technologies."
                         accentColor="#0073fe"
                     />
+                </div>
+            </section>
+
+            <section>
+                <SectionHeading title="Video" />
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <VideoCard title="Indonesia Raya" embedSrc="https://www.youtube.com/embed/5gUA33sxi4E?si=fAFgQfBZeozHwpQb" />
+                    <VideoCard title="Induction" embedSrc="https://www.youtube.com/embed/P3mihiz8KUQ?si=yZQ3diYFHqnnt5cf" />
+                    <VideoCard title="AKHLAK" embedSrc="https://www.youtube.com/embed/T4b5O24DtOA?si=6fxQPLvaU1lQBs3b" />
                 </div>
             </section>
         </div>
