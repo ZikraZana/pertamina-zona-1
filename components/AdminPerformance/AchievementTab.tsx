@@ -30,6 +30,15 @@ type InovasiItem = {
     wilayah_kerja: string
 };
 
+type KehumasanItem = {
+    id: string;
+    wilayah_kerja: string;
+    kategori: string;
+    sub_kategori: string;
+    medali: "gold" | "silver" | "bronze";
+    urutan: number;
+};
+
 // ============================================================
 // ICONS (inline SVG, konsisten dengan gaya ikon di PerformanceReportTab)
 // ============================================================
@@ -200,8 +209,63 @@ function SortableRkItem({
     );
 }
 
+const MEDALI_STYLE: Record<KehumasanItem["medali"], { label: string; className: string }> = {
+    gold: { label: "🥇 Gold", className: "bg-amber-100 text-amber-800" },
+    silver: { label: "🥈 Silver", className: "bg-slate-200 text-slate-700" },
+    bronze: { label: "🥉 Bronze", className: "bg-orange-100 text-orange-800" },
+};
+
+function SortableKehumasanItem({
+    item,
+    index,
+    onEdit,
+    onDelete,
+}: {
+    item: KehumasanItem;
+    index: number;
+    onEdit: (item: KehumasanItem) => void;
+    onDelete: (id: string) => void;
+}) {
+    const { ref, handleRef, isDragging } = useSortable({ id: item.id, index });
+    const medali = MEDALI_STYLE[item.medali];
+
+    return (
+        <li
+            ref={ref}
+            style={{ opacity: isDragging ? 0.5 : 1 }}
+            className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30"
+        >
+            <button
+                type="button"
+                ref={handleRef}
+                title="Geser untuk mengubah urutan"
+                className="shrink-0 cursor-grab touch-none rounded-lg p-1.5 text-black transition-colors hover:bg-slate-100 hover:text-slate-500 active:cursor-grabbing"
+            >
+                <DragHandleIcon />
+            </button>
+
+            <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="truncate font-semibold text-blue-900">{item.wilayah_kerja}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${medali.className}`}>{medali.label}</span>
+                </div>
+                <p className="mt-0.5 truncate text-xs text-slate-400">{item.kategori} · {item.sub_kategori}</p>
+            </div>
+
+            <div className="flex shrink-0 gap-1">
+                <button onClick={() => onEdit(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                    <PencilIcon />
+                </button>
+                <button onClick={() => onDelete(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                    <TrashIcon />
+                </button>
+            </div>
+        </li>
+    );
+}
+
 const AchievementTab = () => {
-    const [activeTab, setActiveTab] = useState<"produksi" | "rencana-kerja" | "inovasi">("produksi");
+    const [activeTab, setActiveTab] = useState<"produksi" | "rencana-kerja" | "inovasi" | "kehumasan">("produksi");
     const [selectedJenis, setSelectedJenis] = useState<"minyak" | "gas">("minyak");
     const [data, setData] = useState<Record<string, ProduksiData>>({});
     const [dataLoading, setDataLoading] = useState(true);
@@ -228,6 +292,15 @@ const AchievementTab = () => {
     const [inovasiEditingId, setInovasiEditingId] = useState<string | null>(null);
     const [inovasiLoading, setInovasiLoading] = useState(false);
 
+    // ---------- State Kehumasan ----------
+    const [kehumasanItems, setKehumasanItems] = useState<KehumasanItem[]>([]);
+    const [kehumasanListLoading, setKehumasanListLoading] = useState(true);
+    const [kehumasanFormOpen, setKehumasanFormOpen] = useState(false);
+    const [kehumasanForm, setKehumasanForm] = useState({ wilayah_kerja: "", kategori: "", sub_kategori: "", medali: "gold" });
+    const [kehumasanEditingId, setKehumasanEditingId] = useState<string | null>(null);
+    const [kehumasanLoading, setKehumasanLoading] = useState(false);
+    const [kehumasanError, setKehumasanError] = useState<string | null>(null);
+
     async function fetchData() {
         setDataLoading(true);
         try {
@@ -247,6 +320,7 @@ const AchievementTab = () => {
         fetchData();
         fetchRkItems();
         fetchInovasiItems();
+        fetchKehumasanItems();
     }, []);
 
     // ---------- Fungsi Rencana Kerja ----------
@@ -393,6 +467,94 @@ const AchievementTab = () => {
         await fetchInovasiItems();
     }
 
+    // ---------- Fungsi Kehumasan ----------
+    async function fetchKehumasanItems() {
+        setKehumasanListLoading(true);
+        try {
+            const res = await fetch("/api/achievement/kehumasan");
+            const json = await res.json();
+            setKehumasanItems(json.data ?? []);
+        } finally {
+            setKehumasanListLoading(false);
+        }
+    }
+
+    function resetKehumasanForm() {
+        setKehumasanForm({ wilayah_kerja: "", kategori: "", sub_kategori: "", medali: "gold" });
+        setKehumasanEditingId(null);
+        setKehumasanFormOpen(false);
+        setKehumasanError(null);
+    }
+
+    function startEditKehumasan(item: KehumasanItem) {
+        setKehumasanForm({ wilayah_kerja: item.wilayah_kerja, kategori: item.kategori, sub_kategori: item.sub_kategori, medali: item.medali });
+        setKehumasanEditingId(item.id);
+        setKehumasanFormOpen(true);
+        setKehumasanError(null);
+    }
+
+    async function handleSubmitKehumasan(e: React.FormEvent) {
+        e.preventDefault();
+        setKehumasanError(null);
+        setKehumasanLoading(true);
+
+        const existingItem = kehumasanEditingId ? kehumasanItems.find((item) => item.id === kehumasanEditingId) : null;
+        const payload = {
+            ...kehumasanForm,
+            urutan: existingItem ? existingItem.urutan : kehumasanItems.length,
+        };
+
+        const url = kehumasanEditingId ? `/api/achievement/kehumasan/${kehumasanEditingId}` : "/api/achievement/kehumasan";
+        const method = kehumasanEditingId ? "PATCH" : "POST";
+        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const json = await res.json();
+
+        if (!res.ok) {
+            setKehumasanError(json.error ?? "Gagal menyimpan data.");
+            setKehumasanLoading(false);
+            return;
+        }
+
+        await fetchKehumasanItems();
+        resetKehumasanForm();
+        setKehumasanLoading(false);
+    }
+
+    async function handleDeleteKehumasan(id: string) {
+        if (!window.confirm("Hapus data ini?")) return;
+        await fetch(`/api/achievement/kehumasan/${id}`, { method: "DELETE" });
+        await fetchKehumasanItems();
+    }
+
+    /** Setelah drag-reorder, simpan urutan baru semua item yang posisinya bergeser ke server. */
+    async function reorderKehumasan(fromIndex: number, toIndex: number) {
+        setKehumasanItems((currentItems) => {
+            const start = Math.min(fromIndex, toIndex);
+            const end = Math.max(fromIndex, toIndex);
+            const affected = currentItems.slice(start, end + 1);
+
+            Promise.all(
+                affected.map((item, i) =>
+                    fetch(`/api/achievement/kehumasan/${item.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            wilayah_kerja: item.wilayah_kerja,
+                            kategori: item.kategori,
+                            sub_kategori: item.sub_kategori,
+                            medali: item.medali,
+                            urutan: start + i,
+                        }),
+                    })
+                )
+            ).catch(() => {
+                fetchKehumasanItems();
+            });
+
+            return currentItems;
+        });
+    }
+
     useEffect(() => {
         if (data[selectedJenis]) {
             setForm(data[selectedJenis]);
@@ -445,6 +607,7 @@ const AchievementTab = () => {
                         { key: "produksi", label: "Produksi" },
                         { key: "rencana-kerja", label: "Rencana Kerja" },
                         { key: "inovasi", label: "Inovasi" },
+                        { key: "kehumasan", label: "Kehumasan" },
                     ] as const
                 ).map((tab) => (
                     <button
@@ -700,6 +863,78 @@ const AchievementTab = () => {
                                 </li>
                             ))}
                         </ul>
+                    )}
+                </div>
+            )}
+
+            {/* ---------- Card Kehumasan ---------- */}
+            {activeTab === "kehumasan" && (
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <SectionHeader
+                        title="Kehumasan"
+                        isFormOpen={kehumasanFormOpen}
+                        onToggle={() => (kehumasanFormOpen ? resetKehumasanForm() : setKehumasanFormOpen(true))}
+                    />
+
+                    {kehumasanFormOpen && (
+                        <form onSubmit={handleSubmitKehumasan} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
+                            <input placeholder="Wilayah Kerja (misal Field Rantau)" value={kehumasanForm.wilayah_kerja} onChange={(e) => setKehumasanForm({ ...kehumasanForm, wilayah_kerja: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                            <input placeholder="Kategori (misal Manajemen Krisis)" value={kehumasanForm.kategori} onChange={(e) => setKehumasanForm({ ...kehumasanForm, kategori: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                            <input placeholder="Sub Kategori (misal Krisis & Pasca Krisis)" value={kehumasanForm.sub_kategori} onChange={(e) => setKehumasanForm({ ...kehumasanForm, sub_kategori: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                            <select value={kehumasanForm.medali} onChange={(e) => setKehumasanForm({ ...kehumasanForm, medali: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500">
+                                <option value="gold">🥇 Gold Winner</option>
+                                <option value="silver">🥈 Silver Winner</option>
+                                <option value="bronze">🥉 Bronze Winner</option>
+                            </select>
+
+                            {kehumasanError && (
+                                <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{kehumasanError}</p>
+                            )}
+
+                            <div className="col-span-2 flex gap-2">
+                                <button type="submit" disabled={kehumasanLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                    {kehumasanLoading ? "Menyimpan..." : kehumasanEditingId ? "Simpan Perubahan" : "Tambah"}
+                                </button>
+                                <button type="button" onClick={resetKehumasanForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
+                            </div>
+                        </form>
+                    )}
+
+                    {kehumasanListLoading ? (
+                        <ListSkeleton />
+                    ) : kehumasanItems.length === 0 ? (
+                        <EmptyState label="Belum ada data kehumasan." />
+                    ) : (
+                        <DragDropProvider
+                            onDragEnd={(event) => {
+                                if (event.canceled) return;
+                                const { source } = event.operation;
+                                if (!isSortable(source)) return;
+
+                                const { initialIndex, index } = source;
+                                if (initialIndex === index) return;
+
+                                setKehumasanItems((items) => {
+                                    const newItems = [...items];
+                                    const [moved] = newItems.splice(initialIndex, 1);
+                                    newItems.splice(index, 0, moved);
+                                    return newItems;
+                                });
+                                reorderKehumasan(initialIndex, index);
+                            }}
+                        >
+                            <ul className="flex flex-col gap-2">
+                                {kehumasanItems.map((item, index) => (
+                                    <SortableKehumasanItem
+                                        key={item.id}
+                                        item={item}
+                                        index={index}
+                                        onEdit={startEditKehumasan}
+                                        onDelete={handleDeleteKehumasan}
+                                    />
+                                ))}
+                            </ul>
+                        </DragDropProvider>
                     )}
                 </div>
             )}
