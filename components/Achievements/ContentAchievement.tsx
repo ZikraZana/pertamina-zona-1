@@ -222,6 +222,7 @@ type Kehumasan = {
     sub_kategori: string;
     medali: "gold" | "silver" | "bronze";
     urutan: number;
+    image_url: string | null;
 }
 
 
@@ -309,6 +310,7 @@ const AchievementsContent = () => {
         groupedKehumasan[row.wilayah_kerja].push({
             text: `Kategori ${row.kategori} Sub Kategori ${row.sub_kategori}`,
             medal: row.medali,
+            imageUrl: row.image_url ?? undefined,
         });
     }
 

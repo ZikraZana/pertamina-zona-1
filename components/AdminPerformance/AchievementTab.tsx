@@ -37,6 +37,7 @@ type KehumasanItem = {
     sub_kategori: string;
     medali: "gold" | "silver" | "bronze";
     urutan: number;
+    image_path: string | null;
 };
 
 // ============================================================
@@ -215,18 +216,26 @@ const MEDALI_STYLE: Record<KehumasanItem["medali"], { label: string; className: 
     bronze: { label: "🥉 Bronze", className: "bg-orange-100 text-orange-800" },
 };
 
+// ============================================================
+// SUB-KOMPONEN: item Kehumasan yang bisa di-drag, DIBATASI dalam
+// grup wilayah_kerja yang sama (prop `group`) -- @dnd-kit/react
+// otomatis mencegah drag lintas-grup ketika prop ini diisi.
+// ============================================================
+
 function SortableKehumasanItem({
     item,
     index,
+    group,
     onEdit,
     onDelete,
 }: {
     item: KehumasanItem;
     index: number;
+    group: string;
     onEdit: (item: KehumasanItem) => void;
     onDelete: (id: string) => void;
 }) {
-    const { ref, handleRef, isDragging } = useSortable({ id: item.id, index });
+    const { ref, handleRef, isDragging } = useSortable({ id: item.id, index, group });
     const medali = MEDALI_STYLE[item.medali];
 
     return (
@@ -296,7 +305,14 @@ const AchievementTab = () => {
     const [kehumasanItems, setKehumasanItems] = useState<KehumasanItem[]>([]);
     const [kehumasanListLoading, setKehumasanListLoading] = useState(true);
     const [kehumasanFormOpen, setKehumasanFormOpen] = useState(false);
-    const [kehumasanForm, setKehumasanForm] = useState({ wilayah_kerja: "", kategori: "", sub_kategori: "", medali: "gold" });
+    const [kehumasanForm, setKehumasanForm] = useState<{
+        wilayah_kerja: string;
+        kategori: string;
+        sub_kategori: string;
+        medali: "gold" | "silver" | "bronze";
+    }>({ wilayah_kerja: "", kategori: "", sub_kategori: "", medali: "gold" });
+    const [kehumasanImageFile, setKehumasanImageFile] = useState<File | null>(null);
+    const [kehumasanExistingImagePath, setKehumasanExistingImagePath] = useState<string | null>(null);
     const [kehumasanEditingId, setKehumasanEditingId] = useState<string | null>(null);
     const [kehumasanLoading, setKehumasanLoading] = useState(false);
     const [kehumasanError, setKehumasanError] = useState<string | null>(null);
@@ -481,6 +497,8 @@ const AchievementTab = () => {
 
     function resetKehumasanForm() {
         setKehumasanForm({ wilayah_kerja: "", kategori: "", sub_kategori: "", medali: "gold" });
+        setKehumasanImageFile(null);
+        setKehumasanExistingImagePath(null);
         setKehumasanEditingId(null);
         setKehumasanFormOpen(false);
         setKehumasanError(null);
@@ -488,6 +506,8 @@ const AchievementTab = () => {
 
     function startEditKehumasan(item: KehumasanItem) {
         setKehumasanForm({ wilayah_kerja: item.wilayah_kerja, kategori: item.kategori, sub_kategori: item.sub_kategori, medali: item.medali });
+        setKehumasanImageFile(null);
+        setKehumasanExistingImagePath(item.image_path ?? null);
         setKehumasanEditingId(item.id);
         setKehumasanFormOpen(true);
         setKehumasanError(null);
@@ -499,14 +519,27 @@ const AchievementTab = () => {
         setKehumasanLoading(true);
 
         const existingItem = kehumasanEditingId ? kehumasanItems.find((item) => item.id === kehumasanEditingId) : null;
-        const payload = {
-            ...kehumasanForm,
-            urutan: existingItem ? existingItem.urutan : kehumasanItems.length,
-        };
+        const urutan = existingItem ? existingItem.urutan : kehumasanItems.length;
+
+        // FormData, bukan JSON -- karena sekarang bisa bawa file gambar sekaligus
+        const formData = new FormData();
+        formData.append("wilayah_kerja", kehumasanForm.wilayah_kerja);
+        formData.append("kategori", kehumasanForm.kategori);
+        formData.append("sub_kategori", kehumasanForm.sub_kategori);
+        formData.append("medali", kehumasanForm.medali);
+        formData.append("urutan", String(urutan));
+        if (kehumasanImageFile) {
+            formData.append("image", kehumasanImageFile);
+        }
+        // Kalau kehumasanImageFile null (admin gak pilih file baru), "image" gak
+        // di-append sama sekali -- di API, formData.get("image") jadi null,
+        // yang berarti "pertahankan foto lama" (lihat logic PATCH di route.ts)
 
         const url = kehumasanEditingId ? `/api/achievement/kehumasan/${kehumasanEditingId}` : "/api/achievement/kehumasan";
         const method = kehumasanEditingId ? "PATCH" : "POST";
-        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        // PENTING: jangan set header Content-Type manual -- biarkan browser yang
+        // otomatis set multipart/form-data dengan boundary yang benar
+        const res = await fetch(url, { method, body: formData });
         const json = await res.json();
 
         if (!res.ok) {
@@ -526,32 +559,32 @@ const AchievementTab = () => {
         await fetchKehumasanItems();
     }
 
-    /** Setelah drag-reorder, simpan urutan baru semua item yang posisinya bergeser ke server. */
-    async function reorderKehumasan(fromIndex: number, toIndex: number) {
-        setKehumasanItems((currentItems) => {
-            const start = Math.min(fromIndex, toIndex);
-            const end = Math.max(fromIndex, toIndex);
-            const affected = currentItems.slice(start, end + 1);
+    /**
+     * Setelah drag-reorder DALAM SATU GRUP (wilayah_kerja) Kehumasan, hitung ulang
+     * `urutan` cuma untuk item-item dalam grup tersebut (mulai dari 0 lagi), lalu
+     * kirim PATCH untuk tiap item di grup itu. Item di grup lain tidak disentuh.
+     */
+    async function reorderKehumasanInGroup(field: string, allItems: KehumasanItem[]) {
+        const itemsInGroup = allItems.filter((it) => it.wilayah_kerja === field);
 
-            Promise.all(
-                affected.map((item, i) =>
-                    fetch(`/api/achievement/kehumasan/${item.id}`, {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            wilayah_kerja: item.wilayah_kerja,
-                            kategori: item.kategori,
-                            sub_kategori: item.sub_kategori,
-                            medali: item.medali,
-                            urutan: start + i,
-                        }),
-                    })
-                )
-            ).catch(() => {
-                fetchKehumasanItems();
-            });
+        await Promise.all(
+            itemsInGroup.map((item, i) => {
+                const formData = new FormData();
+                formData.append("wilayah_kerja", item.wilayah_kerja);
+                formData.append("kategori", item.kategori);
+                formData.append("sub_kategori", item.sub_kategori);
+                formData.append("medali", item.medali);
+                formData.append("urutan", String(i));
+                // tidak append "image" -- reorder tidak pernah mengubah foto,
+                // jadi backend akan pertahankan image_path yang sudah ada
 
-            return currentItems;
+                return fetch(`/api/achievement/kehumasan/${item.id}`, {
+                    method: "PATCH",
+                    body: formData,
+                });
+            })
+        ).catch(() => {
+            fetchKehumasanItems();
         });
     }
 
@@ -596,6 +629,17 @@ const AchievementTab = () => {
             await fetchData();
         }
         setSaveLoading(false);
+    }
+
+    // Kelompokkan kehumasanItems per wilayah_kerja untuk tampilan admin.
+    // Urutan relatif dalam tiap grup tetap ikut urutan array asli (yang sudah
+    // diurutkan server berdasarkan `urutan`), jadi konsisten dengan halaman publik.
+    const groupedKehumasanItems: Record<string, KehumasanItem[]> = {};
+    for (const item of kehumasanItems) {
+        if (!groupedKehumasanItems[item.wilayah_kerja]) {
+            groupedKehumasanItems[item.wilayah_kerja] = [];
+        }
+        groupedKehumasanItems[item.wilayah_kerja].push(item);
     }
 
     return (
@@ -881,11 +925,27 @@ const AchievementTab = () => {
                             <input placeholder="Wilayah Kerja (misal Field Rantau)" value={kehumasanForm.wilayah_kerja} onChange={(e) => setKehumasanForm({ ...kehumasanForm, wilayah_kerja: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
                             <input placeholder="Kategori (misal Manajemen Krisis)" value={kehumasanForm.kategori} onChange={(e) => setKehumasanForm({ ...kehumasanForm, kategori: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
                             <input placeholder="Sub Kategori (misal Krisis & Pasca Krisis)" value={kehumasanForm.sub_kategori} onChange={(e) => setKehumasanForm({ ...kehumasanForm, sub_kategori: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                            <select value={kehumasanForm.medali} onChange={(e) => setKehumasanForm({ ...kehumasanForm, medali: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500">
+                            <select value={kehumasanForm.medali} onChange={(e) => setKehumasanForm({ ...kehumasanForm, medali: e.target.value as "gold" | "silver" | "bronze" })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500">
                                 <option value="gold">🥇 Gold Winner</option>
                                 <option value="silver">🥈 Silver Winner</option>
                                 <option value="bronze">🥉 Bronze Winner</option>
                             </select>
+
+                            <div className="col-span-2">
+                                <label className="mb-1 block text-xs font-semibold text-slate-600">Foto Penghargaan (opsional)</label>
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    onChange={(e) => setKehumasanImageFile(e.target.files?.[0] ?? null)}
+                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-blue-700 focus:border-blue-500"
+                                />
+                                {kehumasanExistingImagePath && !kehumasanImageFile && (
+                                    <p className="mt-1 text-[11px] text-slate-400">Sudah ada foto tersimpan. Pilih file baru untuk menggantinya, atau biarkan kosong untuk tetap memakai foto lama.</p>
+                                )}
+                                {kehumasanImageFile && (
+                                    <p className="mt-1 text-[11px] text-blue-700">File dipilih: {kehumasanImageFile.name}</p>
+                                )}
+                            </div>
 
                             {kehumasanError && (
                                 <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{kehumasanError}</p>
@@ -911,29 +971,50 @@ const AchievementTab = () => {
                                 const { source } = event.operation;
                                 if (!isSortable(source)) return;
 
-                                const { initialIndex, index } = source;
-                                if (initialIndex === index) return;
+                                const { initialIndex, index, group } = source;
+                                if (initialIndex === index || group === undefined) return;
 
-                                setKehumasanItems((items) => {
-                                    const newItems = [...items];
-                                    const [moved] = newItems.splice(initialIndex, 1);
-                                    newItems.splice(index, 0, moved);
+                                setKehumasanItems((currentItems) => {
+                                    // `initialIndex`/`index` di sini adalah index DALAM GRUP
+                                    // (bukan index array global), karena prop `group` diisi
+                                    // di useSortable. Perlu dipetakan balik ke posisi global
+                                    // sebelum splice supaya urutan array penuh tetap benar.
+                                    const groupItems = currentItems.filter((it) => it.wilayah_kerja === group);
+                                    const movedItem = groupItems[initialIndex];
+                                    const targetItem = groupItems[index];
+                                    if (!movedItem || !targetItem) return currentItems;
+
+                                    const globalFrom = currentItems.findIndex((it) => it.id === movedItem.id);
+                                    const globalTo = currentItems.findIndex((it) => it.id === targetItem.id);
+
+                                    const newItems = [...currentItems];
+                                    const [moved] = newItems.splice(globalFrom, 1);
+                                    newItems.splice(globalTo, 0, moved);
+
+                                    reorderKehumasanInGroup(group as string, newItems);
                                     return newItems;
                                 });
-                                reorderKehumasan(initialIndex, index);
                             }}
                         >
-                            <ul className="flex flex-col gap-2">
-                                {kehumasanItems.map((item, index) => (
-                                    <SortableKehumasanItem
-                                        key={item.id}
-                                        item={item}
-                                        index={index}
-                                        onEdit={startEditKehumasan}
-                                        onDelete={handleDeleteKehumasan}
-                                    />
+                            <div className="flex flex-col gap-4">
+                                {Object.entries(groupedKehumasanItems).map(([field, items]) => (
+                                    <div key={field}>
+                                        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">{field}</p>
+                                        <ul className="flex flex-col gap-2">
+                                            {items.map((item, index) => (
+                                                <SortableKehumasanItem
+                                                    key={item.id}
+                                                    item={item}
+                                                    index={index}
+                                                    group={field}
+                                                    onEdit={startEditKehumasan}
+                                                    onDelete={handleDeleteKehumasan}
+                                                />
+                                            ))}
+                                        </ul>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
                         </DragDropProvider>
                     )}
                 </div>
