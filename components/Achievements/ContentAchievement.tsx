@@ -216,12 +216,24 @@ type Inovasi = {
     wilayah_kerja: string;
 }
 
+type Kehumasan = {
+    wilayah_kerja: string;
+    kategori: string;
+    sub_kategori: string;
+    medali: "gold" | "silver" | "bronze";
+    urutan: number;
+}
+
 
 const AchievementsContent = () => {
     const [activeTab, setActiveTab] = useState<TabKey>("produksi");
     const [produksiData, setProduksiData] = useState<Record<string, ProduksiData>>({});
     const [rencanaKerja, setRencanaKerja] = useState<Record<string, RencanaKerja[]>>({});
     const [inovasi, setInovasi] = useState<Inovasi[]>([]);
+    const [kehumasan, setKehumasan] = useState<Kehumasan[]>([]);
+    const goldCount = kehumasan.filter((item) => item.medali === 'gold').length;
+    const silverCount = kehumasan.filter((item) => item.medali === 'silver').length;
+    const bronzeCount = kehumasan.filter((item) => item.medali === 'bronze').length;
 
     useEffect(() => {
         async function fetchProduksi() {
@@ -270,11 +282,35 @@ const AchievementsContent = () => {
                 console.error("Gagal mengambil data inovasi:", err);
             }
         }
+        async function fetchKehumasan() {
+
+            try {
+                const res = await fetch('/api/achievement/kehumasan');
+                const json = await res.json();
+                setKehumasan(json.data ?? []);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data kehumasan:", err);
+            }
+        }
 
         fetchProduksi()
         fetchRencanaKerja()
         fetchInovasi()
+        fetchKehumasan()
     }, []);
+
+    const groupedKehumasan: Record<string, AwardItem[]> = {};
+    for (const row of kehumasan) {
+        if (!groupedKehumasan[row.wilayah_kerja]) {
+            groupedKehumasan[row.wilayah_kerja] = [];
+        }
+
+        groupedKehumasan[row.wilayah_kerja].push({
+            text: `Kategori ${row.kategori} Sub Kategori ${row.sub_kategori}`,
+            medal: row.medali,
+        });
+    }
 
     return (
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-4 sm:p-6">
@@ -562,7 +598,7 @@ const AchievementsContent = () => {
                                         1
                                     </span> */}
                                 </p>
-                                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-slate-500">1 Silver Winner</p>
+                                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-slate-500">{silverCount} Silver Winner</p>
                             </div>
 
                             {/* Gold */}
@@ -574,7 +610,7 @@ const AchievementsContent = () => {
                                         2
                                     </span> */}
                                 </p>
-                                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-amber-700">2 Gold Winner</p>
+                                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-amber-700">{goldCount} Gold Winner</p>
                             </div>
 
                             {/* Bronze */}
@@ -586,58 +622,19 @@ const AchievementsContent = () => {
                                         2
                                     </span> */}
                                 </p>
-                                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-orange-700">2 Bronze Winner</p>
+                                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-orange-700">{bronzeCount} Bronze Winner</p>
                             </div>
                         </div>
 
                         {/* Detail per field */}
-                        {/* Detail per field */}
                         <div className="flex flex-col gap-4">
-                            <FieldAwardCard
-                                field="PT Pertamina EP Rantau Field"
-                                awards={[
-                                    {
-                                        text: "Kategori Manajemen Krisis Sub Kategori Krisis & Pasca Krisis",
-                                        medal: "gold",
-                                        //imageUrl: "/images/kehumasan/rantau-gold.jpg",
-                                    },
-                                    {
-                                        text: "Kategori Program Komunikasi Social Responsibility Sub Kategori Community Based Development",
-                                        medal: "bronze",
-                                        //imageUrl: "/images/kehumasan/rantau-bronze.jpg",
-                                    },
-                                ]}
-                            />
-                            <FieldAwardCard
-                                field="PT Pertamina EP Jambi Field"
-                                awards={[
-                                    {
-                                        text: "Kategori Program Komunikasi Social Responsibility Sub Kategori Community Based Development",
-                                        medal: "silver",
-                                        // imageUrl belum diisi -> tampil placeholder (Foto)
-                                    },
-                                ]}
-                            />
-                            <FieldAwardCard
-                                field="PT Pertamina EP Lirik Field"
-                                awards={[
-                                    {
-                                        text: "Kategori Manajemen Krisis Sub Kategori Krisis & Pasca Krisis",
-                                        medal: "gold",
-
-                                    },
-                                ]}
-                            />
-                            <FieldAwardCard
-                                field="PT Pertamina EP Pangkalan Susu Field"
-                                awards={[
-                                    {
-                                        text: "Kategori Program Komunikasi Social Responsibility Sub Kategori Community Based Development",
-                                        medal: "bronze",
-
-                                    },
-                                ]}
-                            />
+                            {Object.entries(groupedKehumasan).map(([field, awards]) => (
+                                <FieldAwardCard
+                                    key={field}
+                                    field={field}
+                                    awards={awards}
+                                />
+                            ))}
                         </div>
                     </div>
                 )}

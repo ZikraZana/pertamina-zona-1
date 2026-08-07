@@ -60,7 +60,7 @@ function TrashIcon() {
 
 function DragHandleIcon() {
     return (
-        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}>
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2}>
             <circle cx="9" cy="6" r="1" fill="currentColor" stroke="none" />
             <circle cx="9" cy="12" r="1" fill="currentColor" stroke="none" />
             <circle cx="9" cy="18" r="1" fill="currentColor" stroke="none" />
@@ -171,7 +171,7 @@ function SortableRkItem({
                 type="button"
                 ref={handleRef}
                 title="Geser untuk mengubah urutan"
-                className="shrink-0 cursor-grab touch-none rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-slate-100 hover:text-slate-500 active:cursor-grabbing"
+                className="shrink-0 cursor-grab touch-none rounded-lg p-1.5 text-black transition-colors hover:bg-slate-100 hover:text-slate-500 active:cursor-grabbing"
             >
                 <DragHandleIcon />
             </button>
