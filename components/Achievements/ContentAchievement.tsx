@@ -184,6 +184,14 @@ function formatAngkaID(n: number) {
     return n.toLocaleString('id-ID');
 }
 
+/** Gabungkan jumlah minyak & gas jadi satu string ringkas, skip yang kosong. */
+function formatJumlahProduksi(jumlahMinyak: number | null, jumlahGas: number | null) {
+    const parts: string[] = [];
+    if (jumlahMinyak !== null) parts.push(`${formatAngkaID(jumlahMinyak)} BOPD`);
+    if (jumlahGas !== null) parts.push(`${formatAngkaID(jumlahGas)} MMSCFD`);
+    return parts.join(" / ");
+}
+
 type ProduksiData = {
     jenis: "minyak" | "gas";
     realisasi: number;
@@ -195,9 +203,10 @@ type ProduksiData = {
 type RencanaKerja = {
     jenis_rk: string;
     nama_rk: string;
-    jenis_produksi: "minyak" | "gas";
-    jumlah_produksi: number;
+    jumlah_minyak: number | null;
+    jumlah_gas: number | null;
     wilayah_kerja: string;
+    urutan: number;
 }
 
 type Inovasi = {
@@ -335,12 +344,13 @@ const AchievementsContent = () => {
                                     accentColor="amber"
                                     items={
                                         rencanaKerja.Bor
-                                            .sort((a, b) => b.jumlah_produksi - a.jumlah_produksi)
+                                            .slice()
+                                            .sort((a, b) => a.urutan - b.urutan)
                                             .slice(0, 5)
                                             .map((item) => ({
                                                 label: item.nama_rk,
                                                 field: item.wilayah_kerja,
-                                                value: formatAngkaID(item.jumlah_produksi)
+                                                value: formatJumlahProduksi(item.jumlah_minyak, item.jumlah_gas)
                                             }))
                                     }
                                 />
@@ -356,12 +366,13 @@ const AchievementsContent = () => {
                                         accentColor="sky"
                                         items={
                                             rencanaKerja.Workover
-                                                .sort((a, b) => b.jumlah_produksi - a.jumlah_produksi)
+                                                .slice()
+                                                .sort((a, b) => a.urutan - b.urutan)
                                                 .slice(0, 5)
                                                 .map((item) => ({
                                                     label: item.nama_rk,
                                                     field: item.wilayah_kerja,
-                                                    value: formatAngkaID(item.jumlah_produksi)
+                                                    value: formatJumlahProduksi(item.jumlah_minyak, item.jumlah_gas)
                                                 }))
                                         }
                                     />
@@ -465,15 +476,15 @@ const AchievementsContent = () => {
                         accentColor="sky"
                         items={inovasi.map((item) => ({
                             label: item.pencapaian,
-                            field: `${item.nama_inovasi} - ${item.nama_acara}, ${item.wilayah_kerja}`,
+                            field: [item.nama_inovasi, item.nama_acara].filter(Boolean).join(" - ") + `, ${item.wilayah_kerja}`,
                             value: ""
                         }))}
-                        // items={[
-                        //     { label: "Best Presentation", field: "PC Prove Velocity - Zona 1", value: "" },
-                        //     { label: "Best Impact on Productivity", field: "Asia Pacific Quality Organization (APQO) - PC Prove Energy, Jambi Merang Field", value: "" },
-                        //     { label: "Four Stars ★★★★", field: "Asia Pacific Quality Organization (APQO) - PC Prove Energy, Jambi Merang Field", value: "" },
-                        //     { label: "2 Sertifikat Paten", field: "Kementrian Hukum RI - Finding Oil Losses Field Jambi (2025-2035)", value: "" },
-                        // ]}
+                    // items={[
+                    //     { label: "Best Presentation", field: "PC Prove Velocity - Zona 1", value: "" },
+                    //     { label: "Best Impact on Productivity", field: "Asia Pacific Quality Organization (APQO) - PC Prove Energy, Jambi Merang Field", value: "" },
+                    //     { label: "Four Stars ★★★★", field: "Asia Pacific Quality Organization (APQO) - PC Prove Energy, Jambi Merang Field", value: "" },
+                    //     { label: "2 Sertifikat Paten", field: "Kementrian Hukum RI - Finding Oil Losses Field Jambi (2025-2035)", value: "" },
+                    // ]}
                     />
                 )}
 
@@ -630,7 +641,7 @@ const AchievementsContent = () => {
                         </div>
                     </div>
                 )}
-                
+
             </div>
         </div>
     );
