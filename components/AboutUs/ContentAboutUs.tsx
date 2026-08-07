@@ -117,8 +117,8 @@ const AboutUsContent = () => {
                 <DescriptionCard
                     paragraphs={[
                         // TODO: Ganti dengan deskripsi resmi perusahaan
-                        "PT Pertamina EP Zona 1 merupakan salah satu wilayah kerja operasi hulu migas Pertamina yang membawahi beberapa Field, meliputi Rantau, Pangkalan Susu, Jambi, Lirik, dan Jambi Merang. Zona 1 berperan penting dalam mendukung ketahanan energi nasional melalui kegiatan eksplorasi dan produksi minyak dan gas bumi.",
-                        "Dengan komitmen terhadap keselamatan, keberlanjutan, dan inovasi, Zona 1 terus berupaya meningkatkan kinerja produksi sekaligus menjaga kelestarian lingkungan dan kesejahteraan masyarakat di wilayah operasi.",
+                        "Pertamina Hulu Rokan (PHR) Zona 1 adalah bagian dari Regional 1 Sumatra Subholding Upstream Pertamina yang mengelola 11 lapangan minyak dan gas bumi di wilayah Aceh, Sumatra Utara, Riau, Jambi, hingga Sumatra Selatan. Zona 1 berfokus mendukung ketahanan energi nasional melalui praktik operasi yang aman, andal, dan berkelanjutan.",
+                        "Pertamina Hulu Rokan Zona 1 membawahi beberapa Field, meliputi Rantau, Pangkalan Susu, Jambi, Lirik, dan Jambi Merang. PHR Zona 1 berperan penting dalam mendukung ketahanan energi nasional melalui kegiatan eksplorasi dan produksi minyak dan gas bumi. Dengan komitmen terhadap keselamatan, keberlanjutan, dan inovasi, PHR Zona 1 terus berupaya meningkatkan kinerja produksi sekaligus menjaga kelestarian lingkungan dan kesejahteraan masyarakat di wilayah operasi.",
                     ]}
                 />
             </section>
