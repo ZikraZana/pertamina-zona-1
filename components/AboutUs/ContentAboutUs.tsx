@@ -206,7 +206,7 @@ const AboutUsContent = () => {
             <section>
                 <SectionHeading title="Video" />
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <VideoCard title="Indonesia Raya" embedSrc="https://www.youtube.com/embed/5gUA33sxi4E?si=fAFgQfBZeozHwpQb" />
+                    <VideoCard title="Indonesia Raya" embedSrc="https://www.youtube.com/embed/uyyLot4PLXM?si=_KMcRGJLfb9jbuxP" />
                     <VideoCard title="Induction" embedSrc="https://www.youtube.com/embed/P3mihiz8KUQ?si=yZQ3diYFHqnnt5cf" />
                     <VideoCard title="AKHLAK" embedSrc="https://www.youtube.com/embed/T4b5O24DtOA?si=6fxQPLvaU1lQBs3b" />
                 </div>
