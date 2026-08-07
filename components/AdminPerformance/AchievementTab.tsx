@@ -1,7 +1,8 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
-import { useEffect, useMemo, useState } from "react";
+import { DragDropProvider } from "@dnd-kit/react";
+import { isSortable, useSortable } from "@dnd-kit/react/sortable";
+import { useEffect, useState } from "react";
 
 type ProduksiData = {
     jenis: "minyak" | "gas";
@@ -53,6 +54,19 @@ function TrashIcon() {
     return (
         <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 7h12M9.5 7V5.5a1.5 1.5 0 011.5-1.5h2a1.5 1.5 0 011.5 1.5V7m-8 0l.6 12a2 2 0 002 1.9h5.8a2 2 0 002-1.9L18 7" />
+        </svg>
+    );
+}
+
+function DragHandleIcon() {
+    return (
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}>
+            <circle cx="9" cy="6" r="1" fill="currentColor" stroke="none" />
+            <circle cx="9" cy="12" r="1" fill="currentColor" stroke="none" />
+            <circle cx="9" cy="18" r="1" fill="currentColor" stroke="none" />
+            <circle cx="15" cy="6" r="1" fill="currentColor" stroke="none" />
+            <circle cx="15" cy="12" r="1" fill="currentColor" stroke="none" />
+            <circle cx="15" cy="18" r="1" fill="currentColor" stroke="none" />
         </svg>
     );
 }
@@ -130,7 +144,64 @@ function ListSkeleton() {
     );
 }
 
+// ============================================================
+// SUB-KOMPONEN: item Rencana Kerja yang bisa di-drag urutannya
+// ============================================================
+
+function SortableRkItem({
+    item,
+    index,
+    onEdit,
+    onDelete,
+}: {
+    item: RKItem;
+    index: number;
+    onEdit: (item: RKItem) => void;
+    onDelete: (id: string) => void;
+}) {
+    const { ref, handleRef, isDragging } = useSortable({ id: item.id, index });
+
+    return (
+        <li
+            ref={ref}
+            style={{ opacity: isDragging ? 0.5 : 1 }}
+            className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30"
+        >
+            <button
+                type="button"
+                ref={handleRef}
+                title="Geser untuk mengubah urutan"
+                className="shrink-0 cursor-grab touch-none rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-slate-100 hover:text-slate-500 active:cursor-grabbing"
+            >
+                <DragHandleIcon />
+            </button>
+
+            <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="truncate font-semibold text-blue-900">{item.nama_rk}</span>
+                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-800">{item.jenis_rk}</span>
+                </div>
+                <p className="mt-0.5 text-xs text-slate-400">
+                    {item.wilayah_kerja}
+                    {item.jumlah_minyak !== null && ` · ${item.jumlah_minyak.toLocaleString("id-ID")} BOPD`}
+                    {item.jumlah_gas !== null && ` · ${item.jumlah_gas.toLocaleString("id-ID")} MMSCFD`}
+                </p>
+            </div>
+
+            <div className="flex shrink-0 gap-1">
+                <button onClick={() => onEdit(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                    <PencilIcon />
+                </button>
+                <button onClick={() => onDelete(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                    <TrashIcon />
+                </button>
+            </div>
+        </li>
+    );
+}
+
 const AchievementTab = () => {
+    const [activeTab, setActiveTab] = useState<"produksi" | "rencana-kerja" | "inovasi">("produksi");
     const [selectedJenis, setSelectedJenis] = useState<"minyak" | "gas">("minyak");
     const [data, setData] = useState<Record<string, ProduksiData>>({});
     const [dataLoading, setDataLoading] = useState(true);
@@ -227,7 +298,7 @@ const AchievementTab = () => {
             jumlah_minyak: rkForm.jumlah_minyak.trim() ? Number(rkForm.jumlah_minyak) : null,
             jumlah_gas: rkForm.jumlah_gas.trim() ? Number(rkForm.jumlah_gas) : null,
             wilayah_kerja: rkForm.wilayah_kerja,
-            urutan: rkForm.urutan.trim() ? Number(rkForm.urutan) : 0,
+            urutan: rkEditingId ? Number(rkForm.urutan) : rkItems.length,
         };
         const url = rkEditingId ? `/api/achievement/rencana-kerja/${rkEditingId}` : "/api/achievement/rencana-kerja";
         const method = rkEditingId ? "PATCH" : "POST";
@@ -249,6 +320,36 @@ const AchievementTab = () => {
         if (!window.confirm("Hapus data ini?")) return;
         await fetch(`/api/achievement/rencana-kerja/${id}`, { method: "DELETE" });
         await fetchRkItems();
+    }
+
+    /** Setelah drag-reorder, simpan urutan baru semua item yang posisinya bergeser ke server. */
+    async function reorderRk(fromIndex: number, toIndex: number) {
+        setRkItems((currentItems) => {
+            const start = Math.min(fromIndex, toIndex);
+            const end = Math.max(fromIndex, toIndex);
+            const affected = currentItems.slice(start, end + 1);
+
+            Promise.all(
+                affected.map((item, i) =>
+                    fetch(`/api/achievement/rencana-kerja/${item.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            jenis_rk: item.jenis_rk,
+                            nama_rk: item.nama_rk,
+                            jumlah_minyak: item.jumlah_minyak,
+                            jumlah_gas: item.jumlah_gas,
+                            wilayah_kerja: item.wilayah_kerja,
+                            urutan: start + i,
+                        }),
+                    })
+                )
+            ).catch(() => {
+                fetchRkItems();
+            });
+
+            return currentItems;
+        });
     }
 
     // ---------- Fungsi Inovasi ----------
@@ -337,211 +438,271 @@ const AchievementTab = () => {
 
     return (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h2 className="mb-4 text-sm font-bold text-blue-900">Produksi</h2>
-
-                <div className="mb-4">
-                    <label className="mb-1 block text-xs font-semibold text-slate-600">Jenis</label>
-                    <select
-                        value={selectedJenis}
-                        onChange={(e) => setSelectedJenis(e.target.value as "minyak" | "gas")}
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+            {/* ---------- Tab Navigasi ---------- */}
+            <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
+                {(
+                    [
+                        { key: "produksi", label: "Produksi" },
+                        { key: "rencana-kerja", label: "Rencana Kerja" },
+                        { key: "inovasi", label: "Inovasi" },
+                    ] as const
+                ).map((tab) => (
+                    <button
+                        key={tab.key}
+                        type="button"
+                        onClick={() => setActiveTab(tab.key)}
+                        className={[
+                            "flex-1 cursor-pointer rounded-lg px-3 py-1.5 text-sm transition-colors",
+                            activeTab === tab.key
+                                ? "bg-blue-900 text-white shadow-sm font-semibold"
+                                : "text-slate-600 hover:bg-slate-200",
+                        ].join(" ")}
                     >
-                        <option value="minyak">Produksi Minyak</option>
-                        <option value="gas">Produksi Gas</option>
-                    </select>
-                </div>
-
-                {dataLoading && <p className="text-xs text-slate-400">Memuat...</p>}
-
-                {!dataLoading && form && (
-                    <form onSubmit={handleSave} className="flex flex-col gap-3">
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <label className="mb-1 block text-xs font-semibold text-slate-600">Realisasi</label>
-                                <input
-                                    type="number"
-                                    step="any"
-                                    value={form.realisasi}
-                                    onChange={(e) => updateField("realisasi", e.target.value)}
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="mb-1 block text-xs font-semibold text-slate-600">Target</label>
-                                <input
-                                    type="number"
-                                    step="any"
-                                    value={form.target}
-                                    onChange={(e) => updateField("target", e.target.value)}
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block text-xs font-semibold text-slate-600">Unit</label>
-                            <input
-                                type="text"
-                                value={form.unit}
-                                onChange={(e) => updateField("unit", e.target.value)}
-                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block text-xs font-semibold text-slate-600">Periode</label>
-                            <input
-                                type="text"
-                                value={form.periode}
-                                onChange={(e) => updateField("periode", e.target.value)}
-                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-                            />
-                        </div>
-
-                        {form.realisasi && form.target && Number(form.target) > 0 && (
-                            <p className="text-xs text-slate-500">
-                                Preview: <span className="font-semibold text-blue-900">{Math.round((Number(form.realisasi) / Number(form.target)) * 100)}%</span> dari target
-                            </p>
-                        )}
-
-                        {saveError && (
-                            <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{saveError}</p>
-                        )}
-                        {saveSuccess && (
-                            <p className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">Data tersimpan.</p>
-                        )}
-
-                        <button
-                            type="submit"
-                            disabled={saveLoading}
-                            className="w-fit cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {saveLoading ? "Menyimpan..." : "Simpan Perubahan"}
-                        </button>
-                    </form>
-                )}
+                        {tab.label}
+                    </button>
+                ))}
             </div>
+
+            {activeTab === "produksi" && (
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <h2 className="mb-4 text-sm font-bold text-blue-900">Produksi</h2>
+
+                    <div className="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1">
+                        {(["minyak", "gas"] as const).map((jenis) => (
+                            <button
+                                key={jenis}
+                                type="button"
+                                onClick={() => setSelectedJenis(jenis)}
+                                className={[
+                                    "flex-1 cursor-pointer rounded-md py-1.5 text-xs font-semibold capitalize transition-colors",
+                                    selectedJenis === jenis
+                                        ? "bg-white text-blue-900 shadow-sm"
+                                        : "text-slate-500 hover:text-slate-700",
+                                ].join(" ")}
+                            >
+                                Produksi {jenis}
+                            </button>
+                        ))}
+                    </div>
+
+                    {dataLoading ? (
+                        <ListSkeleton />
+                    ) : form ? (
+                        <>
+                            {(() => {
+                                const realisasi = Number(form.realisasi) || 0;
+                                const target = Number(form.target) || 0;
+                                const persen = target > 0 ? Math.round((realisasi / target) * 100) : 0;
+
+                                return (
+                                    <div className="mb-4 rounded-lg bg-slate-50 p-3">
+                                        <div className="mb-2 flex items-end justify-between">
+                                            <div>
+                                                <p className="text-lg font-bold text-blue-900">{realisasi.toLocaleString("id-ID")} <span className="text-xs font-normal text-slate-400">{form.unit}</span></p>
+                                                <p className="text-[11px] text-slate-400">dari target {target.toLocaleString("id-ID")} {form.unit} · {form.periode}</p>
+                                            </div>
+                                            <span className="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-800">{persen}%</span>
+                                        </div>
+                                        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                                            <div
+                                                className="h-full rounded-full bg-blue-900 transition-all"
+                                                style={{ width: `${Math.min(persen, 100)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+
+                            <form onSubmit={handleSave} className="flex flex-col gap-3">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="mb-1 block text-xs font-semibold text-slate-600">Realisasi</label>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            value={form.realisasi}
+                                            onChange={(e) => updateField("realisasi", e.target.value)}
+                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-xs font-semibold text-slate-600">Target</label>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            value={form.target}
+                                            onChange={(e) => updateField("target", e.target.value)}
+                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="mb-1 block text-xs font-semibold text-slate-600">Unit</label>
+                                    <input
+                                        type="text"
+                                        value={form.unit}
+                                        onChange={(e) => updateField("unit", e.target.value)}
+                                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="mb-1 block text-xs font-semibold text-slate-600">Periode</label>
+                                    <input
+                                        type="text"
+                                        value={form.periode}
+                                        onChange={(e) => updateField("periode", e.target.value)}
+                                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    />
+                                </div>
+
+                                {saveError && (
+                                    <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{saveError}</p>
+                                )}
+                                {saveSuccess && (
+                                    <p className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">Data tersimpan.</p>
+                                )}
+
+                                <button
+                                    type="submit"
+                                    disabled={saveLoading}
+                                    className="w-fit cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    {saveLoading ? "Menyimpan..." : "Simpan Perubahan"}
+                                </button>
+                            </form>
+                        </>
+                    ) : null}
+                </div>
+            )}
 
             {/* ---------- Card Rencana Kerja ---------- */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <SectionHeader
-                    title="Rencana Kerja"
-                    isFormOpen={rkFormOpen}
-                    onToggle={() => (rkFormOpen ? resetRkForm() : setRkFormOpen(true))}
-                />
+            {activeTab === "rencana-kerja" && (
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <SectionHeader
+                        title="Rencana Kerja"
+                        isFormOpen={rkFormOpen}
+                        onToggle={() => (rkFormOpen ? resetRkForm() : setRkFormOpen(true))}
+                    />
 
-                {rkFormOpen && (
-                    <form onSubmit={handleSubmitRk} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
-                        <select value={rkForm.jenis_rk} onChange={(e) => setRkForm({ ...rkForm, jenis_rk: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500">
-                            <option value="Bor">Bor</option>
-                            <option value="Workover">Workover</option>
-                        </select>
-                        <input placeholder="Urutan Tampil (misal 1)" type="number" step="1" min="0" value={rkForm.urutan} onChange={(e) => setRkForm({ ...rkForm, urutan: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
-                        <input placeholder="Nama RK (misal PPS-015A)" value={rkForm.nama_rk} onChange={(e) => setRkForm({ ...rkForm, nama_rk: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                        <input placeholder="Jumlah Minyak (BOPD, opsional)" type="number" step="any" min="0" value={rkForm.jumlah_minyak} onChange={(e) => setRkForm({ ...rkForm, jumlah_minyak: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
-                        <input placeholder="Jumlah Gas (MMSCFD, opsional)" type="number" step="any" min="0" value={rkForm.jumlah_gas} onChange={(e) => setRkForm({ ...rkForm, jumlah_gas: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
-                        <input placeholder="Wilayah Kerja (misal Field Jambi)" value={rkForm.wilayah_kerja} onChange={(e) => setRkForm({ ...rkForm, wilayah_kerja: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                    {rkFormOpen && (
+                        <form onSubmit={handleSubmitRk} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
+                            <select value={rkForm.jenis_rk} onChange={(e) => setRkForm({ ...rkForm, jenis_rk: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500">
+                                <option value="Bor">Bor</option>
+                                <option value="Workover">Workover</option>
+                            </select>
+                            <input placeholder="Nama RK (misal PPS-015A)" value={rkForm.nama_rk} onChange={(e) => setRkForm({ ...rkForm, nama_rk: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                            <input placeholder="Jumlah Minyak (BOPD, opsional)" type="number" step="any" min="0" value={rkForm.jumlah_minyak} onChange={(e) => setRkForm({ ...rkForm, jumlah_minyak: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
+                            <input placeholder="Jumlah Gas (MMSCFD, opsional)" type="number" step="any" min="0" value={rkForm.jumlah_gas} onChange={(e) => setRkForm({ ...rkForm, jumlah_gas: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
+                            <input placeholder="Wilayah Kerja (misal Field Jambi)" value={rkForm.wilayah_kerja} onChange={(e) => setRkForm({ ...rkForm, wilayah_kerja: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
 
-                        <p className="col-span-2 -mt-1 text-[11px] text-slate-400">Isi minimal salah satu: Jumlah Minyak atau Jumlah Gas.</p>
+                            <p className="col-span-2 -mt-1 text-[11px] text-slate-400">Isi minimal salah satu: Jumlah Minyak atau Jumlah Gas.</p>
 
-                        {rkError && (
-                            <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{rkError}</p>
-                        )}
+                            {rkError && (
+                                <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{rkError}</p>
+                            )}
 
-                        <div className="col-span-2 flex gap-2">
-                            <button type="submit" disabled={rkLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                {rkLoading ? "Menyimpan..." : rkEditingId ? "Simpan Perubahan" : "Tambah"}
-                            </button>
-                            <button type="button" onClick={resetRkForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
-                        </div>
-                    </form>
-                )}
+                            <div className="col-span-2 flex gap-2">
+                                <button type="submit" disabled={rkLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                    {rkLoading ? "Menyimpan..." : rkEditingId ? "Simpan Perubahan" : "Tambah"}
+                                </button>
+                                <button type="button" onClick={resetRkForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
+                            </div>
+                        </form>
+                    )}
 
-                {rkListLoading ? (
-                    <ListSkeleton />
-                ) : rkItems.length === 0 ? (
-                    <EmptyState label="Belum ada data rencana kerja." />
-                ) : (
-                    <ul className="flex flex-col gap-2">
-                        {rkItems.map((item) => (
-                            <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
-                                <div className="min-w-0">
-                                    <div className="flex flex-wrap items-center gap-1.5">
-                                        <span className="shrink-0 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">#{item.urutan}</span>
-                                        <span className="truncate font-semibold text-blue-900">{item.nama_rk}</span>
-                                        <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-800">{item.jenis_rk}</span>
-                                    </div>
-                                    <p className="mt-0.5 text-xs text-slate-400">
-                                        {item.wilayah_kerja}
-                                        {item.jumlah_minyak !== null && ` · ${item.jumlah_minyak.toLocaleString("id-ID")} BOPD`}
-                                        {item.jumlah_gas !== null && ` · ${item.jumlah_gas.toLocaleString("id-ID")} MMSCFD`}
-                                    </p>
-                                </div>
-                                <div className="flex shrink-0 gap-1">
-                                    <button onClick={() => startEditRk(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
-                                        <PencilIcon />
-                                    </button>
-                                    <button onClick={() => handleDeleteRk(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
-                                        <TrashIcon />
-                                    </button>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
+                    {rkListLoading ? (
+                        <ListSkeleton />
+                    ) : rkItems.length === 0 ? (
+                        <EmptyState label="Belum ada data rencana kerja." />
+                    ) : (
+                        <DragDropProvider
+                            onDragEnd={(event) => {
+                                if (event.canceled) return;
+                                const { source } = event.operation;
+                                if (!isSortable(source)) return;
+
+                                const { initialIndex, index } = source;
+                                if (initialIndex === index) return;
+
+                                setRkItems((items) => {
+                                    const newItems = [...items];
+                                    const [moved] = newItems.splice(initialIndex, 1);
+                                    newItems.splice(index, 0, moved);
+                                    return newItems;
+                                });
+                                reorderRk(initialIndex, index);
+                            }}
+                        >
+                            <ul className="flex flex-col gap-2">
+                                {rkItems.map((item, index) => (
+                                    <SortableRkItem
+                                        key={item.id}
+                                        item={item}
+                                        index={index}
+                                        onEdit={startEditRk}
+                                        onDelete={handleDeleteRk}
+                                    />
+                                ))}
+                            </ul>
+                        </DragDropProvider>
+                    )}
+                </div>
+            )}
 
             {/* ---------- Card Inovasi ---------- */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <SectionHeader
-                    title="Inovasi"
-                    isFormOpen={inovasiFormOpen}
-                    onToggle={() => (inovasiFormOpen ? resetInovasiForm() : setInovasiFormOpen(true))}
-                />
+            {activeTab === "inovasi" && (
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <SectionHeader
+                        title="Inovasi"
+                        isFormOpen={inovasiFormOpen}
+                        onToggle={() => (inovasiFormOpen ? resetInovasiForm() : setInovasiFormOpen(true))}
+                    />
 
-                {inovasiFormOpen && (
-                    <form onSubmit={handleSubmitInovasi} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
-                        <input placeholder="Pencapaian (misal Best Presentation)" value={inovasiForm.pencapaian} onChange={(e) => setInovasiForm({ ...inovasiForm, pencapaian: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                        <input placeholder="Nama Inovasi" value={inovasiForm.nama_inovasi} onChange={(e) => setInovasiForm({ ...inovasiForm, nama_inovasi: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                        <input placeholder="Nama Acara" value={inovasiForm.nama_acara} onChange={(e) => setInovasiForm({ ...inovasiForm, nama_acara: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                        <input placeholder="Wilayah Kerja" value={inovasiForm.wilayah_kerja} onChange={(e) => setInovasiForm({ ...inovasiForm, wilayah_kerja: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                        <div className="col-span-2 flex gap-2">
-                            <button type="submit" disabled={inovasiLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                {inovasiLoading ? "Menyimpan..." : inovasiEditingId ? "Simpan Perubahan" : "Tambah"}
-                            </button>
-                            <button type="button" onClick={resetInovasiForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
-                        </div>
-                    </form>
-                )}
+                    {inovasiFormOpen && (
+                        <form onSubmit={handleSubmitInovasi} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
+                            <input placeholder="Pencapaian (misal Best Presentation)" value={inovasiForm.pencapaian} onChange={(e) => setInovasiForm({ ...inovasiForm, pencapaian: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                            <input placeholder="Nama Inovasi" value={inovasiForm.nama_inovasi} onChange={(e) => setInovasiForm({ ...inovasiForm, nama_inovasi: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                            <input placeholder="Nama Acara" value={inovasiForm.nama_acara} onChange={(e) => setInovasiForm({ ...inovasiForm, nama_acara: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                            <input placeholder="Wilayah Kerja" value={inovasiForm.wilayah_kerja} onChange={(e) => setInovasiForm({ ...inovasiForm, wilayah_kerja: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                            <div className="col-span-2 flex gap-2">
+                                <button type="submit" disabled={inovasiLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                    {inovasiLoading ? "Menyimpan..." : inovasiEditingId ? "Simpan Perubahan" : "Tambah"}
+                                </button>
+                                <button type="button" onClick={resetInovasiForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
+                            </div>
+                        </form>
+                    )}
 
-                {inovasiListLoading ? (
-                    <ListSkeleton />
-                ) : inovasiItems.length === 0 ? (
-                    <EmptyState label="Belum ada data inovasi." />
-                ) : (
-                    <ul className="flex flex-col gap-2">
-                        {inovasiItems.map((item) => (
-                            <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
-                                <div className="min-w-0">
-                                    <span className="truncate font-semibold text-blue-900">{item.pencapaian}</span>
-                                    <p className="mt-0.5 truncate text-xs text-slate-400">
-                                        {[item.nama_inovasi, item.nama_acara, item.wilayah_kerja].filter(Boolean).join(" · ")}
-                                    </p>
-                                </div>
-                                <div className="flex shrink-0 gap-1">
-                                    <button onClick={() => startEditInovasi(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
-                                        <PencilIcon />
-                                    </button>
-                                    <button onClick={() => handleDeleteInovasi(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
-                                        <TrashIcon />
-                                    </button>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
+                    {inovasiListLoading ? (
+                        <ListSkeleton />
+                    ) : inovasiItems.length === 0 ? (
+                        <EmptyState label="Belum ada data inovasi." />
+                    ) : (
+                        <ul className="flex flex-col gap-2">
+                            {inovasiItems.map((item) => (
+                                <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
+                                    <div className="min-w-0">
+                                        <span className="truncate font-semibold text-blue-900">{item.pencapaian}</span>
+                                        <p className="mt-0.5 truncate text-xs text-slate-400">
+                                            {[item.nama_inovasi, item.nama_acara, item.wilayah_kerja].filter(Boolean).join(" · ")}
+                                        </p>
+                                    </div>
+                                    <div className="flex shrink-0 gap-1">
+                                        <button onClick={() => startEditInovasi(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                            <PencilIcon />
+                                        </button>
+                                        <button onClick={() => handleDeleteInovasi(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                            <TrashIcon />
+                                        </button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
