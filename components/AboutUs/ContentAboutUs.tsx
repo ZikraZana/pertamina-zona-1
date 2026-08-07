@@ -140,16 +140,15 @@ const AboutUsContent = () => {
                         style={{ backgroundColor: "#0073FE4D" }}
                     />
                     <div className="relative">
-                        <p className="text-lg font-bold leading-snug text-slate-900 sm:text-xl">
+                        {/* <p className="text-lg font-bold leading-snug text-slate-900 sm:text-xl">
                             "Menjadi perusahaan energi yang mengedepankan ketahanan, ketersediaan dan keberlanjutan energi."
-                        </p>
+                        </p> */}
                         <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-                            Pertamina berkomitmen untuk menjadi perusahaan energi berskala global yang tidak hanya menjalankan kegiatan usaha dengan landasan komersial yang kuat, tetapi juga berperan strategis dalam mendukung kepentingan energi nasional, khususnya dalam memperkuat ketahanan, memastikan ketersediaan, serta mendorong keberlanjutan energi.
-                        </p>
+                            Menjadi Perusahaan Minyak dan Gas Bumi Terkemuka yang Mengutamakan Ketahanan, Ketersediaan dan Keberlanjutan Energi.</p>
                     </div>
                 </div>
 
-               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+               {/* <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <ValueCard
                         icon="🛡️"
                         title="Ketahanan Energi"
@@ -168,7 +167,7 @@ const AboutUsContent = () => {
                         detail="Mendorong pengembangan energi rendah karbon sebagai langkah strategis dalam menjaga keberlanjutan sumber energi nasional."
                         accentColor="#0073fe"
                     />
-                </div>
+                </div> */}
             </section>
 
             {/* Misi */}
@@ -178,16 +177,15 @@ const AboutUsContent = () => {
                 <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-linear-to-b from-sky-50 to-white p-6 shadow-sm ring-1 ring-sky-200 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg sm:p-8">
                     <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-sky-300/30 blur-2xl" />
                     <div className="relative">
-                        <p className="text-lg font-bold leading-snug text-slate-900 sm:text-xl">
+                        {/* <p className="text-lg font-bold leading-snug text-slate-900 sm:text-xl">
                             "Menyediakan energi melalui solusi inovatif yang memberi nilai tambah untuk masyarakat."
-                        </p>
+                        </p> */}
                         <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-                            Misi untuk menyediakan energi melalui solusi inovatif yang memberi nilai tambah bagi masyarakat mencerminkan komitmen perusahaan dalam menghadirkan layanan energi yang andal, berkelanjutan, dan relevan dengan dinamika perkembangan industri nasional dan global. Upaya tersebut dilakukan melalui fokus usaha pada pilar dual-growth strategy.
-                        </p>
+                            Melaksanakan Pengelolaan Usaha Hulu Minyak dan Gas Bumi secara Efisien dan Inovatif dengan Komitmen Keberlanjutan untuk Ketahanan Energi dan Memberi Nilai Tambah bagi Lingkungan & Masyarakat.</p>
                     </div>
                 </div>
 
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {/* <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <ValueCard
                         icon="🏭"
                         title="Maximizing Legacy Businesses"
@@ -200,7 +198,7 @@ const AboutUsContent = () => {
                         detail="Pengembangan geothermal, ekosistem biofuel, green energy, dan low carbon technologies."
                         accentColor="#0073fe"
                     />
-                </div>
+                </div> */}
             </section>
 
             <section>
