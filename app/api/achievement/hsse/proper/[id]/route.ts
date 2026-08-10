@@ -20,7 +20,7 @@ export async function PUT(
         }
 
         const { data, error } = await supabase
-            .from("proper")
+            .from("achievement_hsse_proper")
             .update({
                 wilayah_kerja,
                 peringkat,
@@ -61,7 +61,7 @@ export async function DELETE(
         const { id } = await params;
 
         const { error } = await supabase
-            .from("proper")
+            .from("achievement_hsse_proper")
             .delete()
             .eq("id", id);
 

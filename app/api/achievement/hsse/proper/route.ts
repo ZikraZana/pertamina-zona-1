@@ -7,7 +7,7 @@ export async function GET() {
         const supabase = await createClient();
 
         const { data, error } = await supabase
-            .from("proper")
+            .from("achievement_hsse_proper")
             .select("*")
             .order("urutan", { ascending: true });
 
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
         }
 
         const { data, error } = await supabase
-            .from("proper")
+            .from("achievement_hsse_proper")
             .insert([
                 {
                     wilayah_kerja,
