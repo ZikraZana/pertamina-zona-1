@@ -304,6 +304,36 @@ function sanitizeNumberInput(raw: string): string {
     return value;
 }
 
+// ============================================================
+// HELPER: konversi periode antara input type="month" ("2026-08")
+// dan teks tampilan Indonesia ("Agustus 2026")
+// ============================================================
+
+const NAMA_BULAN = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+];
+
+/** "2026-08" -> "Agustus 2026". Kalau format tidak dikenali, dikembalikan apa adanya. */
+function monthValueToLabel(monthValue: string): string {
+    const match = /^(\d{4})-(\d{2})$/.exec(monthValue);
+    if (!match) return monthValue;
+    const [, year, month] = match;
+    const index = Number(month) - 1;
+    if (index < 0 || index > 11) return monthValue;
+    return `${NAMA_BULAN[index]} ${year}`;
+}
+
+/** "Agustus 2026" -> "2026-08". Kalau tidak dikenali, dikembalikan string kosong. */
+function labelToMonthValue(label: string): string {
+    const match = /^([A-Za-zé]+)\s+(\d{4})$/.exec(label.trim());
+    if (!match) return "";
+    const [, namaBulan, year] = match;
+    const index = NAMA_BULAN.findIndex((n) => n.toLowerCase() === namaBulan.toLowerCase());
+    if (index === -1) return "";
+    return `${year}-${String(index + 1).padStart(2, "0")}`;
+}
+
 const AchievementTab = () => {
     const [activeTab, setActiveTab] = useState<"produksi" | "rencana-kerja" | "inovasi" | "kehumasan">("produksi");
     const [selectedJenis, setSelectedJenis] = useState<"minyak" | "gas" | "migas">("minyak");
@@ -788,25 +818,26 @@ const AchievementTab = () => {
                                         />
                                     </div>
                                 </div>
-
-                                <label className="mb-1 block text-xs font-semibold text-slate-600">Unit</label>
-                                <select
-                                    value={form.unit}
-                                    onChange={(e) => updateField("unit", e.target.value)}
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                >
-                                    <option value="" disabled>Pilih Unit</option>
-                                    <option value="BOPD">BOPD</option>
-                                    <option value="MMSCFD">MMSCFD</option>
-                                    <option value="MMBOEPD">MMBOEPD</option>
-                                </select>
+                                <div>
+                                    <label className="mb-1 block text-xs font-semibold text-slate-600">Unit</label>
+                                    <select
+                                        value={form.unit}
+                                        onChange={(e) => updateField("unit", e.target.value)}
+                                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    >
+                                        <option value="" disabled>Pilih Unit</option>
+                                        <option value="BOPD">BOPD</option>
+                                        <option value="MMSCFD">MMSCFD</option>
+                                        <option value="MMBOEPD">MMBOEPD</option>
+                                    </select>
+                                </div>
 
                                 <div>
                                     <label className="mb-1 block text-xs font-semibold text-slate-600">Periode</label>
                                     <input
-                                        type="text"
-                                        value={form.periode}
-                                        onChange={(e) => updateField("periode", e.target.value)}
+                                        type="month"
+                                        value={labelToMonthValue(form.periode)}
+                                        onChange={(e) => updateField("periode", monthValueToLabel(e.target.value))}
                                         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
                                     />
                                 </div>

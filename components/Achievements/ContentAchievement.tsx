@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type TabKey = "produksi" | "rencana-kerja" | "hsse" | "inovasi" | "top-project" | "kehumasan";
 
@@ -72,7 +72,7 @@ function RankedListCard({
 }: {
     title: string;
     subtitle: string;
-    items: { label: string; value: string; field: string }[];
+    items: { label: string; value: string; field: React.ReactNode }[];
     accentColor: "amber" | "sky";
 }) {
     const colors = {
@@ -502,7 +502,14 @@ const AchievementsContent = () => {
                         accentColor="sky"
                         items={inovasi.map((item) => ({
                             label: item.pencapaian,
-                            field: [item.nama_inovasi, item.nama_acara].filter(Boolean).join(" - ") + `, ${item.wilayah_kerja}`,
+                            field: (
+                                <>
+                                    <span className="font-semibold text-slate-600">{item.nama_inovasi}</span>
+                                    {item.nama_inovasi && item.nama_acara && " - "}
+                                    <span className="font-semibold text-slate-600">{item.nama_acara}</span>
+                                    {`, ${item.wilayah_kerja}`}
+                                </>
+                            ),
                             value: ""
                         }))}
                     // items={[
