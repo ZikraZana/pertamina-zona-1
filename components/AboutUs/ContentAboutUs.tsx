@@ -63,16 +63,29 @@ function ValueCard({
     );
 }
 
-function VideoCard({ title, embedSrc }: { title: string; embedSrc: string }) {
+function VideoCard({
+    title, embedSrc, videoSrc,
+}: {
+    title: string;
+    embedSrc?: string;
+    videoSrc?: string;
+}) {
     return (
         <div className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ring-sky-200 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg">
-            <div className="relative aspect-video w-full bg-slate-900">
-                <iframe
-                    src={embedSrc}
-                    className="h-full w-full"
-                    allow="autoplay; encrypted-media; fullscreen"
-                    allowFullScreen
-                />
+            <div className="relative flex aspect-video w-full items-center justify-center bg-slate-900">
+                {embedSrc ? (
+                    <iframe
+                        src={embedSrc}
+                        className="h-full w-full"
+                        allow="autoplay; encrypted-media; fullscreen"
+                        allowFullScreen
+                    />
+                ) : videoSrc ? (
+                    <video controls preload="metadata" className="h-full w-full">
+                        <source src={videoSrc} type="video/mp4" />
+                        Browser Anda tidak mendukung pemutaran video.
+                    </video>
+                ) : null}
             </div>
             <div className="p-4">
                 <p className="text-sm font-bold text-slate-900">{title}</p>
@@ -204,9 +217,9 @@ const AboutUsContent = () => {
             <section>
                 <SectionHeading title="Video" />
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <VideoCard title="Indonesia Raya" embedSrc="https://www.youtube.com/embed/uyyLot4PLXM?si=_KMcRGJLfb9jbuxP" />
-                    <VideoCard title="Induction" embedSrc="https://www.youtube.com/embed/P3mihiz8KUQ?si=yZQ3diYFHqnnt5cf" />
-                    <VideoCard title="AKHLAK" embedSrc="https://www.youtube.com/embed/T4b5O24DtOA?si=6fxQPLvaU1lQBs3b" />
+                    <VideoCard title="Indonesia Raya" videoSrc="https://www.dropbox.com/scl/fi/sk0o6v1wwbkb9gva31bcl/INDONESIA-RAYA.mov?rlkey=vll4pek54qh1jinkdhwwa65i7&st=sfn7gdqa&e=1&raw=1" />
+                    <VideoCard title="Induction" embedSrc="https://drive.google.com/file/d/1jVuaGzEvAnoqt5a8hhyoYP_UmDxSmgbv/preview" />
+                    <VideoCard title="Melayani Sepenuh Hati" embedSrc="https://www.youtube.com/embed/YBCxQtFpOuw" />
                 </div>
             </section>
         </div>

@@ -82,7 +82,7 @@ const AdminPerformanceContent = () => {
                     {user ? `Selamat Datang, ${fullName ?? user.email}!` : "Admin"}
                 </h1>
                 <p className="text-sm text-blue-900/70">
-                    Kelola data yang tampil di halaman Overview dan Performance Report.
+                    Kelola data yang tampil di halaman Overview, Achievement, dan Performance Report.
                 </p>
             </div>
 
