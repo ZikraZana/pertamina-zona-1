@@ -5,9 +5,19 @@ import { isSortable, useSortable } from "@dnd-kit/react/sortable";
 import { useEffect, useState } from "react";
 
 type ProduksiData = {
-    jenis: "minyak" | "gas";
+    jenis: "minyak" | "gas" | "migas";
     realisasi: number;
     target: number;
+    periode: string;
+    unit: string;
+};
+
+// State form realisasi/target disimpan sebagai string mentah selagi diketik
+// (mis. "1," di tengah mengetik "1,000") supaya tidak "terpotong" tiap keystroke.
+type ProduksiFormState = {
+    jenis: "minyak" | "gas" | "migas";
+    realisasi: string;
+    target: string;
     periode: string;
     unit: string;
 };
@@ -201,8 +211,8 @@ function SortableRkItem({
                 </div>
                 <p className="mt-0.5 text-xs text-slate-400">
                     {item.wilayah_kerja}
-                    {item.jumlah_minyak !== null && ` · ${item.jumlah_minyak.toLocaleString("id-ID")} BOPD`}
-                    {item.jumlah_gas !== null && ` · ${item.jumlah_gas.toLocaleString("id-ID")} MMSCFD`}
+                    {item.jumlah_minyak !== null && ` · ${item.jumlah_minyak.toLocaleString("en-US")} BOPD`}
+                    {item.jumlah_gas !== null && ` · ${item.jumlah_gas.toLocaleString("en-US")} MMSCFD`}
                 </p>
             </div>
 
@@ -287,13 +297,64 @@ function SortableKehumasanItem({
     );
 }
 
+// ============================================================
+// HELPER: input angka format "1,000.5" (koma ribuan, titik desimal)
+// ============================================================
+
+/** Buang koma ribuan lalu ubah ke number murni. Contoh: "1,234.5" -> 1234.5 */
+function parseFormattedNumber(str: string): number {
+    const cleaned = str.replace(/,/g, "");
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : 0;
+}
+
+/** Saring ketikan supaya cuma angka, koma, dan satu titik desimal yang lolos. */
+function sanitizeNumberInput(raw: string): string {
+    let value = raw.replace(/[^0-9.,]/g, "");
+    const firstDot = value.indexOf(".");
+    if (firstDot !== -1) {
+        value = value.slice(0, firstDot + 1) + value.slice(firstDot + 1).replace(/\./g, "");
+    }
+    return value;
+}
+
+// ============================================================
+// HELPER: konversi periode antara input type="month" ("2026-08")
+// dan teks tampilan Indonesia ("Agustus 2026")
+// ============================================================
+
+const NAMA_BULAN = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+];
+
+/** "2026-08" -> "Agustus 2026". Kalau format tidak dikenali, dikembalikan apa adanya. */
+function monthValueToLabel(monthValue: string): string {
+    const match = /^(\d{4})-(\d{2})$/.exec(monthValue);
+    if (!match) return monthValue;
+    const [, year, month] = match;
+    const index = Number(month) - 1;
+    if (index < 0 || index > 11) return monthValue;
+    return `${NAMA_BULAN[index]} ${year}`;
+}
+
+/** "Agustus 2026" -> "2026-08". Kalau tidak dikenali, dikembalikan string kosong. */
+function labelToMonthValue(label: string): string {
+    const match = /^([A-Za-zé]+)\s+(\d{4})$/.exec(label.trim());
+    if (!match) return "";
+    const [, namaBulan, year] = match;
+    const index = NAMA_BULAN.findIndex((n) => n.toLowerCase() === namaBulan.toLowerCase());
+    if (index === -1) return "";
+    return `${year}-${String(index + 1).padStart(2, "0")}`;
+}
+
 const AchievementTab = () => {
     const [activeTab, setActiveTab] = useState<"produksi" | "rencana-kerja" | "proper" | "inovasi" | "kehumasan">("produksi");
-    const [selectedJenis, setSelectedJenis] = useState<"minyak" | "gas">("minyak");
+    const [selectedJenis, setSelectedJenis] = useState<"minyak" | "gas" | "migas">("minyak");
     const [wilayahKerjaList, setWilayahKerjaList] = useState<string[]>([]);
     const [data, setData] = useState<Record<string, ProduksiData>>({});
     const [dataLoading, setDataLoading] = useState(true);
-    const [form, setForm] = useState<ProduksiData | null>(null);
+    const [form, setForm] = useState<ProduksiFormState | null>(null);
 
     const [saveLoading, setSaveLoading] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
@@ -706,15 +767,27 @@ const AchievementTab = () => {
     }
 
     useEffect(() => {
-        if (data[selectedJenis]) {
-            setForm(data[selectedJenis]);
+        const current = data[selectedJenis];
+        if (current) {
+            setForm({
+                jenis: current.jenis,
+                realisasi: current.realisasi.toLocaleString("en-US"),
+                target: current.target.toLocaleString("en-US"),
+                periode: current.periode,
+                unit: current.unit,
+            });
             setSaveSuccess(false);
             setSaveError(null);
         }
     }, [selectedJenis, data]);
 
-    function updateField(key: keyof ProduksiData, value: string) {
+    function updateField(key: keyof ProduksiFormState, value: string) {
         setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
+    }
+
+    /** Khusus field angka (realisasi/target): saring karakter tidak valid sebelum disimpan ke state. */
+    function updateNumberField(key: "realisasi" | "target", raw: string) {
+        setForm((prev) => (prev ? { ...prev, [key]: sanitizeNumberInput(raw) } : prev));
     }
 
     async function handleSave(e: React.FormEvent) {
@@ -730,8 +803,8 @@ const AchievementTab = () => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 jenis: form.jenis,
-                realisasi: Number(form.realisasi),
-                target: Number(form.target),
+                realisasi: parseFormattedNumber(form.realisasi),
+                target: parseFormattedNumber(form.target),
                 periode: form.periode,
                 unit: form.unit,
             }),
@@ -797,7 +870,7 @@ const AchievementTab = () => {
                     <h2 className="mb-4 text-sm font-bold text-blue-900">Produksi</h2>
 
                     <div className="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1">
-                        {(["minyak", "gas"] as const).map((jenis) => (
+                        {(["minyak", "gas", "migas"] as const).map((jenis) => (
                             <button
                                 key={jenis}
                                 type="button"
@@ -819,16 +892,16 @@ const AchievementTab = () => {
                     ) : form ? (
                         <>
                             {(() => {
-                                const realisasi = Number(form.realisasi) || 0;
-                                const target = Number(form.target) || 0;
+                                const realisasi = parseFormattedNumber(form.realisasi);
+                                const target = parseFormattedNumber(form.target);
                                 const persen = target > 0 ? Math.round((realisasi / target) * 100) : 0;
 
                                 return (
                                     <div className="mb-4 rounded-lg bg-slate-50 p-3">
                                         <div className="mb-2 flex items-end justify-between">
                                             <div>
-                                                <p className="text-lg font-bold text-blue-900">{realisasi.toLocaleString("id-ID")} <span className="text-xs font-normal text-slate-400">{form.unit}</span></p>
-                                                <p className="text-[11px] text-slate-400">dari target {target.toLocaleString("id-ID")} {form.unit} · {form.periode}</p>
+                                                <p className="text-lg font-bold text-blue-900">{realisasi.toLocaleString("en-US")} <span className="text-xs font-normal text-slate-400">{form.unit}</span></p>
+                                                <p className="text-[11px] text-slate-400">dari target {target.toLocaleString("en-US")} {form.unit} · {form.periode}</p>
                                             </div>
                                             <span className="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-800">{persen}%</span>
                                         </div>
@@ -847,41 +920,46 @@ const AchievementTab = () => {
                                     <div>
                                         <label className="mb-1 block text-xs font-semibold text-slate-600">Realisasi</label>
                                         <input
-                                            type="number"
-                                            step="any"
+                                            type="text"
+                                            inputMode="decimal"
+                                            placeholder="mis. 1,234.5"
                                             value={form.realisasi}
-                                            onChange={(e) => updateField("realisasi", e.target.value)}
+                                            onChange={(e) => updateNumberField("realisasi", e.target.value)}
                                             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
                                         />
                                     </div>
                                     <div>
                                         <label className="mb-1 block text-xs font-semibold text-slate-600">Target</label>
                                         <input
-                                            type="number"
-                                            step="any"
+                                            type="text"
+                                            inputMode="decimal"
+                                            placeholder="mis. 1,234.5"
                                             value={form.target}
-                                            onChange={(e) => updateField("target", e.target.value)}
+                                            onChange={(e) => updateNumberField("target", e.target.value)}
                                             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
                                         />
                                     </div>
                                 </div>
-
                                 <div>
                                     <label className="mb-1 block text-xs font-semibold text-slate-600">Unit</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={form.unit}
                                         onChange={(e) => updateField("unit", e.target.value)}
                                         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                    />
+                                    >
+                                        <option value="" disabled>Pilih Unit</option>
+                                        <option value="BOPD">BOPD</option>
+                                        <option value="MMSCFD">MMSCFD</option>
+                                        <option value="MMBOEPD">MMBOEPD</option>
+                                    </select>
                                 </div>
 
                                 <div>
                                     <label className="mb-1 block text-xs font-semibold text-slate-600">Periode</label>
                                     <input
-                                        type="text"
-                                        value={form.periode}
-                                        onChange={(e) => updateField("periode", e.target.value)}
+                                        type="month"
+                                        value={labelToMonthValue(form.periode)}
+                                        onChange={(e) => updateField("periode", monthValueToLabel(e.target.value))}
                                         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
                                     />
                                 </div>

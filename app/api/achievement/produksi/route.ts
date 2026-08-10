@@ -29,7 +29,7 @@ export async function PATCH(request: Request) {
 
     const { jenis, realisasi, target, periode, unit } = body;
 
-    if (!["minyak", "gas"].includes(jenis)) {
+    if (!["minyak", "gas", "migas"].includes(jenis)) {
         return NextResponse.json({ error: "Jenis tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
     }
     if (typeof realisasi !== "number" || !Number.isFinite(realisasi) || realisasi < 0) {
