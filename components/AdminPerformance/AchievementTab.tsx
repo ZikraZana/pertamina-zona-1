@@ -50,6 +50,14 @@ type KehumasanItem = {
     image_path: string | null;
 };
 
+type ProperItem = {
+    id: string;
+    wilayah_kerja: string;
+    peringkat: "Biru" | "Hijau" | "Emas";
+    tahun: number;
+    keterangan: string | null;
+};
+
 // ============================================================
 // ICONS (inline SVG, konsisten dengan gaya ikon di PerformanceReportTab)
 // ============================================================
@@ -226,6 +234,12 @@ const MEDALI_STYLE: Record<KehumasanItem["medali"], { label: string; className: 
     bronze: { label: "🥉 Bronze", className: "bg-orange-100 text-orange-800" },
 };
 
+const PERINGKAT_STYLE: Record<ProperItem["peringkat"], string> = {
+    Biru: "bg-sky-100 text-sky-700",
+    Hijau: "bg-emerald-100 text-emerald-700",
+    Emas: "bg-amber-100 text-amber-700",
+};
+
 // ============================================================
 // SUB-KOMPONEN: item Kehumasan yang bisa di-drag, DIBATASI dalam
 // grup wilayah_kerja yang sama (prop `group`) -- @dnd-kit/react
@@ -335,8 +349,9 @@ function labelToMonthValue(label: string): string {
 }
 
 const AchievementTab = () => {
-    const [activeTab, setActiveTab] = useState<"produksi" | "rencana-kerja" | "inovasi" | "kehumasan">("produksi");
+    const [activeTab, setActiveTab] = useState<"produksi" | "rencana-kerja" | "proper" | "inovasi" | "kehumasan">("produksi");
     const [selectedJenis, setSelectedJenis] = useState<"minyak" | "gas" | "migas">("minyak");
+    const [wilayahKerjaList, setWilayahKerjaList] = useState<string[]>([]);
     const [data, setData] = useState<Record<string, ProduksiData>>({});
     const [dataLoading, setDataLoading] = useState(true);
     const [form, setForm] = useState<ProduksiFormState | null>(null);
@@ -350,6 +365,8 @@ const AchievementTab = () => {
     const [rkListLoading, setRkListLoading] = useState(true);
     const [rkFormOpen, setRkFormOpen] = useState(false);
     const [rkForm, setRkForm] = useState({ jenis_rk: "Bor", nama_rk: "", jumlah_minyak: "", jumlah_gas: "", wilayah_kerja: "", urutan: "" });
+    const [isAddingNewJenis, setIsAddingNewJenis] = useState(false);
+    const [newJenisInput, setNewJenisInput] = useState("");
     const [rkEditingId, setRkEditingId] = useState<string | null>(null);
     const [rkLoading, setRkLoading] = useState(false);
     const [rkError, setRkError] = useState<string | null>(null);
@@ -361,6 +378,20 @@ const AchievementTab = () => {
     const [inovasiForm, setInovasiForm] = useState({ pencapaian: "", nama_inovasi: "", nama_acara: "", wilayah_kerja: "" });
     const [inovasiEditingId, setInovasiEditingId] = useState<string | null>(null);
     const [inovasiLoading, setInovasiLoading] = useState(false);
+
+    // ---------- State PROPER ----------
+    const [properItems, setProperItems] = useState<ProperItem[]>([]);
+    const [properListLoading, setProperListLoading] = useState(true);
+    const [properFormOpen, setProperFormOpen] = useState(false);
+    const [properForm, setProperForm] = useState<{
+        wilayah_kerja: string;
+        peringkat: "Biru" | "Hijau" | "Emas";
+        tahun: string;
+        keterangan: string;
+    }>({ wilayah_kerja: "", peringkat: "Biru", tahun: String(new Date().getFullYear()), keterangan: "" });
+    const [properEditingId, setProperEditingId] = useState<string | null>(null);
+    const [properLoading, setProperLoading] = useState(false);
+    const [properError, setProperError] = useState<string | null>(null);
 
     // ---------- State Kehumasan ----------
     const [kehumasanItems, setKehumasanItems] = useState<KehumasanItem[]>([]);
@@ -396,8 +427,10 @@ const AchievementTab = () => {
     useEffect(() => {
         fetchData();
         fetchRkItems();
+        fetchProperItems();
         fetchInovasiItems();
         fetchKehumasanItems();
+        fetchWilayahKerjaList();
     }, []);
 
     // ---------- Fungsi Rencana Kerja ----------
@@ -417,6 +450,8 @@ const AchievementTab = () => {
         setRkEditingId(null);
         setRkFormOpen(false);
         setRkError(null);
+        setIsAddingNewJenis(false);
+        setNewJenisInput("");
     }
 
     function startEditRk(item: RKItem) {
@@ -544,6 +579,75 @@ const AchievementTab = () => {
         await fetchInovasiItems();
     }
 
+    // ---------- Fungsi PROPER ----------
+    async function fetchProperItems() {
+        setProperListLoading(true);
+        try {
+            const res = await fetch("/api/achievement/hsse/proper");
+            const json = await res.json();
+            setProperItems(json.data ?? []);
+        } finally {
+            setProperListLoading(false);
+        }
+    }
+
+    function resetProperForm() {
+        setProperForm({ wilayah_kerja: "", peringkat: "Biru", tahun: String(new Date().getFullYear()), keterangan: "" });
+        setProperEditingId(null);
+        setProperFormOpen(false);
+        setProperError(null);
+    }
+
+    function startEditProper(item: ProperItem) {
+        setProperForm({
+            wilayah_kerja: item.wilayah_kerja,
+            peringkat: item.peringkat,
+            tahun: String(item.tahun),
+            keterangan: item.keterangan ?? "",
+        });
+        setProperEditingId(item.id);
+        setProperFormOpen(true);
+        setProperError(null);
+    }
+
+    async function handleSubmitProper(e: React.FormEvent) {
+        e.preventDefault();
+        setProperError(null);
+        setProperLoading(true);
+
+        const existingItem = properEditingId ? properItems.find((item) => item.id === properEditingId) : null;
+        const urutan = existingItem ? (existingItem as any).urutan ?? 0 : properItems.length;
+
+        const payload = {
+            wilayah_kerja: properForm.wilayah_kerja,
+            peringkat: properForm.peringkat,
+            tahun: Number(properForm.tahun),
+            keterangan: properForm.keterangan.trim() ? properForm.keterangan.trim() : null,
+            urutan,
+        };
+
+        const url = properEditingId ? `/api/achievement/hsse/proper/${properEditingId}` : "/api/achievement/hsse/proper";
+        const method = properEditingId ? "PUT" : "POST";
+        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const json = await res.json();
+
+        if (!res.ok) {
+            setProperError(json.error ?? "Gagal menyimpan data.");
+            setProperLoading(false);
+            return;
+        }
+
+        await fetchProperItems();
+        resetProperForm();
+        setProperLoading(false);
+    }
+
+    async function handleDeleteProper(id: string) {
+        if (!window.confirm("Hapus data ini?")) return;
+        await fetch(`/api/achievement/hsse/proper/${id}`, { method: "DELETE" });
+        await fetchProperItems();
+    }
+
     // ---------- Fungsi Kehumasan ----------
     async function fetchKehumasanItems() {
         setKehumasanListLoading(true);
@@ -649,6 +753,19 @@ const AchievementTab = () => {
         });
     }
 
+    async function fetchWilayahKerjaList() {
+        try {
+            const res = await fetch("/api/wilayah");
+            const json = await res.json();
+            const names = Object.values(json.data ?? {})
+                .map((w: any) => w.nama_wilayah)
+                .filter(Boolean);
+            setWilayahKerjaList(names);
+        } catch (err) {
+            console.error("Gagal mengambil daftar wilayah kerja:", err);
+        }
+    }
+
     useEffect(() => {
         const current = data[selectedJenis];
         if (current) {
@@ -715,6 +832,10 @@ const AchievementTab = () => {
         groupedKehumasanItems[item.wilayah_kerja].push(item);
     }
 
+    const jenisRkOptions = Array.from(
+        new Set(["Bor", "Workover", ...rkItems.map((item) => item.jenis_rk)])
+    );
+
     return (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
             {/* ---------- Tab Navigasi ---------- */}
@@ -723,6 +844,7 @@ const AchievementTab = () => {
                     [
                         { key: "produksi", label: "Produksi" },
                         { key: "rencana-kerja", label: "Rencana Kerja" },
+                        { key: "proper", label: "HSSE" },
                         { key: "inovasi", label: "Inovasi" },
                         { key: "kehumasan", label: "Kehumasan" },
                     ] as const
@@ -873,14 +995,69 @@ const AchievementTab = () => {
 
                     {rkFormOpen && (
                         <form onSubmit={handleSubmitRk} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
-                            <select value={rkForm.jenis_rk} onChange={(e) => setRkForm({ ...rkForm, jenis_rk: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500">
-                                <option value="Bor">Bor</option>
-                                <option value="Workover">Workover</option>
-                            </select>
+                            {!isAddingNewJenis ? (
+                                <select
+                                    value={rkForm.jenis_rk}
+                                    onChange={(e) => {
+                                        if (e.target.value === "__new__") {
+                                            setIsAddingNewJenis(true);
+                                            setNewJenisInput("");
+                                        } else {
+                                            setRkForm({ ...rkForm, jenis_rk: e.target.value });
+                                        }
+                                    }}
+                                    className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                >
+                                    {jenisRkOptions.map((jenis) => (
+                                        <option key={jenis} value={jenis}>{jenis}</option>
+                                    ))}
+                                    <option value="__new__">+ Tambah jenis baru...</option>
+                                </select>
+                            ) : (
+                                <div className="flex gap-1.5">
+                                    <input
+                                        type="text"
+                                        autoFocus
+                                        placeholder="Nama jenis baru"
+                                        value={newJenisInput}
+                                        onChange={(e) => setNewJenisInput(e.target.value)}
+                                        className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const trimmed = newJenisInput.trim();
+                                            if (!trimmed) return;
+                                            setRkForm({ ...rkForm, jenis_rk: trimmed });
+                                            setIsAddingNewJenis(false);
+                                        }}
+                                        className="shrink-0 cursor-pointer rounded-lg bg-blue-900 px-3 text-xs font-semibold text-white hover:bg-blue-800"
+                                    >
+                                        OK
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAddingNewJenis(false)}
+                                        className="shrink-0 cursor-pointer rounded-lg border border-slate-300 px-3 text-xs text-slate-600 hover:bg-white"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            )}
                             <input placeholder="Nama RK (misal PPS-015A)" value={rkForm.nama_rk} onChange={(e) => setRkForm({ ...rkForm, nama_rk: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
                             <input placeholder="Jumlah Minyak (BOPD, opsional)" type="number" step="any" min="0" value={rkForm.jumlah_minyak} onChange={(e) => setRkForm({ ...rkForm, jumlah_minyak: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
                             <input placeholder="Jumlah Gas (MMSCFD, opsional)" type="number" step="any" min="0" value={rkForm.jumlah_gas} onChange={(e) => setRkForm({ ...rkForm, jumlah_gas: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
-                            <input placeholder="Wilayah Kerja (misal Field Jambi)" value={rkForm.wilayah_kerja} onChange={(e) => setRkForm({ ...rkForm, wilayah_kerja: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                            <select
+                                value={rkForm.wilayah_kerja}
+                                onChange={(e) => setRkForm({ ...rkForm, wilayah_kerja: e.target.value })}
+                                className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                required
+                            >
+                                <option value="">Pilih Wilayah Kerja</option>
+                                {wilayahKerjaList.map((nama) => (
+                                    <option key={nama} value={nama}>{nama}</option>
+                                ))}
+                            </select>
 
                             <p className="col-span-2 -mt-1 text-[11px] text-slate-400">Isi minimal salah satu: Jumlah Minyak atau Jumlah Gas.</p>
 
@@ -932,6 +1109,95 @@ const AchievementTab = () => {
                                 ))}
                             </ul>
                         </DragDropProvider>
+                    )}
+                </div>
+            )}
+
+            {/* ---------- Card PROPER ---------- */}
+            {activeTab === "proper" && (
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <SectionHeader
+                        title="PROPER"
+                        isFormOpen={properFormOpen}
+                        onToggle={() => (properFormOpen ? resetProperForm() : setProperFormOpen(true))}
+                    />
+
+                    {properFormOpen && (
+                        <form onSubmit={handleSubmitProper} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
+                            <input
+                                placeholder="Wilayah Kerja (misal Field Rantau)"
+                                value={properForm.wilayah_kerja}
+                                onChange={(e) => setProperForm({ ...properForm, wilayah_kerja: e.target.value })}
+                                className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                required
+                            />
+                            <select
+                                value={properForm.peringkat}
+                                onChange={(e) => setProperForm({ ...properForm, peringkat: e.target.value as "Biru" | "Hijau" | "Emas" })}
+                                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                            >
+                                <option value="Biru">Biru</option>
+                                <option value="Hijau">Hijau</option>
+                                <option value="Emas">Emas</option>
+                            </select>
+                            <input
+                                placeholder="Tahun"
+                                type="number"
+                                value={properForm.tahun}
+                                onChange={(e) => setProperForm({ ...properForm, tahun: e.target.value })}
+                                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                required
+                            />
+                            <input
+                                placeholder="Keterangan (opsional, misal Rapor Sementara)"
+                                value={properForm.keterangan}
+                                onChange={(e) => setProperForm({ ...properForm, keterangan: e.target.value })}
+                                className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                            />
+
+                            {properError && (
+                                <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{properError}</p>
+                            )}
+
+                            <div className="col-span-2 flex gap-2">
+                                <button type="submit" disabled={properLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                    {properLoading ? "Menyimpan..." : properEditingId ? "Simpan Perubahan" : "Tambah"}
+                                </button>
+                                <button type="button" onClick={resetProperForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
+                            </div>
+                        </form>
+                    )}
+
+                    {properListLoading ? (
+                        <ListSkeleton />
+                    ) : properItems.length === 0 ? (
+                        <EmptyState label="Belum ada data PROPER." />
+                    ) : (
+                        <ul className="flex flex-col gap-2">
+                            {properItems.map((item) => (
+                                <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
+                                    <div className="min-w-0">
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                            <span className="truncate font-semibold text-blue-900">{item.wilayah_kerja}</span>
+                                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${PERINGKAT_STYLE[item.peringkat]}`}>
+                                                {item.peringkat} {item.tahun}
+                                            </span>
+                                        </div>
+                                        {item.keterangan && (
+                                            <p className="mt-0.5 truncate text-xs text-slate-400">{item.keterangan}</p>
+                                        )}
+                                    </div>
+                                    <div className="flex shrink-0 gap-1">
+                                        <button onClick={() => startEditProper(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                            <PencilIcon />
+                                        </button>
+                                        <button onClick={() => handleDeleteProper(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                            <TrashIcon />
+                                        </button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
                     )}
                 </div>
             )}
