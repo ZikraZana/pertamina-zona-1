@@ -26,11 +26,12 @@ function ProductionCard({
     target: string;
     percentValue: number;
     periode: string;
-    accentColor: "amber" | "sky";
+    accentColor: "amber" | "sky" | "emerald";
 }) {
     const colors = {
         amber: { bar: "bg-amber-500", text: "text-amber-600", chip: "bg-amber-50 text-amber-700" },
         sky: { bar: "bg-sky-500", text: "text-sky-600", chip: "bg-sky-50 text-sky-700" },
+        emerald: { bar: "bg-emerald-500", text: "text-emerald-600", chip: "bg-emerald-50 text-emerald-700" },
     }[accentColor];
 
     return (
@@ -40,7 +41,7 @@ function ProductionCard({
                     <p className="text-sm font-semibold text-slate-500">{title}</p>
                     <p className="mt-0.5 text-xs text-slate-400">{periode}</p>
                 </div>
-                <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${colors.chip}`}>
+                <span className={`rounded-full px-2.5 text-center py-1 text-xs font-bold ${colors.chip}`}>
                     {percentValue}% RKAP
                 </span>
             </div>
@@ -181,7 +182,7 @@ function FieldAwardCard({ field, awards }: { field: string; awards: AwardItem[] 
 // KOMPONEN UTAMA
 // ============================================================
 function formatAngkaID(n: number) {
-    return n.toLocaleString('id-ID');
+    return n.toLocaleString('en-US');
 }
 
 /** Gabungkan jumlah minyak & gas jadi satu string ringkas, skip yang kosong. */
@@ -193,7 +194,7 @@ function formatJumlahProduksi(jumlahMinyak: number | null, jumlahGas: number | n
 }
 
 type ProduksiData = {
-    jenis: "minyak" | "gas";
+    jenis: "minyak" | "gas" | "migas";
     realisasi: number;
     target: number;
     periode: string;
@@ -343,7 +344,7 @@ const AchievementsContent = () => {
             {/* Isi tab */}
             <div className="animate-page-fade-in" key={activeTab}>
                 {activeTab === "produksi" && (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         {produksiData.minyak && (
                             <>
                                 <ProductionCard
@@ -366,6 +367,17 @@ const AchievementsContent = () => {
                                 percentValue={Math.round((produksiData.gas.realisasi / produksiData.gas.target) * 100) || 0}
                                 periode={produksiData.gas.periode ?? "-"}
                                 accentColor="sky"
+                            />
+                        )}
+                        {produksiData.migas && (
+                            <ProductionCard
+                                title="Produksi Migas"
+                                unit={produksiData.migas.unit ?? "-"}
+                                realisasi={formatAngkaID(produksiData.migas.realisasi ?? "-")}
+                                target={formatAngkaID(produksiData.migas.target ?? "-")}
+                                percentValue={Math.round((produksiData.migas.realisasi / produksiData.migas.target) * 100) || 0}
+                                periode={produksiData.migas.periode ?? "-"}
+                                accentColor="emerald"
                             />
                         )}
 
