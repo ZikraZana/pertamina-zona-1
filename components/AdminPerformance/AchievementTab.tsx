@@ -276,6 +276,7 @@ function SortableKehumasanItem({
 const AchievementTab = () => {
     const [activeTab, setActiveTab] = useState<"produksi" | "rencana-kerja" | "inovasi" | "kehumasan">("produksi");
     const [selectedJenis, setSelectedJenis] = useState<"minyak" | "gas">("minyak");
+    const [wilayahKerjaList, setWilayahKerjaList] = useState<string[]>([]);
     const [data, setData] = useState<Record<string, ProduksiData>>({});
     const [dataLoading, setDataLoading] = useState(true);
     const [form, setForm] = useState<ProduksiData | null>(null);
@@ -289,6 +290,8 @@ const AchievementTab = () => {
     const [rkListLoading, setRkListLoading] = useState(true);
     const [rkFormOpen, setRkFormOpen] = useState(false);
     const [rkForm, setRkForm] = useState({ jenis_rk: "Bor", nama_rk: "", jumlah_minyak: "", jumlah_gas: "", wilayah_kerja: "", urutan: "" });
+    const [isAddingNewJenis, setIsAddingNewJenis] = useState(false);
+    const [newJenisInput, setNewJenisInput] = useState("");
     const [rkEditingId, setRkEditingId] = useState<string | null>(null);
     const [rkLoading, setRkLoading] = useState(false);
     const [rkError, setRkError] = useState<string | null>(null);
@@ -337,6 +340,7 @@ const AchievementTab = () => {
         fetchRkItems();
         fetchInovasiItems();
         fetchKehumasanItems();
+        fetchWilayahKerjaList();
     }, []);
 
     // ---------- Fungsi Rencana Kerja ----------
@@ -356,6 +360,8 @@ const AchievementTab = () => {
         setRkEditingId(null);
         setRkFormOpen(false);
         setRkError(null);
+        setIsAddingNewJenis(false);
+        setNewJenisInput("");
     }
 
     function startEditRk(item: RKItem) {
@@ -588,6 +594,19 @@ const AchievementTab = () => {
         });
     }
 
+    async function fetchWilayahKerjaList() {
+        try {
+            const res = await fetch("/api/wilayah");
+            const json = await res.json();
+            const names = Object.values(json.data ?? {})
+                .map((w: any) => w.nama_wilayah)
+                .filter(Boolean);
+            setWilayahKerjaList(names);
+        } catch (err) {
+            console.error("Gagal mengambil daftar wilayah kerja:", err);
+        }
+    }
+
     useEffect(() => {
         if (data[selectedJenis]) {
             setForm(data[selectedJenis]);
@@ -641,6 +660,10 @@ const AchievementTab = () => {
         }
         groupedKehumasanItems[item.wilayah_kerja].push(item);
     }
+
+    const jenisRkOptions = Array.from(
+        new Set(["Bor", "Workover", ...rkItems.map((item) => item.jenis_rk)])
+    );
 
     return (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
@@ -795,14 +818,69 @@ const AchievementTab = () => {
 
                     {rkFormOpen && (
                         <form onSubmit={handleSubmitRk} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
-                            <select value={rkForm.jenis_rk} onChange={(e) => setRkForm({ ...rkForm, jenis_rk: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500">
-                                <option value="Bor">Bor</option>
-                                <option value="Workover">Workover</option>
-                            </select>
+                            {!isAddingNewJenis ? (
+                                <select
+                                    value={rkForm.jenis_rk}
+                                    onChange={(e) => {
+                                        if (e.target.value === "__new__") {
+                                            setIsAddingNewJenis(true);
+                                            setNewJenisInput("");
+                                        } else {
+                                            setRkForm({ ...rkForm, jenis_rk: e.target.value });
+                                        }
+                                    }}
+                                    className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                >
+                                    {jenisRkOptions.map((jenis) => (
+                                        <option key={jenis} value={jenis}>{jenis}</option>
+                                    ))}
+                                    <option value="__new__">+ Tambah jenis baru...</option>
+                                </select>
+                            ) : (
+                                <div className="flex gap-1.5">
+                                    <input
+                                        type="text"
+                                        autoFocus
+                                        placeholder="Nama jenis baru"
+                                        value={newJenisInput}
+                                        onChange={(e) => setNewJenisInput(e.target.value)}
+                                        className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const trimmed = newJenisInput.trim();
+                                            if (!trimmed) return;
+                                            setRkForm({ ...rkForm, jenis_rk: trimmed });
+                                            setIsAddingNewJenis(false);
+                                        }}
+                                        className="shrink-0 cursor-pointer rounded-lg bg-blue-900 px-3 text-xs font-semibold text-white hover:bg-blue-800"
+                                    >
+                                        OK
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAddingNewJenis(false)}
+                                        className="shrink-0 cursor-pointer rounded-lg border border-slate-300 px-3 text-xs text-slate-600 hover:bg-white"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            )}
                             <input placeholder="Nama RK (misal PPS-015A)" value={rkForm.nama_rk} onChange={(e) => setRkForm({ ...rkForm, nama_rk: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
                             <input placeholder="Jumlah Minyak (BOPD, opsional)" type="number" step="any" min="0" value={rkForm.jumlah_minyak} onChange={(e) => setRkForm({ ...rkForm, jumlah_minyak: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
                             <input placeholder="Jumlah Gas (MMSCFD, opsional)" type="number" step="any" min="0" value={rkForm.jumlah_gas} onChange={(e) => setRkForm({ ...rkForm, jumlah_gas: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
-                            <input placeholder="Wilayah Kerja (misal Field Jambi)" value={rkForm.wilayah_kerja} onChange={(e) => setRkForm({ ...rkForm, wilayah_kerja: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                            <select
+                                value={rkForm.wilayah_kerja}
+                                onChange={(e) => setRkForm({ ...rkForm, wilayah_kerja: e.target.value })}
+                                className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                required
+                            >
+                                <option value="">Pilih Wilayah Kerja</option>
+                                {wilayahKerjaList.map((nama) => (
+                                    <option key={nama} value={nama}>{nama}</option>
+                                ))}
+                            </select>
 
                             <p className="col-span-2 -mt-1 text-[11px] text-slate-400">Isi minimal salah satu: Jumlah Minyak atau Jumlah Gas.</p>
 

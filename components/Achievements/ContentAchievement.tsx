@@ -74,10 +74,13 @@ function RankedListCard({
     items: { label: string; value: string; field: string }[];
     accentColor: "amber" | "sky";
 }) {
+    const [showAll, setShowAll] = useState(false);
     const colors = {
         amber: { badge: "bg-amber-500", value: "text-amber-600" },
         sky: { badge: "bg-sky-500", value: "text-sky-600" },
     }[accentColor];
+
+    const visibleItems = showAll ? items : items.slice(0, 5);
 
     return (
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
@@ -85,7 +88,7 @@ function RankedListCard({
             <p className="mt-0.5 text-xs text-slate-400">{subtitle}</p>
 
             <div className="mt-4 flex flex-col divide-y divide-slate-100">
-                {items.map((item, i) => (
+                {visibleItems.map((item, i) => (
                     <div key={i} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
                         <span
                             className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${colors.badge} text-xs font-bold text-white`}
@@ -100,6 +103,16 @@ function RankedListCard({
                     </div>
                 ))}
             </div>
+
+            {items.length > 5 && (
+                <button
+                    type="button"
+                    onClick={() => setShowAll((prev) => !prev)}
+                    className="mt-3 w-full cursor-pointer rounded-lg border border-slate-200 py-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-slate-50"
+                >
+                    {showAll ? "Tampilkan lebih sedikit" : `Lihat semua (${items.length})`}
+                </button>
+            )}
         </div>
     );
 }
