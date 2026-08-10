@@ -238,6 +238,14 @@ type Kehumasan = {
     image_url: string | null;
 }
 
+type Proper = {
+    id: string;
+    wilayah_kerja: string;
+    peringkat: "Biru" | "Hijau" | "Emas";
+    tahun: number;
+    keterangan: string | null;
+    urutan: number;
+};
 
 const AchievementsContent = () => {
     const [activeTab, setActiveTab] = useState<TabKey>("produksi");
@@ -248,6 +256,7 @@ const AchievementsContent = () => {
     const goldCount = kehumasan.filter((item) => item.medali === 'gold').length;
     const silverCount = kehumasan.filter((item) => item.medali === 'silver').length;
     const bronzeCount = kehumasan.filter((item) => item.medali === 'bronze').length;
+    const [proper, setProper] = useState<Proper[]>([]);
 
     useEffect(() => {
         async function fetchProduksi() {
@@ -307,11 +316,22 @@ const AchievementsContent = () => {
                 console.error("Gagal mengambil data kehumasan:", err);
             }
         }
+        async function fetchProper() {
+            try {
+                const res = await fetch('/api/achievement/hsse/proper');
+                const json = await res.json();
+                setProper(json.data ?? []);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data proper:", err);
+            }
+        }
 
         fetchProduksi()
         fetchRencanaKerja()
         fetchInovasi()
         fetchKehumasan()
+        fetchProper()
     }, []);
 
     const groupedKehumasan: Record<string, AwardItem[]> = {};
@@ -426,30 +446,28 @@ const AchievementsContent = () => {
                         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
                             <p className="text-sm font-semibold text-slate-500">PROPER</p>
                             <div className="mt-4 flex flex-col gap-3">
-                                <div className="flex items-start gap-3">
-                                    <span className="mt-0.5 shrink-0 rounded-full bg-sky-100 px-2.5 py-1 text-xs font-bold text-sky-700">
-                                        Biru
-                                    </span>
-                                    <p className="text-sm leading-relaxed text-slate-700">
-                                        Semua Field di Zona 1 mendapatkan peringkat ini (Rapor Sementara tahun 2025).
-                                    </p>
-                                </div>
-                                <div className="flex items-start gap-3">
-                                    <span className="mt-0.5 shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
-                                        Calon Hijau
-                                    </span>
-                                    <p className="text-sm leading-relaxed text-slate-700">
-                                        4 Field: NSO, Rantau, Pangkalan Susu, Jambi Merang.
-                                    </p>
-                                </div>
-                                <div className="flex items-start gap-3">
-                                    <span className="mt-0.5 shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700">
-                                        Emas 2024
-                                    </span>
-                                    <p className="text-sm leading-relaxed text-slate-700">
-                                        Diraih PEP Field Rantau. PROPER Hijau diraih PEP Field Pangkalan Susu, PEP Field Jambi, dan PHE Jambi Merang.
-                                    </p>
-                                </div>
+                                {proper
+                                    .slice()
+                                    .sort((a, b) => a.urutan - b.urutan)
+                                    .map((item) => {
+                                        const badgeStyle = {
+                                            Biru: "bg-sky-100 text-sky-700",
+                                            Hijau: "bg-emerald-100 text-emerald-700",
+                                            Emas: "bg-amber-100 text-amber-700",
+                                        }[item.peringkat];
+
+                                        return (
+                                            <div key={item.id} className="flex items-start gap-3">
+                                                <span className={`mt-0.5 shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${badgeStyle}`}>
+                                                    {item.peringkat} {item.tahun}
+                                                </span>
+                                                <p className="text-sm leading-relaxed text-slate-700">
+                                                    {item.wilayah_kerja}
+                                                    {item.keterangan ? ` — ${item.keterangan}` : ""}
+                                                </p>
+                                            </div>
+                                        );
+                                    })}
                             </div>
                         </div>
 
