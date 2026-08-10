@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createClient } from "@/lib/supabase/server";
 
 // PUT: update data proper berdasarkan id
 export async function PUT(
@@ -12,6 +7,7 @@ export async function PUT(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const supabase = await createClient();
         const { id } = await params;
         const body = await req.json();
         const { wilayah_kerja, peringkat, tahun, keterangan, urutan } = body;
@@ -61,6 +57,7 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const supabase = await createClient();
         const { id } = await params;
 
         const { error } = await supabase
