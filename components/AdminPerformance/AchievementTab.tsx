@@ -370,6 +370,10 @@ const AchievementTab = () => {
     const [rkEditingId, setRkEditingId] = useState<string | null>(null);
     const [rkLoading, setRkLoading] = useState(false);
     const [rkError, setRkError] = useState<string | null>(null);
+    const [manageJenisOpen, setManageJenisOpen] = useState(false);
+    const [renamingJenis, setRenamingJenis] = useState<string | null>(null);
+    const [renameInput, setRenameInput] = useState("");
+    const [jenisActionLoading, setJenisActionLoading] = useState(false);
 
     // ---------- State Inovasi ----------
     const [inovasiItems, setInovasiItems] = useState<InovasiItem[]>([]);
@@ -536,6 +540,69 @@ const AchievementTab = () => {
 
             return currentItems;
         });
+    }
+
+    const jenisRkOptions = Array.from(
+        new Set(["Bor", "Workover", ...rkItems.map((item) => item.jenis_rk), rkForm.jenis_rk].filter(Boolean))
+    );
+
+    // Hitung jumlah item per jenis, buat ditampilkan di panel kelola jenis
+    const jenisRkSummary = jenisRkOptions
+        .filter((jenis) => rkItems.some((item) => item.jenis_rk === jenis))
+        .map((jenis) => ({
+            jenis,
+            count: rkItems.filter((item) => item.jenis_rk === jenis).length,
+        }));
+
+    function startRenameJenis(jenis: string) {
+        setRenamingJenis(jenis);
+        setRenameInput(jenis);
+    }
+
+    async function handleRenameJenis() {
+        if (!renamingJenis) return;
+        const trimmed = renameInput.trim();
+        if (!trimmed || trimmed === renamingJenis) {
+            setRenamingJenis(null);
+            return;
+        }
+
+        setJenisActionLoading(true);
+        try {
+            const res = await fetch("/api/achievement/rencana-kerja/jenis", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ jenis_lama: renamingJenis, jenis_baru: trimmed }),
+            });
+            if (!res.ok) {
+                const json = await res.json();
+                alert(json.error ?? "Gagal mengubah nama jenis.");
+                return;
+            }
+            await fetchRkItems();
+            setRenamingJenis(null);
+        } finally {
+            setJenisActionLoading(false);
+        }
+    }
+
+    async function handleDeleteJenis(jenis: string, count: number) {
+        if (!window.confirm(`Hapus jenis "${jenis}" beserta ${count} data di dalamnya? Tindakan ini tidak bisa dibatalkan.`)) return;
+
+        setJenisActionLoading(true);
+        try {
+            const res = await fetch(`/api/achievement/rencana-kerja/jenis?jenis=${encodeURIComponent(jenis)}`, {
+                method: "DELETE",
+            });
+            if (!res.ok) {
+                const json = await res.json();
+                alert(json.error ?? "Gagal menghapus jenis.");
+                return;
+            }
+            await fetchRkItems();
+        } finally {
+            setJenisActionLoading(false);
+        }
     }
 
     // ---------- Fungsi Inovasi ----------
@@ -832,10 +899,6 @@ const AchievementTab = () => {
         groupedKehumasanItems[item.wilayah_kerja].push(item);
     }
 
-    const jenisRkOptions = Array.from(
-        new Set(["Bor", "Workover", ...rkItems.map((item) => item.jenis_rk)])
-    );
-
     return (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
             {/* ---------- Tab Navigasi ---------- */}
@@ -993,6 +1056,77 @@ const AchievementTab = () => {
                         onToggle={() => (rkFormOpen ? resetRkForm() : setRkFormOpen(true))}
                     />
 
+                    <button
+                        type="button"
+                        onClick={() => setManageJenisOpen((prev) => !prev)}
+                        className="mb-3 text-xs font-semibold text-blue-700 hover:underline"
+                    >
+                        {manageJenisOpen ? "Sembunyikan kelola jenis" : "Kelola Jenis RK"}
+                    </button>
+
+                    {manageJenisOpen && (
+                        <div className="mb-4 flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                            {jenisRkSummary.length === 0 ? (
+                                <p className="text-xs text-slate-400">Belum ada jenis RK.</p>
+                            ) : (
+                                jenisRkSummary.map(({ jenis, count }) => (
+                                    <div key={jenis} className="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2">
+                                        {renamingJenis === jenis ? (
+                                            <div className="flex flex-1 items-center gap-1.5">
+                                                <input
+                                                    type="text"
+                                                    autoFocus
+                                                    value={renameInput}
+                                                    onChange={(e) => setRenameInput(e.target.value)}
+                                                    onKeyDown={(e) => e.key === "Enter" && handleRenameJenis()}
+                                                    className="min-w-0 flex-1 rounded-md border border-slate-300 px-2 py-1 text-xs outline-none focus:border-blue-500"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleRenameJenis}
+                                                    disabled={jenisActionLoading}
+                                                    className="shrink-0 cursor-pointer rounded-md bg-blue-900 px-2 py-1 text-[11px] font-semibold text-white hover:bg-blue-800 disabled:opacity-60"
+                                                >
+                                                    Simpan
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setRenamingJenis(null)}
+                                                    className="shrink-0 cursor-pointer rounded-md border border-slate-300 px-2 py-1 text-[11px] text-slate-600 hover:bg-slate-50"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <span className="text-sm font-semibold text-slate-700">
+                                                    {jenis} <span className="font-normal text-slate-400">({count} data)</span>
+                                                </span>
+                                                <div className="flex shrink-0 gap-1">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => startRenameJenis(jenis)}
+                                                        className="cursor-pointer rounded-md px-2 py-1 text-[11px] font-semibold text-blue-700 hover:bg-blue-50"
+                                                    >
+                                                        Rename
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteJenis(jenis, count)}
+                                                        disabled={jenisActionLoading}
+                                                        className="cursor-pointer rounded-md px-2 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60"
+                                                    >
+                                                        Hapus Semua
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+
                     {rkFormOpen && (
                         <form onSubmit={handleSubmitRk} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
                             {!isAddingNewJenis ? (
@@ -1014,34 +1148,46 @@ const AchievementTab = () => {
                                     <option value="__new__">+ Tambah jenis baru...</option>
                                 </select>
                             ) : (
-                                <div className="flex gap-1.5">
-                                    <input
-                                        type="text"
-                                        autoFocus
-                                        placeholder="Nama jenis baru"
-                                        value={newJenisInput}
-                                        onChange={(e) => setNewJenisInput(e.target.value)}
-                                        className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            const trimmed = newJenisInput.trim();
-                                            if (!trimmed) return;
-                                            setRkForm({ ...rkForm, jenis_rk: trimmed });
-                                            setIsAddingNewJenis(false);
-                                        }}
-                                        className="shrink-0 cursor-pointer rounded-lg bg-blue-900 px-3 text-xs font-semibold text-white hover:bg-blue-800"
-                                    >
-                                        OK
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsAddingNewJenis(false)}
-                                        className="shrink-0 cursor-pointer rounded-lg border border-slate-300 px-3 text-xs text-slate-600 hover:bg-white"
-                                    >
-                                        ✕
-                                    </button>
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex gap-1.5">
+                                        <input
+                                            type="text"
+                                            autoFocus
+                                            placeholder="Ketik nama jenis baru, lalu klik OK"
+                                            value={newJenisInput}
+                                            onChange={(e) => setNewJenisInput(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") {
+                                                    e.preventDefault();
+                                                    const trimmed = newJenisInput.trim();
+                                                    if (!trimmed) return;
+                                                    setRkForm({ ...rkForm, jenis_rk: trimmed });
+                                                    setIsAddingNewJenis(false);
+                                                }
+                                            }}
+                                            className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const trimmed = newJenisInput.trim();
+                                                if (!trimmed) return;
+                                                setRkForm({ ...rkForm, jenis_rk: trimmed });
+                                                setIsAddingNewJenis(false);
+                                            }}
+                                            className="shrink-0 cursor-pointer rounded-lg bg-blue-900 px-3 text-xs font-semibold text-white hover:bg-blue-800"
+                                        >
+                                            OK
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsAddingNewJenis(false)}
+                                            className="shrink-0 cursor-pointer rounded-lg border border-slate-300 px-3 text-xs text-slate-600 hover:bg-white"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400">Ketik nama jenis, lalu tekan Enter atau klik OK.</p>
                                 </div>
                             )}
                             <input placeholder="Nama RK (misal PPS-015A)" value={rkForm.nama_rk} onChange={(e) => setRkForm({ ...rkForm, nama_rk: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
