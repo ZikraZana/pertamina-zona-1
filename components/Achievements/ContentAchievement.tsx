@@ -374,60 +374,36 @@ const AchievementsContent = () => {
 
                 {activeTab === "rencana-kerja" && (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        {rencanaKerja.Bor && (
-                            <>
-                                <RankedListCard
-                                    title="Top 5 Capaian RK Bor"
-                                    subtitle="Realisasi produksi sumur terbaik"
-                                    accentColor="amber"
-                                    items={
-                                        rencanaKerja.Bor
-                                            .slice()
-                                            .sort((a, b) => a.urutan - b.urutan)
-                                            .slice(0, 5)
-                                            .map((item) => ({
-                                                label: item.nama_rk,
-                                                field: item.wilayah_kerja,
-                                                value: formatJumlahProduksi(item.jumlah_minyak, item.jumlah_gas)
-                                            }))
-                                    }
-                                />
-                            </>
-                        )}
+                        {Object.entries(rencanaKerja).map(([jenisRk, items]) => (
+                            <RankedListCard
+                                key={jenisRk}
+                                title={`Capaian RK ${jenisRk}`}
+                                subtitle="Realisasi produksi terbaik"
+                                accentColor="amber"
+                                items={items
+                                    .slice()
+                                    .sort((a, b) => a.urutan - b.urutan)
+                                    .slice(0, 5)
+                                    .map((item) => ({
+                                        label: item.nama_rk,
+                                        field: item.wilayah_kerja,
+                                        value: formatJumlahProduksi(item.jumlah_minyak, item.jumlah_gas),
+                                    }))}
+                            />
+                        ))}
 
-                        <div className="flex flex-col gap-4">
-                            {rencanaKerja.Workover && (
-                                <>
-                                    <RankedListCard
-                                        title="Pencapaian RK Workover"
-                                        subtitle="Realisasi produksi hasil workover"
-                                        accentColor="sky"
-                                        items={
-                                            rencanaKerja.Workover
-                                                .slice()
-                                                .sort((a, b) => a.urutan - b.urutan)
-                                                .slice(0, 5)
-                                                .map((item) => ({
-                                                    label: item.nama_rk,
-                                                    field: item.wilayah_kerja,
-                                                    value: formatJumlahProduksi(item.jumlah_minyak, item.jumlah_gas)
-                                                }))
-                                        }
-                                    />
-                                </>
-                            )}
-
-                            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
-                                <p className="text-sm font-semibold text-slate-500">Capaian OPTIMUS</p>
-                                <div className="mt-3 flex items-baseline gap-2">
-                                    <span className="text-4xl font-extrabold tracking-tight text-slate-900">8,2</span>
-                                    <span className="text-sm font-medium text-slate-400">Juta USD</span>
-                                </div>
-                                <span className="mt-2 inline-block rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
-                                    120% dari Target
-                                </span>
+                        {/* Capaian OPTIMUS — sementara dikomentari, belum ada di backend
+                        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
+                            <p className="text-sm font-semibold text-slate-500">Capaian OPTIMUS</p>
+                            <div className="mt-3 flex items-baseline gap-2">
+                                <span className="text-4xl font-extrabold tracking-tight text-slate-900">8,2</span>
+                                <span className="text-sm font-medium text-slate-400">Juta USD</span>
                             </div>
+                            <span className="mt-2 inline-block rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                                120% dari Target
+                            </span>
                         </div>
+                        */}
                     </div>
                 )}
 
