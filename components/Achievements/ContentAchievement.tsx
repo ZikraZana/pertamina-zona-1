@@ -66,6 +66,9 @@ function ProductionCard({
     );
 }
 
+const ITEMS_PER_PAGE = 10;
+const COLLAPSED_COUNT = 5;
+
 function RankedListCard({
     title, subtitle, items, accentColor,
 }: {
@@ -74,13 +77,32 @@ function RankedListCard({
     items: { label: string; value: string; field: string }[];
     accentColor: "amber" | "sky";
 }) {
-    const [showAll, setShowAll] = useState(false);
+    const [expanded, setExpanded] = useState(false);
+    const [page, setPage] = useState(1);
+
     const colors = {
         amber: { badge: "bg-amber-500", value: "text-amber-600" },
         sky: { badge: "bg-sky-500", value: "text-sky-600" },
     }[accentColor];
 
-    const visibleItems = showAll ? items : items.slice(0, 5);
+    const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+
+    let visibleItems: typeof items;
+    let startNumber: number;
+
+    if (!expanded) {
+        visibleItems = items.slice(0, COLLAPSED_COUNT);
+        startNumber = 1;
+    } else {
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        visibleItems = items.slice(start, start + ITEMS_PER_PAGE);
+        startNumber = start + 1;
+    }
+
+    function handleToggleExpand() {
+        setExpanded((prev) => !prev);
+        setPage(1);
+    }
 
     return (
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
@@ -89,11 +111,11 @@ function RankedListCard({
 
             <div className="mt-4 flex flex-col divide-y divide-slate-100">
                 {visibleItems.map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                    <div key={startNumber + i} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
                         <span
                             className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${colors.badge} text-xs font-bold text-white`}
                         >
-                            {i + 1}
+                            {startNumber + i}
                         </span>
                         <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-semibold text-slate-800">{item.label}</p>
@@ -104,13 +126,48 @@ function RankedListCard({
                 ))}
             </div>
 
-            {items.length > 5 && (
+            {/* Pagination — cuma muncul kalau sedang expanded dan totalnya lebih dari 1 halaman */}
+            {expanded && totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-center gap-1.5">
+                    <button
+                        type="button"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className="cursor-pointer rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-500 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        ‹
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                        <button
+                            key={p}
+                            type="button"
+                            onClick={() => setPage(p)}
+                            className={[
+                                "cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
+                                page === p ? "bg-blue-900 text-white" : "text-slate-500 hover:bg-slate-100",
+                            ].join(" ")}
+                        >
+                            {p}
+                        </button>
+                    ))}
+                    <button
+                        type="button"
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                        className="cursor-pointer rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-500 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        ›
+                    </button>
+                </div>
+            )}
+
+            {items.length > COLLAPSED_COUNT && (
                 <button
                     type="button"
-                    onClick={() => setShowAll((prev) => !prev)}
+                    onClick={handleToggleExpand}
                     className="mt-3 w-full cursor-pointer rounded-lg border border-slate-200 py-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-slate-50"
                 >
-                    {showAll ? "Tampilkan lebih sedikit" : `Lihat semua (${items.length})`}
+                    {expanded ? "Tampilkan lebih sedikit" : `Lihat semua (${items.length})`}
                 </button>
             )}
         </div>
@@ -406,7 +463,7 @@ const AchievementsContent = () => {
                 )}
 
                 {activeTab === "rencana-kerja" && (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="flex flex-col gap-4">
                         {Object.entries(rencanaKerja).map(([jenisRk, items]) => (
                             <RankedListCard
                                 key={jenisRk}
@@ -416,7 +473,6 @@ const AchievementsContent = () => {
                                 items={items
                                     .slice()
                                     .sort((a, b) => a.urutan - b.urutan)
-                                    .slice(0, 5)
                                     .map((item) => ({
                                         label: item.nama_rk,
                                         field: item.wilayah_kerja,
