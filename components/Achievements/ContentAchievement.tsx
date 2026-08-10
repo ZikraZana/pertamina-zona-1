@@ -675,7 +675,7 @@ const AchievementsContent = () => {
                        {/* Ringkasan medali (podium) */}
                         <div className="grid grid-cols-3 items-end gap-3">
                             {/* Gold */}
-                            <div className="group relative -mt-8 overflow-hidden rounded-2xl border border-amber-300 bg-linear-to-b from-amber-50 to-white p-5 text-center shadow-lg ring-1 ring-amber-200 transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl">
+                            <div className="group relative -mt-8 overflow-hidden rounded-2xl border border-amber-300 bg-linear-to-b from-amber-50 to-white p-5 text-center shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
                                 <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-amber-300/30 blur-xl" />
                                 <div className="flex items-center justify-center gap-2">
                                     {/* <span className="text-3xl drop-shadow-sm">🥇</span> */}
@@ -683,7 +683,7 @@ const AchievementsContent = () => {
                                 </div>
                                 <p className="mt-1.5 text-xs font-bold uppercase tracking-wide text-amber-700">🥇 Gold Winner</p>
                             </div>
-                            
+
                             {/* Silver */}
                             <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-linear-to-b from-slate-50 to-white p-5 text-center shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
                                 <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-slate-200/40 blur-xl" />
