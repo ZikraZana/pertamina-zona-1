@@ -293,6 +293,7 @@ type Kehumasan = {
     sub_kategori: string;
     medali: "gold" | "silver" | "bronze";
     urutan: number;
+    urutan_wilayah: number;
     image_url: string | null;
 }
 
@@ -392,18 +393,26 @@ const AchievementsContent = () => {
         fetchProper()
     }, []);
 
-    const groupedKehumasan: Record<string, AwardItem[]> = {};
+    const groupedKehumasanUnordered: Record<string, AwardItem[]> = {};
+    const urutanWilayahMap: Record<string, number> = {};
     for (const row of kehumasan) {
-        if (!groupedKehumasan[row.wilayah_kerja]) {
-            groupedKehumasan[row.wilayah_kerja] = [];
+        if (!groupedKehumasanUnordered[row.wilayah_kerja]) {
+            groupedKehumasanUnordered[row.wilayah_kerja] = [];
+            urutanWilayahMap[row.wilayah_kerja] = row.urutan_wilayah;
         }
 
-        groupedKehumasan[row.wilayah_kerja].push({
+        groupedKehumasanUnordered[row.wilayah_kerja].push({
             text: `Kategori ${row.kategori} Sub Kategori ${row.sub_kategori}`,
             medal: row.medali,
             imageUrl: row.image_url ?? undefined,
         });
     }
+
+    // Urutan GRUP mengikuti urutan_wilayah yang diatur admin lewat tombol
+    // panah naik/turun, supaya konsisten dengan tampilan di halaman admin.
+    const groupedKehumasan: [string, AwardItem[]][] = Object.keys(groupedKehumasanUnordered)
+        .sort((a, b) => (urutanWilayahMap[a] ?? 0) - (urutanWilayahMap[b] ?? 0))
+        .map((field) => [field, groupedKehumasanUnordered[field]]);
 
     return (
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-4 sm:p-6">
@@ -672,7 +681,7 @@ const AchievementsContent = () => {
                 {activeTab === "kehumasan" && (
                     <div className="flex flex-col gap-4">
                         {/* Ringkasan medali (podium) */}
-                       {/* Ringkasan medali (podium) */}
+                        {/* Ringkasan medali (podium) */}
                         <div className="grid grid-cols-3 items-end gap-3">
                             {/* Gold */}
                             <div className="group relative -mt-8 overflow-hidden rounded-2xl border border-amber-300 bg-linear-to-b from-amber-50 to-white p-5 text-center shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
@@ -708,7 +717,7 @@ const AchievementsContent = () => {
 
                         {/* Detail per field */}
                         <div className="flex flex-col gap-4">
-                            {Object.entries(groupedKehumasan).map(([field, awards]) => (
+                            {groupedKehumasan.map(([field, awards]) => (
                                 <FieldAwardCard
                                     key={field}
                                     field={field}

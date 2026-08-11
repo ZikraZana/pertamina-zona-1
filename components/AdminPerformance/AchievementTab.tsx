@@ -47,6 +47,7 @@ type KehumasanItem = {
     sub_kategori: string;
     medali: "gold" | "silver" | "bronze";
     urutan: number;
+    urutan_wilayah: number;
     image_path: string | null;
 };
 
@@ -239,6 +240,62 @@ const PERINGKAT_STYLE: Record<ProperItem["peringkat"], string> = {
     Hijau: "bg-emerald-100 text-emerald-700",
     Emas: "bg-amber-100 text-amber-700",
 };
+
+// ============================================================
+// SUB-KOMPONEN: card pembungkus 1 grup wilayah_kerja, urutan
+// GRUP diatur lewat tombol panah naik/turun (bukan drag) --
+// supaya tidak bentrok dengan drag urutan item DALAM grup, yang
+// tetap pakai @dnd-kit di level yang sama.
+// ============================================================
+
+function WilayahGroupCard({
+    field,
+    canMoveUp,
+    canMoveDown,
+    onMoveUp,
+    onMoveDown,
+    children,
+}: {
+    field: string;
+    canMoveUp: boolean;
+    canMoveDown: boolean;
+    onMoveUp: () => void;
+    onMoveDown: () => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+            <div className="mb-2 flex items-center gap-1.5">
+                <div className="flex shrink-0 flex-col gap-0.5">
+                    <button
+                        type="button"
+                        onClick={onMoveUp}
+                        disabled={!canMoveUp}
+                        title="Naikkan urutan wilayah kerja"
+                        className="cursor-pointer rounded p-0.5 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                        </svg>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onMoveDown}
+                        disabled={!canMoveDown}
+                        title="Turunkan urutan wilayah kerja"
+                        className="cursor-pointer rounded p-0.5 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-400">{field}</p>
+            </div>
+            {children}
+        </div>
+    );
+}
 
 // ============================================================
 // SUB-KOMPONEN: item Kehumasan yang bisa di-drag, DIBATASI dalam
@@ -820,6 +877,48 @@ const AchievementTab = () => {
         });
     }
 
+    /**
+     * Setelah urutan GRUP wilayah kerja ditukar lewat tombol panah, hitung
+     * ulang `urutan_wilayah` untuk SEMUA grup sesuai posisi barunya, lalu PATCH
+     * semua item di tiap grup yang urutan_wilayah-nya berubah.
+     */
+    async function reorderWilayahGroup(newOrderedFields: string[], allItems: KehumasanItem[]) {
+        await Promise.all(
+            newOrderedFields.flatMap((field, groupIndex) => {
+                const itemsInGroup = allItems.filter((it) => it.wilayah_kerja === field);
+                return itemsInGroup.map((item) => {
+                    const formData = new FormData();
+                    formData.append("wilayah_kerja", item.wilayah_kerja);
+                    formData.append("kategori", item.kategori);
+                    formData.append("sub_kategori", item.sub_kategori);
+                    formData.append("medali", item.medali);
+                    formData.append("urutan", String(item.urutan));
+                    formData.append("urutan_wilayah", String(groupIndex));
+                    // tidak append "image" -- reorder tidak pernah mengubah foto
+
+                    return fetch(`/api/achievement/kehumasan/${item.id}`, {
+                        method: "PATCH",
+                        body: formData,
+                    });
+                });
+            })
+        ).catch(() => {
+            fetchKehumasanItems();
+        });
+    }
+
+    /** Tukar posisi 1 grup wilayah kerja dengan tetangganya (naik/turun), lalu simpan ke server. */
+    function moveWilayahGroup(field: string, direction: "up" | "down") {
+        const currentIndex = orderedWilayahKerjaKeys.indexOf(field);
+        const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+        if (currentIndex === -1 || targetIndex < 0 || targetIndex >= orderedWilayahKerjaKeys.length) return;
+
+        const newOrderedFields = [...orderedWilayahKerjaKeys];
+        [newOrderedFields[currentIndex], newOrderedFields[targetIndex]] = [newOrderedFields[targetIndex], newOrderedFields[currentIndex]];
+
+        reorderWilayahGroup(newOrderedFields, kehumasanItems).then(fetchKehumasanItems);
+    }
+
     async function fetchWilayahKerjaList() {
         try {
             const res = await fetch("/api/wilayah");
@@ -891,13 +990,26 @@ const AchievementTab = () => {
     // Kelompokkan kehumasanItems per wilayah_kerja untuk tampilan admin.
     // Urutan relatif dalam tiap grup tetap ikut urutan array asli (yang sudah
     // diurutkan server berdasarkan `urutan`), jadi konsisten dengan halaman publik.
-    const groupedKehumasanItems: Record<string, KehumasanItem[]> = {};
+    const groupedKehumasanItemsUnordered: Record<string, KehumasanItem[]> = {};
     for (const item of kehumasanItems) {
-        if (!groupedKehumasanItems[item.wilayah_kerja]) {
-            groupedKehumasanItems[item.wilayah_kerja] = [];
+        if (!groupedKehumasanItemsUnordered[item.wilayah_kerja]) {
+            groupedKehumasanItemsUnordered[item.wilayah_kerja] = [];
         }
-        groupedKehumasanItems[item.wilayah_kerja].push(item);
+        groupedKehumasanItemsUnordered[item.wilayah_kerja].push(item);
     }
+
+    // Urutan GRUP (bukan urutan item dalam grup) ditentukan oleh urutan_wilayah
+    // -- diambil dari item pertama tiap grup, karena semua item dalam 1 grup
+    // seharusnya punya urutan_wilayah yang sama (di-sync tiap kali grup ditukar).
+    const orderedWilayahKerjaKeys = Object.keys(groupedKehumasanItemsUnordered).sort((a, b) => {
+        const urutanA = groupedKehumasanItemsUnordered[a][0]?.urutan_wilayah ?? 0;
+        const urutanB = groupedKehumasanItemsUnordered[b][0]?.urutan_wilayah ?? 0;
+        return urutanA - urutanB;
+    });
+    const groupedKehumasanItems: [string, KehumasanItem[]][] = orderedWilayahKerjaKeys.map((field) => [
+        field,
+        groupedKehumasanItemsUnordered[field],
+    ]);
 
     return (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
@@ -1486,10 +1598,16 @@ const AchievementTab = () => {
                                 });
                             }}
                         >
-                            <div className="flex flex-col gap-4">
-                                {Object.entries(groupedKehumasanItems).map(([field, items]) => (
-                                    <div key={field}>
-                                        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">{field}</p>
+                            <div className="flex flex-col gap-3">
+                                {groupedKehumasanItems.map(([field, items], groupIndex) => (
+                                    <WilayahGroupCard
+                                        key={field}
+                                        field={field}
+                                        canMoveUp={groupIndex > 0}
+                                        canMoveDown={groupIndex < groupedKehumasanItems.length - 1}
+                                        onMoveUp={() => moveWilayahGroup(field, "up")}
+                                        onMoveDown={() => moveWilayahGroup(field, "down")}
+                                    >
                                         <ul className="flex flex-col gap-2">
                                             {items.map((item, index) => (
                                                 <SortableKehumasanItem
@@ -1502,7 +1620,7 @@ const AchievementTab = () => {
                                                 />
                                             ))}
                                         </ul>
-                                    </div>
+                                    </WilayahGroupCard>
                                 ))}
                             </div>
                         </DragDropProvider>

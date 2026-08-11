@@ -10,7 +10,7 @@ export async function GET() {
 
     const { data, error } = await supabase
         .from("achievement_kehumasan")
-        .select('id, wilayah_kerja, kategori, sub_kategori, medali, urutan, image_path')
+        .select('id, wilayah_kerja, kategori, sub_kategori, medali, urutan, urutan_wilayah, image_path')
         .order('urutan', { ascending: true });
 
     if (error) {
@@ -46,6 +46,7 @@ export async function POST(request: Request) {
     const sub_kategori = formData.get("sub_kategori");
     const medali = formData.get("medali");
     const urutan = formData.get("urutan");
+    const urutan_wilayah = formData.get("urutan_wilayah");
     const file = formData.get("image");
 
     const stringFields: [string, FormDataEntryValue | null][] = [
@@ -70,6 +71,15 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Field "urutan" harus berupa bilangan bulat dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
         }
         urutanNumber = parsed;
+    }
+
+    let urutanWilayahNumber = 0;
+    if (urutan_wilayah !== null) {
+        const parsed = Number(urutan_wilayah);
+        if (!Number.isInteger(parsed) || parsed < 0) {
+            return NextResponse.json({ error: 'Field "urutan_wilayah" harus berupa bilangan bulat dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
+        }
+        urutanWilayahNumber = parsed;
     }
 
     let imagePath: string | null = null;
@@ -100,6 +110,7 @@ export async function POST(request: Request) {
             sub_kategori,
             medali,
             urutan: urutanNumber,
+            urutan_wilayah: urutanWilayahNumber,
             image_path: imagePath,
         })
         .select()
