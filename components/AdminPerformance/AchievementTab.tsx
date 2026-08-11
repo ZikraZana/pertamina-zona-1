@@ -36,8 +36,9 @@ type InovasiItem = {
     id: string;
     pencapaian: string;
     nama_inovasi: string;
-    nama_acara: string;
+    nama_acara: string | null;
     wilayah_kerja: string
+    urutan: number;
 };
 
 type KehumasanItem = {
@@ -214,6 +215,60 @@ function SortableRkItem({
                     {item.wilayah_kerja}
                     {item.jumlah_minyak !== null && ` · ${item.jumlah_minyak.toLocaleString("en-US")} BOPD`}
                     {item.jumlah_gas !== null && ` · ${item.jumlah_gas.toLocaleString("en-US")} MMSCFD`}
+                </p>
+            </div>
+
+            <div className="flex shrink-0 gap-1">
+                <button onClick={() => onEdit(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                    <PencilIcon />
+                </button>
+                <button onClick={() => onDelete(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                    <TrashIcon />
+                </button>
+            </div>
+        </li>
+    );
+}
+
+// ============================================================
+// SUB-KOMPONEN: item Inovasi yang bisa di-drag urutannya (list flat,
+// tidak dikelompokkan seperti Kehumasan)
+// ============================================================
+
+function SortableInovasiItem({
+    item,
+    index,
+    onEdit,
+    onDelete,
+}: {
+    item: InovasiItem;
+    index: number;
+    onEdit: (item: InovasiItem) => void;
+    onDelete: (id: string) => void;
+}) {
+    const { ref, handleRef, isDragging } = useSortable({ id: item.id, index });
+
+    return (
+        <li
+            ref={ref}
+            style={{ opacity: isDragging ? 0.5 : 1 }}
+            className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30"
+        >
+            <button
+                type="button"
+                ref={handleRef}
+                title="Geser untuk mengubah urutan"
+                className="shrink-0 cursor-grab touch-none rounded-lg p-1.5 text-black transition-colors hover:bg-slate-100 hover:text-slate-500 active:cursor-grabbing"
+            >
+                <DragHandleIcon />
+            </button>
+
+            <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="truncate font-semibold text-blue-900">{item.pencapaian}</span>
+                </div>
+                <p className="mt-0.5 truncate text-xs text-slate-400">
+                    {[item.nama_inovasi, item.nama_acara, item.wilayah_kerja].filter(Boolean).join(" · ")}
                 </p>
             </div>
 
@@ -681,7 +736,7 @@ const AchievementTab = () => {
     }
 
     function startEditInovasi(item: InovasiItem) {
-        setInovasiForm({ pencapaian: item.pencapaian, nama_inovasi: item.nama_inovasi, nama_acara: item.nama_acara, wilayah_kerja: item.wilayah_kerja });
+        setInovasiForm({ pencapaian: item.pencapaian, nama_inovasi: item.nama_inovasi, nama_acara: item.nama_acara ?? "", wilayah_kerja: item.wilayah_kerja });
         setInovasiEditingId(item.id);
         setInovasiFormOpen(true);
     }
@@ -701,6 +756,30 @@ const AchievementTab = () => {
         if (!window.confirm("Hapus data ini?")) return;
         await fetch(`/api/achievement/inovasi/${id}`, { method: "DELETE" });
         await fetchInovasiItems();
+    }
+
+    /**
+     * Setelah drag-reorder Inovasi (list flat, tidak dikelompokkan), hitung
+     * ulang `urutan` untuk SEMUA item lalu kirim PATCH untuk tiap item.
+     */
+    async function reorderInovasi(newItems: InovasiItem[]) {
+        await Promise.all(
+            newItems.map((item, i) =>
+                fetch(`/api/achievement/inovasi/${item.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        pencapaian: item.pencapaian,
+                        nama_inovasi: item.nama_inovasi,
+                        nama_acara: item.nama_acara,
+                        wilayah_kerja: item.wilayah_kerja,
+                        urutan: i,
+                    }),
+                })
+            )
+        ).catch(() => {
+            fetchInovasiItems();
+        });
     }
 
     // ---------- Fungsi PROPER ----------
@@ -1473,7 +1552,7 @@ const AchievementTab = () => {
                         <form onSubmit={handleSubmitInovasi} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
                             <input placeholder="Pencapaian (misal Best Presentation)" value={inovasiForm.pencapaian} onChange={(e) => setInovasiForm({ ...inovasiForm, pencapaian: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
                             <input placeholder="Nama Inovasi" value={inovasiForm.nama_inovasi} onChange={(e) => setInovasiForm({ ...inovasiForm, nama_inovasi: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                            <input placeholder="Nama Acara" value={inovasiForm.nama_acara} onChange={(e) => setInovasiForm({ ...inovasiForm, nama_acara: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                            <input placeholder="Nama Acara (opsional)" value={inovasiForm.nama_acara} onChange={(e) => setInovasiForm({ ...inovasiForm, nama_acara: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
                             <input placeholder="Wilayah Kerja" value={inovasiForm.wilayah_kerja} onChange={(e) => setInovasiForm({ ...inovasiForm, wilayah_kerja: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
                             <div className="col-span-2 flex gap-2">
                                 <button type="submit" disabled={inovasiLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
@@ -1489,26 +1568,37 @@ const AchievementTab = () => {
                     ) : inovasiItems.length === 0 ? (
                         <EmptyState label="Belum ada data inovasi." />
                     ) : (
-                        <ul className="flex flex-col gap-2">
-                            {inovasiItems.map((item) => (
-                                <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
-                                    <div className="min-w-0">
-                                        <span className="truncate font-semibold text-blue-900">{item.pencapaian}</span>
-                                        <p className="mt-0.5 truncate text-xs text-slate-400">
-                                            {[item.nama_inovasi, item.nama_acara, item.wilayah_kerja].filter(Boolean).join(" · ")}
-                                        </p>
-                                    </div>
-                                    <div className="flex shrink-0 gap-1">
-                                        <button onClick={() => startEditInovasi(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
-                                            <PencilIcon />
-                                        </button>
-                                        <button onClick={() => handleDeleteInovasi(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
-                                            <TrashIcon />
-                                        </button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
+                        <DragDropProvider
+                            onDragEnd={(event) => {
+                                if (event.canceled) return;
+                                const { source } = event.operation;
+                                if (!isSortable(source)) return;
+
+                                const { initialIndex, index } = source;
+                                if (initialIndex === index) return;
+
+                                setInovasiItems((currentItems) => {
+                                    const newItems = [...currentItems];
+                                    const [moved] = newItems.splice(initialIndex, 1);
+                                    newItems.splice(index, 0, moved);
+
+                                    reorderInovasi(newItems);
+                                    return newItems;
+                                });
+                            }}
+                        >
+                            <ul className="flex flex-col gap-2">
+                                {inovasiItems.map((item, index) => (
+                                    <SortableInovasiItem
+                                        key={item.id}
+                                        item={item}
+                                        index={index}
+                                        onEdit={startEditInovasi}
+                                        onDelete={handleDeleteInovasi}
+                                    />
+                                ))}
+                            </ul>
+                        </DragDropProvider>
                     )}
                 </div>
             )}

@@ -283,8 +283,9 @@ type RencanaKerja = {
 type Inovasi = {
     pencapaian: string;
     nama_inovasi: string;
-    nama_acara: string;
+    nama_acara: string | null;
     wilayah_kerja: string;
+    urutan: number;
 }
 
 type Kehumasan = {
@@ -596,18 +597,21 @@ const AchievementsContent = () => {
                         title="Capaian Inovasi"
                         subtitle="Penghargaan dan pencapaian inovasi Zona 1"
                         accentColor="sky"
-                        items={inovasi.map((item) => ({
-                            label: item.pencapaian,
-                            field: (
-                                <>
-                                    <span className="font-semibold text-slate-600">{item.nama_inovasi}</span>
-                                    {item.nama_inovasi && item.nama_acara && " - "}
-                                    <span className="font-semibold text-slate-600">{item.nama_acara}</span>
-                                    {`, ${item.wilayah_kerja}`}
-                                </>
-                            ),
-                            value: ""
-                        }))}
+                        items={inovasi
+                            .slice()
+                            .sort((a, b) => a.urutan - b.urutan)
+                            .map((item) => ({
+                                label: item.pencapaian,
+                                field: (
+                                    <>
+                                        <span className="font-semibold text-slate-600">{item.nama_inovasi}</span>
+                                        {item.nama_inovasi && item.nama_acara && " - "}
+                                        <span className="font-semibold text-slate-600">{item.nama_acara}</span>
+                                        {`, ${item.wilayah_kerja}`}
+                                    </>
+                                ),
+                                value: ""
+                            }))}
                     // items={[
                     //     { label: "Best Presentation", field: "PC Prove Velocity - Zona 1", value: "" },
                     //     { label: "Best Impact on Productivity", field: "Asia Pacific Quality Organization (APQO) - PC Prove Energy, Jambi Merang Field", value: "" },
