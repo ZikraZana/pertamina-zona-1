@@ -255,6 +255,11 @@ function formatAngkaID(n: number) {
     return n.toLocaleString('en-US');
 }
 
+function formatTanggalID(dateStr: string) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+}
+
 /** Gabungkan jumlah minyak & gas jadi satu string ringkas, skip yang kosong. */
 function formatJumlahProduksi(jumlahMinyak: number | null, jumlahGas: number | null) {
     const parts: string[] = [];
@@ -305,6 +310,14 @@ type Proper = {
     urutan: number;
 };
 
+type SecurityItem = {
+    id: string;
+    judul: string;
+    wilayah_kerja: string;
+    tanggal: string;
+    urutan: number;
+};
+
 type NaratifItem = {
     id: string;
     title: string;
@@ -332,6 +345,7 @@ const AchievementsContent = () => {
     const silverCount = kehumasan.filter((item) => item.medali === 'silver').length;
     const bronzeCount = kehumasan.filter((item) => item.medali === 'bronze').length;
     const [proper, setProper] = useState<Proper[]>([]);
+    const [security, setSecurity] = useState<SecurityItem[]>([]);
     const [naratifItems, setNaratifItems] = useState<NaratifItem[]>([]);
     const [abiItems, setAbiItems] = useState<AbiItem[]>([]);
 
@@ -403,6 +417,16 @@ const AchievementsContent = () => {
                 console.error("Gagal mengambil data proper:", err);
             }
         }
+        async function fetchSecurity() {
+            try {
+                const res = await fetch('/api/achievement/hsse/security');
+                const json = await res.json();
+                setSecurity(json.data ?? []);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data security:", err);
+            }
+        }
         async function fetchNaratif() {
             try {
                 const res = await fetch('/api/achievement/top-project-naratif');
@@ -431,6 +455,7 @@ const AchievementsContent = () => {
         fetchKehumasan()
         fetchNaratif()
         fetchAbi()
+        fetchSecurity()
     }, []);
 
     const groupedKehumasan: Record<string, AwardItem[]> = {};
@@ -584,29 +609,19 @@ const AchievementsContent = () => {
                         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
                             <p className="text-sm font-semibold text-slate-500">SECURITY</p>
                             <div className="mt-4 flex flex-col divide-y divide-slate-100">
-                                {[
-                                    { text: "Penggagalan dan Penangkapan Pelaku Illegal Tapping", field: "Rantau", date: "11 Feb 2025" },
-                                    { text: "Penggagalan ITAP Trunkline Kenali Asam – Ketaling", field: "Jambi", date: "31 Mei 2025" },
-                                    { text: "Penangkapan tangan pelaku ITAP", field: "Jambi", date: "24 Sept 2025" },
-                                    { text: "Penggagalan ITAP di KP 04 SKN", field: "Jambi Merang", date: "27 Agt 2025" },
-                                ].map((event, i) => (
-                                    <div key={i} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
-                                        <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-semibold text-slate-800">{event.text}</p>
-                                            <p className="text-xs text-slate-400">{event.field}</p>
+                                {security
+                                    .slice()
+                                    .sort((a, b) => a.urutan - b.urutan)
+                                    .map((event) => (
+                                        <div key={event.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                                            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-sm font-semibold text-slate-800">{event.judul}</p>
+                                                <p className="text-xs text-slate-400">{event.wilayah_kerja}</p>
+                                            </div>
+                                            <span className="shrink-0 text-xs font-medium text-slate-400">{formatTanggalID(event.tanggal)}</span>
                                         </div>
-                                        <span className="shrink-0 text-xs font-medium text-slate-400">{event.date}</span>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="mt-4 rounded-lg bg-amber-50 px-4 py-3">
-                                <p className="text-sm font-semibold text-amber-800">
-                                    Predikat Gold — 5 Field
-                                </p>
-                                <p className="mt-0.5 text-xs text-amber-700">
-                                    Rantau, Pangkalan Susu, Lirik, Jambi, Jambi Merang — Audit Sistem Manajemen Pengamanan (SMP) 2025
-                                </p>
+                                    ))}
                             </div>
                         </div>
 

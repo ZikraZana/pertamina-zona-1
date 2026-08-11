@@ -75,6 +75,13 @@ type ProperItem = {
     keterangan: string | null;
 };
 
+type SecurityFormItem = {
+    id: string;
+    judul: string;
+    wilayah_kerja: string;
+    tanggal: string;
+    urutan: number;
+};
 // ============================================================
 // ICONS (inline SVG, konsisten dengan gaya ikon di PerformanceReportTab)
 // ============================================================
@@ -414,6 +421,15 @@ const AchievementTab = () => {
     const [properLoading, setProperLoading] = useState(false);
     const [properError, setProperError] = useState<string | null>(null);
 
+    // ---------- State Security ----------
+    const [securityItems, setSecurityItems] = useState<SecurityFormItem[]>([]);
+    const [securityListLoading, setSecurityListLoading] = useState(true);
+    const [securityFormOpen, setSecurityFormOpen] = useState(false);
+    const [securityForm, setSecurityForm] = useState({ judul: "", wilayah_kerja: "", tanggal: "" });
+    const [securityEditingId, setSecurityEditingId] = useState<string | null>(null);
+    const [securityLoading, setSecurityLoading] = useState(false);
+    const [securityError, setSecurityError] = useState<string | null>(null);
+
     // ---------- State Kehumasan ----------
     const [kehumasanItems, setKehumasanItems] = useState<KehumasanItem[]>([]);
     const [kehumasanListLoading, setKehumasanListLoading] = useState(true);
@@ -467,6 +483,7 @@ const AchievementTab = () => {
         fetchData();
         fetchRkItems();
         fetchProperItems();
+        fetchSecurityItems();
         fetchInovasiItems();
         fetchKehumasanItems();
         fetchWilayahKerjaList();
@@ -750,6 +767,69 @@ const AchievementTab = () => {
         if (!window.confirm("Hapus data ini?")) return;
         await fetch(`/api/achievement/hsse/proper/${id}`, { method: "DELETE" });
         await fetchProperItems();
+    }
+
+    // ---------- Fungsi Security ----------
+    async function fetchSecurityItems() {
+        setSecurityListLoading(true);
+        try {
+            const res = await fetch("/api/achievement/hsse/security");
+            const json = await res.json();
+            setSecurityItems(json.data ?? []);
+        } finally {
+            setSecurityListLoading(false);
+        }
+    }
+
+    function resetSecurityForm() {
+        setSecurityForm({ judul: "", wilayah_kerja: "", tanggal: "" });
+        setSecurityEditingId(null);
+        setSecurityFormOpen(false);
+        setSecurityError(null);
+    }
+
+    function startEditSecurity(item: SecurityFormItem) {
+        setSecurityForm({ judul: item.judul, wilayah_kerja: item.wilayah_kerja, tanggal: item.tanggal });
+        setSecurityEditingId(item.id);
+        setSecurityFormOpen(true);
+        setSecurityError(null);
+    }
+
+    async function handleSubmitSecurity(e: React.FormEvent) {
+        e.preventDefault();
+        setSecurityError(null);
+        setSecurityLoading(true);
+
+        const existingItem = securityEditingId ? securityItems.find((item) => item.id === securityEditingId) : null;
+        const urutan = existingItem ? existingItem.urutan : securityItems.length;
+
+        const payload = {
+            judul: securityForm.judul,
+            wilayah_kerja: securityForm.wilayah_kerja,
+            tanggal: securityForm.tanggal,
+            urutan,
+        };
+
+        const url = securityEditingId ? `/api/achievement/hsse/security/${securityEditingId}` : "/api/achievement/hsse/security";
+        const method = securityEditingId ? "PUT" : "POST";
+        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const json = await res.json();
+
+        if (!res.ok) {
+            setSecurityError(json.error ?? "Gagal menyimpan data.");
+            setSecurityLoading(false);
+            return;
+        }
+
+        await fetchSecurityItems();
+        resetSecurityForm();
+        setSecurityLoading(false);
+    }
+
+    async function handleDeleteSecurity(id: string) {
+        if (!window.confirm("Hapus data ini?")) return;
+        await fetch(`/api/achievement/hsse/security/${id}`, { method: "DELETE" });
+        await fetchSecurityItems();
     }
 
     // ---------- Fungsi Kehumasan ----------
@@ -1431,92 +1511,175 @@ const AchievementTab = () => {
                 </div>
             )}
 
-            {/* ---------- Card PROPER ---------- */}
+            {/* ---------- Card HSSE (PROPER + Security) ---------- */}
             {activeTab === "proper" && (
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <SectionHeader
-                        title="PROPER"
-                        isFormOpen={properFormOpen}
-                        onToggle={() => (properFormOpen ? resetProperForm() : setProperFormOpen(true))}
-                    />
+                <div className="flex flex-col gap-6">
+                    {/* --- Sub-section: PROPER --- */}
+                    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <SectionHeader
+                            title="PROPER"
+                            isFormOpen={properFormOpen}
+                            onToggle={() => (properFormOpen ? resetProperForm() : setProperFormOpen(true))}
+                        />
 
-                    {properFormOpen && (
-                        <form onSubmit={handleSubmitProper} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
-                            <input
-                                placeholder="Wilayah Kerja (misal Field Rantau)"
-                                value={properForm.wilayah_kerja}
-                                onChange={(e) => setProperForm({ ...properForm, wilayah_kerja: e.target.value })}
-                                className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                required
-                            />
-                            <select
-                                value={properForm.peringkat}
-                                onChange={(e) => setProperForm({ ...properForm, peringkat: e.target.value as "Biru" | "Hijau" | "Emas" })}
-                                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                            >
-                                <option value="Biru">Biru</option>
-                                <option value="Hijau">Hijau</option>
-                                <option value="Emas">Emas</option>
-                            </select>
-                            <input
-                                placeholder="Tahun"
-                                type="number"
-                                value={properForm.tahun}
-                                onChange={(e) => setProperForm({ ...properForm, tahun: e.target.value })}
-                                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                required
-                            />
-                            <input
-                                placeholder="Keterangan (opsional, misal Rapor Sementara)"
-                                value={properForm.keterangan}
-                                onChange={(e) => setProperForm({ ...properForm, keterangan: e.target.value })}
-                                className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                            />
+                        {properFormOpen && (
+                            <form onSubmit={handleSubmitProper} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
+                                <input
+                                    placeholder="Wilayah Kerja (misal Field Rantau)"
+                                    value={properForm.wilayah_kerja}
+                                    onChange={(e) => setProperForm({ ...properForm, wilayah_kerja: e.target.value })}
+                                    className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    required
+                                />
+                                <select
+                                    value={properForm.peringkat}
+                                    onChange={(e) => setProperForm({ ...properForm, peringkat: e.target.value as "Biru" | "Hijau" | "Emas" })}
+                                    className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                >
+                                    <option value="Biru">Biru</option>
+                                    <option value="Hijau">Hijau</option>
+                                    <option value="Emas">Emas</option>
+                                </select>
+                                <input
+                                    placeholder="Tahun"
+                                    type="number"
+                                    value={properForm.tahun}
+                                    onChange={(e) => setProperForm({ ...properForm, tahun: e.target.value })}
+                                    className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    required
+                                />
+                                <input
+                                    placeholder="Keterangan (opsional, misal Rapor Sementara)"
+                                    value={properForm.keterangan}
+                                    onChange={(e) => setProperForm({ ...properForm, keterangan: e.target.value })}
+                                    className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                />
 
-                            {properError && (
-                                <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{properError}</p>
-                            )}
+                                {properError && (
+                                    <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{properError}</p>
+                                )}
 
-                            <div className="col-span-2 flex gap-2">
-                                <button type="submit" disabled={properLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                    {properLoading ? "Menyimpan..." : properEditingId ? "Simpan Perubahan" : "Tambah"}
-                                </button>
-                                <button type="button" onClick={resetProperForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
-                            </div>
-                        </form>
-                    )}
+                                <div className="col-span-2 flex gap-2">
+                                    <button type="submit" disabled={properLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                        {properLoading ? "Menyimpan..." : properEditingId ? "Simpan Perubahan" : "Tambah"}
+                                    </button>
+                                    <button type="button" onClick={resetProperForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
+                                </div>
+                            </form>
+                        )}
 
-                    {properListLoading ? (
-                        <ListSkeleton />
-                    ) : properItems.length === 0 ? (
-                        <EmptyState label="Belum ada data PROPER." />
-                    ) : (
-                        <ul className="flex flex-col gap-2">
-                            {properItems.map((item) => (
-                                <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
-                                    <div className="min-w-0">
-                                        <div className="flex flex-wrap items-center gap-1.5">
-                                            <span className="truncate font-semibold text-blue-900">{item.wilayah_kerja}</span>
-                                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${PERINGKAT_STYLE[item.peringkat]}`}>
-                                                {item.peringkat} {item.tahun}
-                                            </span>
+                        {properListLoading ? (
+                            <ListSkeleton />
+                        ) : properItems.length === 0 ? (
+                            <EmptyState label="Belum ada data PROPER." />
+                        ) : (
+                            <ul className="flex flex-col gap-2">
+                                {properItems.map((item) => (
+                                    <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
+                                        <div className="min-w-0">
+                                            <div className="flex flex-wrap items-center gap-1.5">
+                                                <span className="truncate font-semibold text-blue-900">{item.wilayah_kerja}</span>
+                                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${PERINGKAT_STYLE[item.peringkat]}`}>
+                                                    {item.peringkat} {item.tahun}
+                                                </span>
+                                            </div>
+                                            {item.keterangan && (
+                                                <p className="mt-0.5 truncate text-xs text-slate-400">{item.keterangan}</p>
+                                            )}
                                         </div>
-                                        {item.keterangan && (
-                                            <p className="mt-0.5 truncate text-xs text-slate-400">{item.keterangan}</p>
-                                        )}
-                                    </div>
-                                    <div className="flex shrink-0 gap-1">
-                                        <button onClick={() => startEditProper(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
-                                            <PencilIcon />
-                                        </button>
-                                        <button onClick={() => handleDeleteProper(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
-                                            <TrashIcon />
-                                        </button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                                        <div className="flex shrink-0 gap-1">
+                                            <button onClick={() => startEditProper(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                <PencilIcon />
+                                            </button>
+                                            <button onClick={() => handleDeleteProper(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                <TrashIcon />
+                                            </button>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+
+                    {/* --- Sub-section: Security --- */}
+                    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <SectionHeader
+                            title="SECURITY"
+                            isFormOpen={securityFormOpen}
+                            onToggle={() => (securityFormOpen ? resetSecurityForm() : setSecurityFormOpen(true))}
+                        />
+
+                        {securityFormOpen && (
+                            <form onSubmit={handleSubmitSecurity} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
+                                <input
+                                    placeholder="Judul Kejadian (misal Penggagalan ITAP...)"
+                                    value={securityForm.judul}
+                                    onChange={(e) => setSecurityForm({ ...securityForm, judul: e.target.value })}
+                                    className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    required
+                                />
+                                <select
+                                    value={securityForm.wilayah_kerja}
+                                    onChange={(e) => setSecurityForm({ ...securityForm, wilayah_kerja: e.target.value })}
+                                    className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    required
+                                >
+                                    <option value="">Pilih Wilayah Kerja</option>
+                                    {wilayahKerjaList.map((nama) => (
+                                        <option key={nama} value={nama}>{nama}</option>
+                                    ))}
+                                </select>
+                                <input
+                                    type="date"
+                                    value={securityForm.tanggal}
+                                    onChange={(e) => setSecurityForm({ ...securityForm, tanggal: e.target.value })}
+                                    className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    required
+                                />
+
+                                {securityError && (
+                                    <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{securityError}</p>
+                                )}
+
+                                <div className="col-span-2 flex gap-2">
+                                    <button type="submit" disabled={securityLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                        {securityLoading ? "Menyimpan..." : securityEditingId ? "Simpan Perubahan" : "Tambah"}
+                                    </button>
+                                    <button type="button" onClick={resetSecurityForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
+                                </div>
+                            </form>
+                        )}
+
+                        {securityListLoading ? (
+                            <ListSkeleton />
+                        ) : securityItems.length === 0 ? (
+                            <EmptyState label="Belum ada data security." />
+                        ) : (
+                            <ul className="flex flex-col gap-2">
+                                {securityItems
+                                    .slice()
+                                    .sort((a, b) => a.urutan - b.urutan)
+                                    .map((item) => (
+                                        <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
+                                            <div className="min-w-0 flex-1">
+                                                <span className="truncate font-semibold text-blue-900">{item.judul}</span>
+                                                <p className="mt-0.5 truncate text-xs text-slate-400">
+                                                    {item.wilayah_kerja} · {new Date(item.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                                                </p>
+                                            </div>
+                                            <div className="flex shrink-0 gap-1">
+                                                <button onClick={() => startEditSecurity(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                    <PencilIcon />
+                                                </button>
+                                                <button onClick={() => handleDeleteSecurity(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                    <TrashIcon />
+                                                </button>
+                                            </div>
+                                        </li>
+                                    ))}
+                            </ul>
+                        )}
+                    </div>
                 </div>
             )}
 
