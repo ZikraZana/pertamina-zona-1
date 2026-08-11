@@ -255,12 +255,23 @@ function formatAngkaID(n: number) {
     return n.toLocaleString('en-US');
 }
 
-/** Gabungkan jumlah minyak & gas jadi satu string ringkas, skip yang kosong. */
+function formatTanggalID(dateStr: string) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+}
+
 function formatJumlahProduksi(jumlahMinyak: number | null, jumlahGas: number | null) {
     const parts: string[] = [];
     if (jumlahMinyak !== null) parts.push(`${formatAngkaID(jumlahMinyak)} BOPD`);
     if (jumlahGas !== null) parts.push(`${formatAngkaID(jumlahGas)} MMSCFD`);
     return parts.join(" / ");
+}
+
+function getResponsiveGridClass(count: number): string {
+    if (count === 1) return "grid-cols-1";
+    if (count === 2) return "grid-cols-1 sm:grid-cols-2";
+    if (count === 4) return "grid-cols-1 sm:grid-cols-2";
+    return "grid-cols-1 sm:grid-cols-3";
 }
 
 type ProduksiData = {
@@ -307,6 +318,31 @@ type Proper = {
     urutan: number;
 };
 
+type SecurityItem = {
+    id: string;
+    judul: string;
+    wilayah_kerja: string;
+    tanggal: string;
+    urutan: number;
+};
+
+type NaratifItem = {
+    id: string;
+    title: string;
+    detail: string;
+    urutan: number;
+};
+
+type AbiItem = {
+    id: string;
+    title: string;
+    unit: string;
+    realisasi: number;
+    target: number;
+    periode: string;
+    urutan: number;
+};
+
 const AchievementsContent = () => {
     const [activeTab, setActiveTab] = useState<TabKey>("produksi");
     const [produksiData, setProduksiData] = useState<Record<string, ProduksiData>>({});
@@ -317,6 +353,9 @@ const AchievementsContent = () => {
     const silverCount = kehumasan.filter((item) => item.medali === 'silver').length;
     const bronzeCount = kehumasan.filter((item) => item.medali === 'bronze').length;
     const [proper, setProper] = useState<Proper[]>([]);
+    const [security, setSecurity] = useState<SecurityItem[]>([]);
+    const [naratifItems, setNaratifItems] = useState<NaratifItem[]>([]);
+    const [abiItems, setAbiItems] = useState<AbiItem[]>([]);
 
     useEffect(() => {
         async function fetchProduksi() {
@@ -386,12 +425,46 @@ const AchievementsContent = () => {
                 console.error("Gagal mengambil data proper:", err);
             }
         }
+        async function fetchSecurity() {
+            try {
+                const res = await fetch('/api/achievement/hsse/security');
+                const json = await res.json();
+                setSecurity(json.data ?? []);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data security:", err);
+            }
+        }
+        async function fetchNaratif() {
+            try {
+                const res = await fetch('/api/achievement/top-project-naratif');
+                const json = await res.json();
+                setNaratifItems(json.data ?? []);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data top project (naratif):", err);
+            }
+        }
+
+        async function fetchAbi() {
+            try {
+                const res = await fetch('/api/achievement/top-project-abi');
+                const json = await res.json();
+                setAbiItems(json.data ?? []);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data top project (ABI NBD):", err);
+            }
+        }
 
         fetchProduksi()
         fetchRencanaKerja()
         fetchInovasi()
         fetchKehumasan()
+        fetchNaratif()
+        fetchAbi()
         fetchProper()
+        fetchSecurity()
     }, []);
 
     const groupedKehumasanUnordered: Record<string, AwardItem[]> = {};
@@ -553,29 +626,19 @@ const AchievementsContent = () => {
                         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
                             <p className="text-sm font-semibold text-slate-500">SECURITY</p>
                             <div className="mt-4 flex flex-col divide-y divide-slate-100">
-                                {[
-                                    { text: "Penggagalan dan Penangkapan Pelaku Illegal Tapping", field: "Rantau", date: "11 Feb 2025" },
-                                    { text: "Penggagalan ITAP Trunkline Kenali Asam – Ketaling", field: "Jambi", date: "31 Mei 2025" },
-                                    { text: "Penangkapan tangan pelaku ITAP", field: "Jambi", date: "24 Sept 2025" },
-                                    { text: "Penggagalan ITAP di KP 04 SKN", field: "Jambi Merang", date: "27 Agt 2025" },
-                                ].map((event, i) => (
-                                    <div key={i} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
-                                        <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-semibold text-slate-800">{event.text}</p>
-                                            <p className="text-xs text-slate-400">{event.field}</p>
+                                {security
+                                    .slice()
+                                    .sort((a, b) => a.urutan - b.urutan)
+                                    .map((event) => (
+                                        <div key={event.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                                            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-sm font-semibold text-slate-800">{event.judul}</p>
+                                                <p className="text-xs text-slate-400">{event.wilayah_kerja}</p>
+                                            </div>
+                                            <span className="shrink-0 text-xs font-medium text-slate-400">{formatTanggalID(event.tanggal)}</span>
                                         </div>
-                                        <span className="shrink-0 text-xs font-medium text-slate-400">{event.date}</span>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="mt-4 rounded-lg bg-amber-50 px-4 py-3">
-                                <p className="text-sm font-semibold text-amber-800">
-                                    Predikat Gold — 5 Field
-                                </p>
-                                <p className="mt-0.5 text-xs text-amber-700">
-                                    Rantau, Pangkalan Susu, Lirik, Jambi, Jambi Merang — Audit Sistem Manajemen Pengamanan (SMP) 2025
-                                </p>
+                                    ))}
                             </div>
                         </div>
 
@@ -622,69 +685,57 @@ const AchievementsContent = () => {
                 )}
 
                 {activeTab === "top-project" && (
-                    <div className="flex flex-col gap-4">
-                        {/* Pencapaian naratif */}
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                            {[
-                                {
-                                    title: "New Technology Velocity String",
-                                    detail: "PPS-12 dan PPS-15",
-                                },
-                                {
-                                    title: "Rejuvenation Mature Oil Field",
-                                    detail: "Pulau Panjang – Pangkalan Susu",
-                                },
-                                {
-                                    title: "POPE Padang Pancuran",
-                                    detail: "Desember 2025",
-                                },
-                            ].map((item, i) => (
-                                <div
-                                    key={i}
-                                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
-                                >
-                                    <p className="text-sm font-bold leading-snug text-blue-900">{item.title}</p>
-                                    <p className="mt-1.5 text-xs text-slate-500">{item.detail}</p>
+                    <div className="flex flex-col items-center gap-4">
+                        <div className={`flex w-full flex-col gap-4 ${naratifItems.length <= 1 && abiItems.length <= 1 ? "max-w-2xl" : ""
+                            }`}>
+                            {/* Pencapaian naratif */}
+                            {naratifItems.length > 0 && (
+                                <div className={`grid gap-4 ${getResponsiveGridClass(naratifItems.length)}`}>
+                                    {naratifItems
+                                        .slice()
+                                        .sort((a, b) => a.urutan - b.urutan)
+                                        .map((item) => (
+                                            <div
+                                                key={item.id}
+                                                className="w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+                                            >
+                                                <p className="text-sm font-bold leading-snug text-blue-900">{item.title}</p>
+                                                <p className="mt-1.5 text-xs text-slate-500">{item.detail}</p>
+                                            </div>
+                                        ))}
                                 </div>
-                            ))}
-                        </div>
+                            )}
 
-                        {/* Pencapaian ABI NBD (investasi vs realisasi) */}
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                            <ProductionCard
-                                title="ABI NBD Asset Integrity"
-                                unit="Juta USD"
-                                realisasi="9,3"
-                                target="11,8"
-                                percentValue={79}
-                                periode="18 ABI NBD terselesaikan · Cost Saving 21%"
-                                accentColor="amber"
-                            />
-                            <ProductionCard
-                                title="ABI NBD HSSE & Process Safety"
-                                unit="Juta USD"
-                                realisasi="1,6"
-                                target="1,8"
-                                percentValue={89}
-                                periode="4 ABI NBD terselesaikan · Cost Saving 11%"
-                                accentColor="sky"
-                            />
-                            <ProductionCard
-                                title="ABI NBD Fasilitas Produksi"
-                                unit="Juta USD"
-                                realisasi="2,2"
-                                target="2,6"
-                                percentValue={85}
-                                periode="4 ABI NBD terselesaikan · Cost Saving 15,38%"
-                                accentColor="amber"
-                            />
+                            {/* Pencapaian ABI NBD (investasi vs realisasi) */}
+                            {abiItems.length > 0 && (
+                                <div className={`grid gap-4 ${getResponsiveGridClass(abiItems.length)}`}>
+                                    {abiItems
+                                        .slice()
+                                        .sort((a, b) => a.urutan - b.urutan)
+                                        .map((item, i) => (
+                                            <ProductionCard
+                                                key={item.id}
+                                                title={item.title}
+                                                unit="Juta USD"
+                                                realisasi={item.realisasi.toLocaleString("id-ID")}
+                                                target={item.target.toLocaleString("id-ID")}
+                                                percentValue={item.target > 0 ? Math.round((item.realisasi / item.target) * 100) : 0}
+                                                periode={item.periode}
+                                                accentColor={i % 2 === 0 ? "amber" : "sky"}
+                                            />
+                                        ))}
+                                </div>
+                            )}
+
+                            {naratifItems.length === 0 && abiItems.length === 0 && (
+                                <p className="text-center text-sm text-slate-400">Belum ada data top project.</p>
+                            )}
                         </div>
                     </div>
                 )}
 
                 {activeTab === "kehumasan" && (
                     <div className="flex flex-col gap-4">
-                        {/* Ringkasan medali (podium) */}
                         {/* Ringkasan medali (podium) */}
                         <div className="grid grid-cols-3 items-end gap-3">
                             {/* Gold */}
