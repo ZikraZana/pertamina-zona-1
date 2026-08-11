@@ -18,6 +18,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const sub_kategori = formData.get("sub_kategori");
     const medali = formData.get("medali");
     const urutan = formData.get("urutan");
+    const urutan_wilayah = formData.get("urutan_wilayah");
     const file = formData.get("image");
 
     const stringFields: [string, FormDataEntryValue | null][] = [
@@ -42,6 +43,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
             return NextResponse.json({ error: 'Field "urutan" harus berupa bilangan bulat dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
         }
         urutanNumber = parsed;
+    }
+    let urutanWilayahNumber = 0;
+    if (urutan_wilayah !== null) {
+        const parsed = Number(urutan_wilayah);
+        if (!Number.isInteger(parsed) || parsed < 0) {
+            return NextResponse.json({ error: 'Field "urutan_wilayah" harus berupa bilangan bulat dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
+        }
+        urutanWilayahNumber = parsed;
     }
 
     const { data: existing } = await supabase
@@ -82,6 +91,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
             sub_kategori,
             medali,
             urutan: urutanNumber,
+            urutan_wilayah: urutanWilayahNumber,
             image_path: imagePath,
         })
         .eq("id", id)

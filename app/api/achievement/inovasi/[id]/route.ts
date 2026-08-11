@@ -11,14 +11,25 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const body = await request.json().catch(() => null);
     if (!body) return NextResponse.json({ error: "Body tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
 
-    const requiredFields = ["pencapaian", "nama_inovasi", "nama_acara", "wilayah_kerja"] as const;
+    const requiredFields = ["pencapaian", "nama_inovasi", "wilayah_kerja"] as const;
     for (const field of requiredFields) {
         if (typeof body[field] !== "string" || !body[field].trim()) {
             return NextResponse.json({ error: `Field "${field}" wajib diisi.`, code: "VALIDATION_ERROR" }, { status: 400 });
         }
     }
 
-    const { data: existing } = await supabase.from("achievement_inovasi").select("id").eq("id", id).single();
+    // nama_acara boleh kosong (nullable di DB), tapi kalau diisi harus string
+    if (body.nama_acara !== undefined && body.nama_acara !== null && typeof body.nama_acara !== "string") {
+        return NextResponse.json({ error: 'Field "nama_acara" harus berupa teks.', code: "VALIDATION_ERROR" }, { status: 400 });
+    }
+    const namaAcara = typeof body.nama_acara === "string" && body.nama_acara.trim() ? body.nama_acara.trim() : null;
+
+    const { urutan } = body;
+    if (urutan !== undefined && (typeof urutan !== "number" || !Number.isInteger(urutan) || urutan < 0)) {
+        return NextResponse.json({ error: 'Field "urutan" harus berupa bilangan bulat dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
+    }
+
+    const { data: existing } = await supabase.from("achievement_inovasi").select("id, urutan").eq("id", id).single();
     if (!existing) return NextResponse.json({ error: "Data tidak ditemukan.", code: "NOT_FOUND" }, { status: 404 });
 
     const { data, error } = await supabase
@@ -26,12 +37,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         .update({
             pencapaian: body.pencapaian,
             nama_inovasi: body.nama_inovasi,
-            nama_acara: body.nama_acara,
+            nama_acara: namaAcara,
             wilayah_kerja: body.wilayah_kerja,
+            urutan: urutan ?? existing.urutan,
         })
         .eq("id", id)
-        .select()
-        .single();
 
     if (error) return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
 

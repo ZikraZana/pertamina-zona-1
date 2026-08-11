@@ -53,8 +53,9 @@ type InovasiItem = {
     id: string;
     pencapaian: string;
     nama_inovasi: string;
-    nama_acara: string;
+    nama_acara: string | null;
     wilayah_kerja: string
+    urutan: number;
 };
 
 type KehumasanItem = {
@@ -64,6 +65,7 @@ type KehumasanItem = {
     sub_kategori: string;
     medali: "gold" | "silver" | "bronze";
     urutan: number;
+    urutan_wilayah: number;
     image_path: string | null;
 };
 
@@ -252,6 +254,60 @@ function SortableRkItem({
     );
 }
 
+// ============================================================
+// SUB-KOMPONEN: item Inovasi yang bisa di-drag urutannya (list flat,
+// tidak dikelompokkan seperti Kehumasan)
+// ============================================================
+
+function SortableInovasiItem({
+    item,
+    index,
+    onEdit,
+    onDelete,
+}: {
+    item: InovasiItem;
+    index: number;
+    onEdit: (item: InovasiItem) => void;
+    onDelete: (id: string) => void;
+}) {
+    const { ref, handleRef, isDragging } = useSortable({ id: item.id, index });
+
+    return (
+        <li
+            ref={ref}
+            style={{ opacity: isDragging ? 0.5 : 1 }}
+            className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30"
+        >
+            <button
+                type="button"
+                ref={handleRef}
+                title="Geser untuk mengubah urutan"
+                className="shrink-0 cursor-grab touch-none rounded-lg p-1.5 text-black transition-colors hover:bg-slate-100 hover:text-slate-500 active:cursor-grabbing"
+            >
+                <DragHandleIcon />
+            </button>
+
+            <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="truncate font-semibold text-blue-900">{item.pencapaian}</span>
+                </div>
+                <p className="mt-0.5 truncate text-xs text-slate-400">
+                    {[item.nama_inovasi, item.nama_acara, item.wilayah_kerja].filter(Boolean).join(" · ")}
+                </p>
+            </div>
+
+            <div className="flex shrink-0 gap-1">
+                <button onClick={() => onEdit(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                    <PencilIcon />
+                </button>
+                <button onClick={() => onDelete(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                    <TrashIcon />
+                </button>
+            </div>
+        </li>
+    );
+}
+
 const MEDALI_STYLE: Record<KehumasanItem["medali"], { label: string; className: string }> = {
     gold: { label: "🥇 Gold", className: "bg-amber-100 text-amber-800" },
     silver: { label: "🥈 Silver", className: "bg-slate-200 text-slate-700" },
@@ -263,6 +319,62 @@ const PERINGKAT_STYLE: Record<ProperItem["peringkat"], string> = {
     Hijau: "bg-emerald-100 text-emerald-700",
     Emas: "bg-amber-100 text-amber-700",
 };
+
+// ============================================================
+// SUB-KOMPONEN: card pembungkus 1 grup wilayah_kerja, urutan
+// GRUP diatur lewat tombol panah naik/turun (bukan drag) --
+// supaya tidak bentrok dengan drag urutan item DALAM grup, yang
+// tetap pakai @dnd-kit di level yang sama.
+// ============================================================
+
+function WilayahGroupCard({
+    field,
+    canMoveUp,
+    canMoveDown,
+    onMoveUp,
+    onMoveDown,
+    children,
+}: {
+    field: string;
+    canMoveUp: boolean;
+    canMoveDown: boolean;
+    onMoveUp: () => void;
+    onMoveDown: () => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+            <div className="mb-2 flex items-center gap-1.5">
+                <div className="flex shrink-0 flex-col gap-0.5">
+                    <button
+                        type="button"
+                        onClick={onMoveUp}
+                        disabled={!canMoveUp}
+                        title="Naikkan urutan wilayah kerja"
+                        className="cursor-pointer rounded p-0.5 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                        </svg>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onMoveDown}
+                        disabled={!canMoveDown}
+                        title="Turunkan urutan wilayah kerja"
+                        className="cursor-pointer rounded p-0.5 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-400">{field}</p>
+            </div>
+            {children}
+        </div>
+    );
+}
 
 // ============================================================
 // SUB-KOMPONEN: item Kehumasan yang bisa di-drag, DIBATASI dalam
@@ -678,7 +790,7 @@ const AchievementTab = () => {
     }
 
     function startEditInovasi(item: InovasiItem) {
-        setInovasiForm({ pencapaian: item.pencapaian, nama_inovasi: item.nama_inovasi, nama_acara: item.nama_acara, wilayah_kerja: item.wilayah_kerja });
+        setInovasiForm({ pencapaian: item.pencapaian, nama_inovasi: item.nama_inovasi, nama_acara: item.nama_acara ?? "", wilayah_kerja: item.wilayah_kerja });
         setInovasiEditingId(item.id);
         setInovasiFormOpen(true);
     }
@@ -698,6 +810,30 @@ const AchievementTab = () => {
         if (!window.confirm("Hapus data ini?")) return;
         await fetch(`/api/achievement/inovasi/${id}`, { method: "DELETE" });
         await fetchInovasiItems();
+    }
+
+    /**
+     * Setelah drag-reorder Inovasi (list flat, tidak dikelompokkan), hitung
+     * ulang `urutan` untuk SEMUA item lalu kirim PATCH untuk tiap item.
+     */
+    async function reorderInovasi(newItems: InovasiItem[]) {
+        await Promise.all(
+            newItems.map((item, i) =>
+                fetch(`/api/achievement/inovasi/${item.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        pencapaian: item.pencapaian,
+                        nama_inovasi: item.nama_inovasi,
+                        nama_acara: item.nama_acara,
+                        wilayah_kerja: item.wilayah_kerja,
+                        urutan: i,
+                    }),
+                })
+            )
+        ).catch(() => {
+            fetchInovasiItems();
+        });
     }
 
     // ---------- Fungsi PROPER ----------
@@ -937,6 +1073,48 @@ const AchievementTab = () => {
         });
     }
 
+    /**
+     * Setelah urutan GRUP wilayah kerja ditukar lewat tombol panah, hitung
+     * ulang `urutan_wilayah` untuk SEMUA grup sesuai posisi barunya, lalu PATCH
+     * semua item di tiap grup yang urutan_wilayah-nya berubah.
+     */
+    async function reorderWilayahGroup(newOrderedFields: string[], allItems: KehumasanItem[]) {
+        await Promise.all(
+            newOrderedFields.flatMap((field, groupIndex) => {
+                const itemsInGroup = allItems.filter((it) => it.wilayah_kerja === field);
+                return itemsInGroup.map((item) => {
+                    const formData = new FormData();
+                    formData.append("wilayah_kerja", item.wilayah_kerja);
+                    formData.append("kategori", item.kategori);
+                    formData.append("sub_kategori", item.sub_kategori);
+                    formData.append("medali", item.medali);
+                    formData.append("urutan", String(item.urutan));
+                    formData.append("urutan_wilayah", String(groupIndex));
+                    // tidak append "image" -- reorder tidak pernah mengubah foto
+
+                    return fetch(`/api/achievement/kehumasan/${item.id}`, {
+                        method: "PATCH",
+                        body: formData,
+                    });
+                });
+            })
+        ).catch(() => {
+            fetchKehumasanItems();
+        });
+    }
+
+    /** Tukar posisi 1 grup wilayah kerja dengan tetangganya (naik/turun), lalu simpan ke server. */
+    function moveWilayahGroup(field: string, direction: "up" | "down") {
+        const currentIndex = orderedWilayahKerjaKeys.indexOf(field);
+        const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+        if (currentIndex === -1 || targetIndex < 0 || targetIndex >= orderedWilayahKerjaKeys.length) return;
+
+        const newOrderedFields = [...orderedWilayahKerjaKeys];
+        [newOrderedFields[currentIndex], newOrderedFields[targetIndex]] = [newOrderedFields[targetIndex], newOrderedFields[currentIndex]];
+
+        reorderWilayahGroup(newOrderedFields, kehumasanItems).then(fetchKehumasanItems);
+    }
+
     async function fetchWilayahKerjaList() {
         try {
             const res = await fetch("/api/wilayah");
@@ -1142,16 +1320,29 @@ const AchievementTab = () => {
     // Kelompokkan kehumasanItems per wilayah_kerja untuk tampilan admin.
     // Urutan relatif dalam tiap grup tetap ikut urutan array asli (yang sudah
     // diurutkan server berdasarkan `urutan`), jadi konsisten dengan halaman publik.
-    const groupedKehumasanItems: Record<string, KehumasanItem[]> = {};
+    const groupedKehumasanItemsUnordered: Record<string, KehumasanItem[]> = {};
     for (const item of kehumasanItems) {
-        if (!groupedKehumasanItems[item.wilayah_kerja]) {
-            groupedKehumasanItems[item.wilayah_kerja] = [];
+        if (!groupedKehumasanItemsUnordered[item.wilayah_kerja]) {
+            groupedKehumasanItemsUnordered[item.wilayah_kerja] = [];
         }
-        groupedKehumasanItems[item.wilayah_kerja].push(item);
+        groupedKehumasanItemsUnordered[item.wilayah_kerja].push(item);
     }
 
+    // Urutan GRUP (bukan urutan item dalam grup) ditentukan oleh urutan_wilayah
+    // -- diambil dari item pertama tiap grup, karena semua item dalam 1 grup
+    // seharusnya punya urutan_wilayah yang sama (di-sync tiap kali grup ditukar).
+    const orderedWilayahKerjaKeys = Object.keys(groupedKehumasanItemsUnordered).sort((a, b) => {
+        const urutanA = groupedKehumasanItemsUnordered[a][0]?.urutan_wilayah ?? 0;
+        const urutanB = groupedKehumasanItemsUnordered[b][0]?.urutan_wilayah ?? 0;
+        return urutanA - urutanB;
+    });
+    const groupedKehumasanItems: [string, KehumasanItem[]][] = orderedWilayahKerjaKeys.map((field) => [
+        field,
+        groupedKehumasanItemsUnordered[field],
+    ]);
+
     return (
-        <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
             {/* ---------- Tab Navigasi ---------- */}
             <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
                 {(
@@ -1696,7 +1887,7 @@ const AchievementTab = () => {
                         <form onSubmit={handleSubmitInovasi} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
                             <input placeholder="Pencapaian (misal Best Presentation)" value={inovasiForm.pencapaian} onChange={(e) => setInovasiForm({ ...inovasiForm, pencapaian: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
                             <input placeholder="Nama Inovasi" value={inovasiForm.nama_inovasi} onChange={(e) => setInovasiForm({ ...inovasiForm, nama_inovasi: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                            <input placeholder="Nama Acara" value={inovasiForm.nama_acara} onChange={(e) => setInovasiForm({ ...inovasiForm, nama_acara: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                            <input placeholder="Nama Acara (opsional)" value={inovasiForm.nama_acara} onChange={(e) => setInovasiForm({ ...inovasiForm, nama_acara: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
                             <input placeholder="Wilayah Kerja" value={inovasiForm.wilayah_kerja} onChange={(e) => setInovasiForm({ ...inovasiForm, wilayah_kerja: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
                             <div className="col-span-2 flex gap-2">
                                 <button type="submit" disabled={inovasiLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
@@ -1712,26 +1903,37 @@ const AchievementTab = () => {
                     ) : inovasiItems.length === 0 ? (
                         <EmptyState label="Belum ada data inovasi." />
                     ) : (
-                        <ul className="flex flex-col gap-2">
-                            {inovasiItems.map((item) => (
-                                <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
-                                    <div className="min-w-0">
-                                        <span className="truncate font-semibold text-blue-900">{item.pencapaian}</span>
-                                        <p className="mt-0.5 truncate text-xs text-slate-400">
-                                            {[item.nama_inovasi, item.nama_acara, item.wilayah_kerja].filter(Boolean).join(" · ")}
-                                        </p>
-                                    </div>
-                                    <div className="flex shrink-0 gap-1">
-                                        <button onClick={() => startEditInovasi(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
-                                            <PencilIcon />
-                                        </button>
-                                        <button onClick={() => handleDeleteInovasi(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
-                                            <TrashIcon />
-                                        </button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
+                        <DragDropProvider
+                            onDragEnd={(event) => {
+                                if (event.canceled) return;
+                                const { source } = event.operation;
+                                if (!isSortable(source)) return;
+
+                                const { initialIndex, index } = source;
+                                if (initialIndex === index) return;
+
+                                setInovasiItems((currentItems) => {
+                                    const newItems = [...currentItems];
+                                    const [moved] = newItems.splice(initialIndex, 1);
+                                    newItems.splice(index, 0, moved);
+
+                                    reorderInovasi(newItems);
+                                    return newItems;
+                                });
+                            }}
+                        >
+                            <ul className="flex flex-col gap-2">
+                                {inovasiItems.map((item, index) => (
+                                    <SortableInovasiItem
+                                        key={item.id}
+                                        item={item}
+                                        index={index}
+                                        onEdit={startEditInovasi}
+                                        onDelete={handleDeleteInovasi}
+                                    />
+                                ))}
+                            </ul>
+                        </DragDropProvider>
                     )}
                 </div>
             )}
@@ -1937,10 +2139,16 @@ const AchievementTab = () => {
                                 });
                             }}
                         >
-                            <div className="flex flex-col gap-4">
-                                {Object.entries(groupedKehumasanItems).map(([field, items]) => (
-                                    <div key={field}>
-                                        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">{field}</p>
+                            <div className="flex flex-col gap-3">
+                                {groupedKehumasanItems.map(([field, items], groupIndex) => (
+                                    <WilayahGroupCard
+                                        key={field}
+                                        field={field}
+                                        canMoveUp={groupIndex > 0}
+                                        canMoveDown={groupIndex < groupedKehumasanItems.length - 1}
+                                        onMoveUp={() => moveWilayahGroup(field, "up")}
+                                        onMoveDown={() => moveWilayahGroup(field, "down")}
+                                    >
                                         <ul className="flex flex-col gap-2">
                                             {items.map((item, index) => (
                                                 <SortableKehumasanItem
@@ -1953,7 +2161,7 @@ const AchievementTab = () => {
                                                 />
                                             ))}
                                         </ul>
-                                    </div>
+                                    </WilayahGroupCard>
                                 ))}
                             </div>
                         </DragDropProvider>
