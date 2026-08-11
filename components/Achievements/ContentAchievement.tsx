@@ -260,12 +260,18 @@ function formatTanggalID(dateStr: string) {
     return date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
 }
 
-/** Gabungkan jumlah minyak & gas jadi satu string ringkas, skip yang kosong. */
 function formatJumlahProduksi(jumlahMinyak: number | null, jumlahGas: number | null) {
     const parts: string[] = [];
     if (jumlahMinyak !== null) parts.push(`${formatAngkaID(jumlahMinyak)} BOPD`);
     if (jumlahGas !== null) parts.push(`${formatAngkaID(jumlahGas)} MMSCFD`);
     return parts.join(" / ");
+}
+
+function getResponsiveGridClass(count: number): string {
+    if (count === 1) return "grid-cols-1 max-w-md mx-auto";
+    if (count === 2) return "grid-cols-1 sm:grid-cols-2";
+    if (count === 4) return "grid-cols-1 sm:grid-cols-2";
+    return "grid-cols-1 sm:grid-cols-3";
 }
 
 type ProduksiData = {
@@ -669,7 +675,7 @@ const AchievementsContent = () => {
                     <div className="flex flex-col gap-4">
                         {/* Pencapaian naratif */}
                         {naratifItems.length > 0 && (
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <div className={`grid gap-4 ${getResponsiveGridClass(naratifItems.length)}`}>
                                 {naratifItems
                                     .slice()
                                     .sort((a, b) => a.urutan - b.urutan)
@@ -687,7 +693,7 @@ const AchievementsContent = () => {
 
                         {/* Pencapaian ABI NBD (investasi vs realisasi) */}
                         {abiItems.length > 0 && (
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <div className={`grid gap-4 ${getResponsiveGridClass(abiItems.length)}`}>
                                 {abiItems
                                     .slice()
                                     .sort((a, b) => a.urutan - b.urutan)
@@ -695,7 +701,7 @@ const AchievementsContent = () => {
                                         <ProductionCard
                                             key={item.id}
                                             title={item.title}
-                                            unit={item.unit}
+                                            unit="Juta USD"
                                             realisasi={item.realisasi.toLocaleString("id-ID")}
                                             target={item.target.toLocaleString("id-ID")}
                                             percentValue={item.target > 0 ? Math.round((item.realisasi / item.target) * 100) : 0}
@@ -714,7 +720,6 @@ const AchievementsContent = () => {
 
                 {activeTab === "kehumasan" && (
                     <div className="flex flex-col gap-4">
-                        {/* Ringkasan medali (podium) */}
                         {/* Ringkasan medali (podium) */}
                         <div className="grid grid-cols-3 items-end gap-3">
                             {/* Gold */}
