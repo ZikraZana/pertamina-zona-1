@@ -268,7 +268,7 @@ function formatJumlahProduksi(jumlahMinyak: number | null, jumlahGas: number | n
 }
 
 function getResponsiveGridClass(count: number): string {
-    if (count === 1) return "grid-cols-1 max-w-md mx-auto";
+    if (count === 1) return "grid-cols-1";
     if (count === 2) return "grid-cols-1 sm:grid-cols-2";
     if (count === 4) return "grid-cols-1 sm:grid-cols-2";
     return "grid-cols-1 sm:grid-cols-3";
@@ -672,49 +672,52 @@ const AchievementsContent = () => {
                 )}
 
                 {activeTab === "top-project" && (
-                    <div className="flex flex-col gap-4">
-                        {/* Pencapaian naratif */}
-                        {naratifItems.length > 0 && (
-                            <div className={`grid gap-4 ${getResponsiveGridClass(naratifItems.length)}`}>
-                                {naratifItems
-                                    .slice()
-                                    .sort((a, b) => a.urutan - b.urutan)
-                                    .map((item) => (
-                                        <div
-                                            key={item.id}
-                                            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
-                                        >
-                                            <p className="text-sm font-bold leading-snug text-blue-900">{item.title}</p>
-                                            <p className="mt-1.5 text-xs text-slate-500">{item.detail}</p>
-                                        </div>
-                                    ))}
-                            </div>
-                        )}
+                    <div className="flex flex-col items-center gap-4">
+                        <div className={`flex w-full flex-col gap-4 ${naratifItems.length <= 1 && abiItems.length <= 1 ? "max-w-2xl" : ""
+                            }`}>
+                            {/* Pencapaian naratif */}
+                            {naratifItems.length > 0 && (
+                                <div className={`grid gap-4 ${getResponsiveGridClass(naratifItems.length)}`}>
+                                    {naratifItems
+                                        .slice()
+                                        .sort((a, b) => a.urutan - b.urutan)
+                                        .map((item) => (
+                                            <div
+                                                key={item.id}
+                                                className="w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+                                            >
+                                                <p className="text-sm font-bold leading-snug text-blue-900">{item.title}</p>
+                                                <p className="mt-1.5 text-xs text-slate-500">{item.detail}</p>
+                                            </div>
+                                        ))}
+                                </div>
+                            )}
 
-                        {/* Pencapaian ABI NBD (investasi vs realisasi) */}
-                        {abiItems.length > 0 && (
-                            <div className={`grid gap-4 ${getResponsiveGridClass(abiItems.length)}`}>
-                                {abiItems
-                                    .slice()
-                                    .sort((a, b) => a.urutan - b.urutan)
-                                    .map((item, i) => (
-                                        <ProductionCard
-                                            key={item.id}
-                                            title={item.title}
-                                            unit="Juta USD"
-                                            realisasi={item.realisasi.toLocaleString("id-ID")}
-                                            target={item.target.toLocaleString("id-ID")}
-                                            percentValue={item.target > 0 ? Math.round((item.realisasi / item.target) * 100) : 0}
-                                            periode={item.periode}
-                                            accentColor={i % 2 === 0 ? "amber" : "sky"}
-                                        />
-                                    ))}
-                            </div>
-                        )}
+                            {/* Pencapaian ABI NBD (investasi vs realisasi) */}
+                            {abiItems.length > 0 && (
+                                <div className={`grid gap-4 ${getResponsiveGridClass(abiItems.length)}`}>
+                                    {abiItems
+                                        .slice()
+                                        .sort((a, b) => a.urutan - b.urutan)
+                                        .map((item, i) => (
+                                            <ProductionCard
+                                                key={item.id}
+                                                title={item.title}
+                                                unit="Juta USD"
+                                                realisasi={item.realisasi.toLocaleString("id-ID")}
+                                                target={item.target.toLocaleString("id-ID")}
+                                                percentValue={item.target > 0 ? Math.round((item.realisasi / item.target) * 100) : 0}
+                                                periode={item.periode}
+                                                accentColor={i % 2 === 0 ? "amber" : "sky"}
+                                            />
+                                        ))}
+                                </div>
+                            )}
 
-                        {naratifItems.length === 0 && abiItems.length === 0 && (
-                            <p className="text-center text-sm text-slate-400">Belum ada data top project.</p>
-                        )}
+                            {naratifItems.length === 0 && abiItems.length === 0 && (
+                                <p className="text-center text-sm text-slate-400">Belum ada data top project.</p>
+                            )}
+                        </div>
                     </div>
                 )}
 
