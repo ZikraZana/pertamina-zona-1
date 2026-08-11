@@ -455,6 +455,7 @@ const AchievementsContent = () => {
         fetchKehumasan()
         fetchNaratif()
         fetchAbi()
+        fetchProper()
         fetchSecurity()
     }, []);
 
