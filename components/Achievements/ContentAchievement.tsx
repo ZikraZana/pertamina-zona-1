@@ -305,6 +305,23 @@ type Proper = {
     urutan: number;
 };
 
+type NaratifItem = {
+    id: string;
+    title: string;
+    detail: string;
+    urutan: number;
+};
+
+type AbiItem = {
+    id: string;
+    title: string;
+    unit: string;
+    realisasi: number;
+    target: number;
+    periode: string;
+    urutan: number;
+};
+
 const AchievementsContent = () => {
     const [activeTab, setActiveTab] = useState<TabKey>("produksi");
     const [produksiData, setProduksiData] = useState<Record<string, ProduksiData>>({});
@@ -315,6 +332,8 @@ const AchievementsContent = () => {
     const silverCount = kehumasan.filter((item) => item.medali === 'silver').length;
     const bronzeCount = kehumasan.filter((item) => item.medali === 'bronze').length;
     const [proper, setProper] = useState<Proper[]>([]);
+    const [naratifItems, setNaratifItems] = useState<NaratifItem[]>([]);
+    const [abiItems, setAbiItems] = useState<AbiItem[]>([]);
 
     useEffect(() => {
         async function fetchProduksi() {
@@ -384,12 +403,34 @@ const AchievementsContent = () => {
                 console.error("Gagal mengambil data proper:", err);
             }
         }
+        async function fetchNaratif() {
+            try {
+                const res = await fetch('/api/achievement/top-project-naratif');
+                const json = await res.json();
+                setNaratifItems(json.data ?? []);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data top project (naratif):", err);
+            }
+        }
+
+        async function fetchAbi() {
+            try {
+                const res = await fetch('/api/achievement/top-project-abi');
+                const json = await res.json();
+                setAbiItems(json.data ?? []);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data top project (ABI NBD):", err);
+            }
+        }
 
         fetchProduksi()
         fetchRencanaKerja()
         fetchInovasi()
         fetchKehumasan()
-        fetchProper()
+        fetchNaratif()
+        fetchAbi()
     }, []);
 
     const groupedKehumasan: Record<string, AwardItem[]> = {};
@@ -611,68 +652,54 @@ const AchievementsContent = () => {
                 {activeTab === "top-project" && (
                     <div className="flex flex-col gap-4">
                         {/* Pencapaian naratif */}
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                            {[
-                                {
-                                    title: "New Technology Velocity String",
-                                    detail: "PPS-12 dan PPS-15",
-                                },
-                                {
-                                    title: "Rejuvenation Mature Oil Field",
-                                    detail: "Pulau Panjang – Pangkalan Susu",
-                                },
-                                {
-                                    title: "POPE Padang Pancuran",
-                                    detail: "Desember 2025",
-                                },
-                            ].map((item, i) => (
-                                <div
-                                    key={i}
-                                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
-                                >
-                                    <p className="text-sm font-bold leading-snug text-blue-900">{item.title}</p>
-                                    <p className="mt-1.5 text-xs text-slate-500">{item.detail}</p>
-                                </div>
-                            ))}
-                        </div>
+                        {naratifItems.length > 0 && (
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                {naratifItems
+                                    .slice()
+                                    .sort((a, b) => a.urutan - b.urutan)
+                                    .map((item) => (
+                                        <div
+                                            key={item.id}
+                                            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+                                        >
+                                            <p className="text-sm font-bold leading-snug text-blue-900">{item.title}</p>
+                                            <p className="mt-1.5 text-xs text-slate-500">{item.detail}</p>
+                                        </div>
+                                    ))}
+                            </div>
+                        )}
 
                         {/* Pencapaian ABI NBD (investasi vs realisasi) */}
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                            <ProductionCard
-                                title="ABI NBD Asset Integrity"
-                                unit="Juta USD"
-                                realisasi="9,3"
-                                target="11,8"
-                                percentValue={79}
-                                periode="18 ABI NBD terselesaikan · Cost Saving 21%"
-                                accentColor="amber"
-                            />
-                            <ProductionCard
-                                title="ABI NBD HSSE & Process Safety"
-                                unit="Juta USD"
-                                realisasi="1,6"
-                                target="1,8"
-                                percentValue={89}
-                                periode="4 ABI NBD terselesaikan · Cost Saving 11%"
-                                accentColor="sky"
-                            />
-                            <ProductionCard
-                                title="ABI NBD Fasilitas Produksi"
-                                unit="Juta USD"
-                                realisasi="2,2"
-                                target="2,6"
-                                percentValue={85}
-                                periode="4 ABI NBD terselesaikan · Cost Saving 15,38%"
-                                accentColor="amber"
-                            />
-                        </div>
+                        {abiItems.length > 0 && (
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                {abiItems
+                                    .slice()
+                                    .sort((a, b) => a.urutan - b.urutan)
+                                    .map((item, i) => (
+                                        <ProductionCard
+                                            key={item.id}
+                                            title={item.title}
+                                            unit={item.unit}
+                                            realisasi={item.realisasi.toLocaleString("id-ID")}
+                                            target={item.target.toLocaleString("id-ID")}
+                                            percentValue={item.target > 0 ? Math.round((item.realisasi / item.target) * 100) : 0}
+                                            periode={item.periode}
+                                            accentColor={i % 2 === 0 ? "amber" : "sky"}
+                                        />
+                                    ))}
+                            </div>
+                        )}
+
+                        {naratifItems.length === 0 && abiItems.length === 0 && (
+                            <p className="text-center text-sm text-slate-400">Belum ada data top project.</p>
+                        )}
                     </div>
                 )}
 
                 {activeTab === "kehumasan" && (
                     <div className="flex flex-col gap-4">
                         {/* Ringkasan medali (podium) */}
-                       {/* Ringkasan medali (podium) */}
+                        {/* Ringkasan medali (podium) */}
                         <div className="grid grid-cols-3 items-end gap-3">
                             {/* Gold */}
                             <div className="group relative -mt-8 overflow-hidden rounded-2xl border border-amber-300 bg-linear-to-b from-amber-50 to-white p-5 text-center shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">

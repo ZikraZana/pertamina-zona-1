@@ -32,6 +32,23 @@ type RKItem = {
     urutan: number;
 };
 
+type NaratifItem = {
+    id: string;
+    title: string;
+    detail: string;
+    urutan: number;
+};
+
+type AbiItem = {
+    id: string;
+    title: string;
+    unit: string;
+    realisasi: number;
+    target: number;
+    periode: string;
+    urutan: number;
+};
+
 type InovasiItem = {
     id: string;
     pencapaian: string;
@@ -349,7 +366,7 @@ function labelToMonthValue(label: string): string {
 }
 
 const AchievementTab = () => {
-    const [activeTab, setActiveTab] = useState<"produksi" | "rencana-kerja" | "proper" | "inovasi" | "kehumasan">("produksi");
+    const [activeTab, setActiveTab] = useState<"produksi" | "rencana-kerja" | "proper" | "inovasi" | "kehumasan" | "top-project">("produksi");
     const [selectedJenis, setSelectedJenis] = useState<"minyak" | "gas" | "migas">("minyak");
     const [wilayahKerjaList, setWilayahKerjaList] = useState<string[]>([]);
     const [data, setData] = useState<Record<string, ProduksiData>>({});
@@ -413,6 +430,24 @@ const AchievementTab = () => {
     const [kehumasanLoading, setKehumasanLoading] = useState(false);
     const [kehumasanError, setKehumasanError] = useState<string | null>(null);
 
+    // ---------- State Top Project: Naratif ----------
+    const [naratifItems, setNaratifItems] = useState<NaratifItem[]>([]);
+    const [naratifListLoading, setNaratifListLoading] = useState(true);
+    const [naratifFormOpen, setNaratifFormOpen] = useState(false);
+    const [naratifForm, setNaratifForm] = useState({ title: "", detail: "" });
+    const [naratifEditingId, setNaratifEditingId] = useState<string | null>(null);
+    const [naratifLoading, setNaratifLoading] = useState(false);
+    const [naratifError, setNaratifError] = useState<string | null>(null);
+
+    // ---------- State Top Project: ABI NBD ----------
+    const [abiItems, setAbiItems] = useState<AbiItem[]>([]);
+    const [abiListLoading, setAbiListLoading] = useState(true);
+    const [abiFormOpen, setAbiFormOpen] = useState(false);
+    const [abiForm, setAbiForm] = useState({ title: "", unit: "", realisasi: "", target: "", periode: "" });
+    const [abiEditingId, setAbiEditingId] = useState<string | null>(null);
+    const [abiLoading, setAbiLoading] = useState(false);
+    const [abiError, setAbiError] = useState<string | null>(null);
+
     async function fetchData() {
         setDataLoading(true);
         try {
@@ -435,6 +470,8 @@ const AchievementTab = () => {
         fetchInovasiItems();
         fetchKehumasanItems();
         fetchWilayahKerjaList();
+        fetchNaratifItems();
+        fetchAbiItems();
     }, []);
 
     // ---------- Fungsi Rencana Kerja ----------
@@ -833,6 +870,140 @@ const AchievementTab = () => {
         }
     }
 
+    // ---------- Fungsi Naratif ----------
+    async function fetchNaratifItems() {
+        setNaratifListLoading(true);
+        try {
+            const res = await fetch("/api/achievement/top-project-naratif");
+            const json = await res.json();
+            setNaratifItems(json.data ?? []);
+        } finally {
+            setNaratifListLoading(false);
+        }
+    }
+
+    function resetNaratifForm() {
+        setNaratifForm({ title: "", detail: "" });
+        setNaratifEditingId(null);
+        setNaratifFormOpen(false);
+        setNaratifError(null);
+    }
+
+    function startEditNaratif(item: NaratifItem) {
+        setNaratifForm({ title: item.title, detail: item.detail });
+        setNaratifEditingId(item.id);
+        setNaratifFormOpen(true);
+        setNaratifError(null);
+    }
+
+    async function handleSubmitNaratif(e: React.FormEvent) {
+        e.preventDefault();
+        setNaratifError(null);
+        setNaratifLoading(true);
+
+        const payload = {
+            title: naratifForm.title,
+            detail: naratifForm.detail,
+            urutan: naratifEditingId
+                ? naratifItems.find((it) => it.id === naratifEditingId)?.urutan ?? 0
+                : naratifItems.length,
+        };
+        const url = naratifEditingId ? `/api/achievement/top-project-naratif/${naratifEditingId}` : "/api/achievement/top-project-naratif";
+        const method = naratifEditingId ? "PATCH" : "POST";
+        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const json = await res.json();
+
+        if (!res.ok) {
+            setNaratifError(json.error ?? "Gagal menyimpan data.");
+            setNaratifLoading(false);
+            return;
+        }
+
+        await fetchNaratifItems();
+        resetNaratifForm();
+        setNaratifLoading(false);
+    }
+
+    async function handleDeleteNaratif(id: string) {
+        if (!window.confirm("Hapus data ini?")) return;
+        await fetch(`/api/achievement/top-project-naratif/${id}`, { method: "DELETE" });
+        await fetchNaratifItems();
+    }
+
+    // ---------- Fungsi ABI NBD ----------
+    async function fetchAbiItems() {
+        setAbiListLoading(true);
+        try {
+            const res = await fetch("/api/achievement/top-project-abi");
+            const json = await res.json();
+            setAbiItems(json.data ?? []);
+        } finally {
+            setAbiListLoading(false);
+        }
+    }
+
+    function resetAbiForm() {
+        setAbiForm({ title: "", unit: "", realisasi: "", target: "", periode: "" });
+        setAbiEditingId(null);
+        setAbiFormOpen(false);
+        setAbiError(null);
+    }
+
+    function startEditAbi(item: AbiItem) {
+        setAbiForm({
+            title: item.title,
+            unit: item.unit,
+            realisasi: String(item.realisasi),
+            target: String(item.target),
+            periode: item.periode,
+        });
+        setAbiEditingId(item.id);
+        setAbiFormOpen(true);
+        setAbiError(null);
+    }
+
+    async function handleSubmitAbi(e: React.FormEvent) {
+        e.preventDefault();
+        setAbiError(null);
+
+        if (!abiForm.realisasi.trim() || !abiForm.target.trim()) {
+            setAbiError("Realisasi dan Target wajib diisi.");
+            return;
+        }
+
+        setAbiLoading(true);
+        const payload = {
+            title: abiForm.title,
+            unit: abiForm.unit,
+            realisasi: Number(abiForm.realisasi),
+            target: Number(abiForm.target),
+            periode: abiForm.periode,
+            urutan: abiEditingId
+                ? abiItems.find((it) => it.id === abiEditingId)?.urutan ?? 0
+                : abiItems.length,
+        };
+        const url = abiEditingId ? `/api/achievement/top-project-abi/${abiEditingId}` : "/api/achievement/top-project-abi";
+        const method = abiEditingId ? "PATCH" : "POST";
+        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const json = await res.json();
+
+        if (!res.ok) {
+            setAbiError(json.error ?? "Gagal menyimpan data.");
+            setAbiLoading(false);
+            return;
+        }
+
+        await fetchAbiItems();
+        resetAbiForm();
+        setAbiLoading(false);
+    }
+
+    async function handleDeleteAbi(id: string) {
+        if (!window.confirm("Hapus data ini?")) return;
+        await fetch(`/api/achievement/top-project-abi/${id}`, { method: "DELETE" });
+        await fetchAbiItems();
+    }
+
     useEffect(() => {
         const current = data[selectedJenis];
         if (current) {
@@ -909,6 +1080,7 @@ const AchievementTab = () => {
                         { key: "rencana-kerja", label: "Rencana Kerja" },
                         { key: "proper", label: "HSSE" },
                         { key: "inovasi", label: "Inovasi" },
+                        { key: "top-project", label: "Top Project" },
                         { key: "kehumasan", label: "Kehumasan" },
                     ] as const
                 ).map((tab) => (
@@ -1401,6 +1573,122 @@ const AchievementTab = () => {
                 </div>
             )}
 
+            {/* ---------- Card Top Project: Naratif ---------- */}
+            {activeTab === "top-project" && (
+                <>
+                    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <SectionHeader
+                            title="Top Project — Pencapaian"
+                            isFormOpen={naratifFormOpen}
+                            onToggle={() => (naratifFormOpen ? resetNaratifForm() : setNaratifFormOpen(true))}
+                        />
+
+                        {naratifFormOpen && (
+                            <form onSubmit={handleSubmitNaratif} className="mb-4 flex flex-col gap-3 rounded-lg bg-slate-50 p-3">
+                                <input placeholder="Judul (misal New Technology Velocity String)" value={naratifForm.title} onChange={(e) => setNaratifForm({ ...naratifForm, title: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                                <input placeholder="Detail (misal PPS-12 dan PPS-15)" value={naratifForm.detail} onChange={(e) => setNaratifForm({ ...naratifForm, detail: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+
+                                {naratifError && (
+                                    <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{naratifError}</p>
+                                )}
+
+                                <div className="flex gap-2">
+                                    <button type="submit" disabled={naratifLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                        {naratifLoading ? "Menyimpan..." : naratifEditingId ? "Simpan Perubahan" : "Tambah"}
+                                    </button>
+                                    <button type="button" onClick={resetNaratifForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
+                                </div>
+                            </form>
+                        )}
+
+                        {naratifListLoading ? (
+                            <ListSkeleton />
+                        ) : naratifItems.length === 0 ? (
+                            <EmptyState label="Belum ada data pencapaian." />
+                        ) : (
+                            <ul className="flex flex-col gap-2">
+                                {naratifItems.map((item) => (
+                                    <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
+                                        <div className="min-w-0">
+                                            <span className="truncate font-semibold text-blue-900">{item.title}</span>
+                                            <p className="mt-0.5 truncate text-xs text-slate-400">{item.detail}</p>
+                                        </div>
+                                        <div className="flex shrink-0 gap-1">
+                                            <button onClick={() => startEditNaratif(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                <PencilIcon />
+                                            </button>
+                                            <button onClick={() => handleDeleteNaratif(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                <TrashIcon />
+                                            </button>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+
+                    {/* ---------- Card Top Project: ABI NBD ---------- */}
+                    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <SectionHeader
+                            title="Top Project — ABI NBD"
+                            isFormOpen={abiFormOpen}
+                            onToggle={() => (abiFormOpen ? resetAbiForm() : setAbiFormOpen(true))}
+                        />
+
+                        {abiFormOpen && (
+                            <form onSubmit={handleSubmitAbi} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
+                                <input placeholder="Judul (misal ABI NBD Asset Integrity)" value={abiForm.title} onChange={(e) => setAbiForm({ ...abiForm, title: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                                <input placeholder="Unit (misal Juta USD)" value={abiForm.unit} onChange={(e) => setAbiForm({ ...abiForm, unit: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                                <input placeholder="Periode/Keterangan (misal 18 ABI NBD, Cost Saving 21%)" value={abiForm.periode} onChange={(e) => setAbiForm({ ...abiForm, periode: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                                <input placeholder="Realisasi" type="number" step="any" min="0" value={abiForm.realisasi} onChange={(e) => setAbiForm({ ...abiForm, realisasi: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                                <input placeholder="Target" type="number" step="any" min="0" value={abiForm.target} onChange={(e) => setAbiForm({ ...abiForm, target: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+
+                                {abiError && (
+                                    <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{abiError}</p>
+                                )}
+
+                                <div className="col-span-2 flex gap-2">
+                                    <button type="submit" disabled={abiLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                        {abiLoading ? "Menyimpan..." : abiEditingId ? "Simpan Perubahan" : "Tambah"}
+                                    </button>
+                                    <button type="button" onClick={resetAbiForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
+                                </div>
+                            </form>
+                        )}
+
+                        {abiListLoading ? (
+                            <ListSkeleton />
+                        ) : abiItems.length === 0 ? (
+                            <EmptyState label="Belum ada data ABI NBD." />
+                        ) : (
+                            <ul className="flex flex-col gap-2">
+                                {abiItems.map((item) => {
+                                    const persen = item.target > 0 ? Math.round((item.realisasi / item.target) * 100) : 0;
+                                    return (
+                                        <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
+                                            <div className="min-w-0">
+                                                <span className="truncate font-semibold text-blue-900">{item.title}</span>
+                                                <p className="mt-0.5 truncate text-xs text-slate-400">
+                                                    {item.realisasi.toLocaleString("id-ID")} / {item.target.toLocaleString("id-ID")} {item.unit} ({persen}%) · {item.periode}
+                                                </p>
+                                            </div>
+                                            <div className="flex shrink-0 gap-1">
+                                                <button onClick={() => startEditAbi(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                    <PencilIcon />
+                                                </button>
+                                                <button onClick={() => handleDeleteAbi(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                    <TrashIcon />
+                                                </button>
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        )}
+                    </div>
+                </>
+            )}
+            
             {/* ---------- Card Kehumasan ---------- */}
             {activeTab === "kehumasan" && (
                 <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
