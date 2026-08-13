@@ -205,15 +205,17 @@ function ListSkeleton() {
 function SortableRkItem({
     item,
     index,
+    group,
     onEdit,
     onDelete,
 }: {
     item: RKItem;
     index: number;
+    group: string;
     onEdit: (item: RKItem) => void;
     onDelete: (id: string) => void;
 }) {
-    const { ref, handleRef, isDragging } = useSortable({ id: item.id, index });
+    const { ref, handleRef, isDragging } = useSortable({ id: item.id, index, group });
 
     return (
         <li
@@ -678,33 +680,28 @@ const AchievementTab = () => {
         await fetchRkItems();
     }
 
-    /** Setelah drag-reorder, simpan urutan baru semua item yang posisinya bergeser ke server. */
-    async function reorderRk(fromIndex: number, toIndex: number) {
-        setRkItems((currentItems) => {
-            const start = Math.min(fromIndex, toIndex);
-            const end = Math.max(fromIndex, toIndex);
-            const affected = currentItems.slice(start, end + 1);
+    // Sama seperti reorderRkInGroup dulunya reorderRk (berbasis index global) --
+    // sekarang list RK dikelompokkan per jenis, jadi reorder ikut per-grup.
+    async function reorderRkInGroup(jenis: string, allItems: RKItem[]) {
+        const itemsInGroup = allItems.filter((it) => it.jenis_rk === jenis);
 
-            Promise.all(
-                affected.map((item, i) =>
-                    fetch(`/api/achievement/rencana-kerja/${item.id}`, {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            jenis_rk: item.jenis_rk,
-                            nama_rk: item.nama_rk,
-                            jumlah_minyak: item.jumlah_minyak,
-                            jumlah_gas: item.jumlah_gas,
-                            wilayah_kerja: item.wilayah_kerja,
-                            urutan: start + i,
-                        }),
-                    })
-                )
-            ).catch(() => {
-                fetchRkItems();
-            });
-
-            return currentItems;
+        await Promise.all(
+            itemsInGroup.map((item, i) =>
+                fetch(`/api/achievement/rencana-kerja/${item.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        jenis_rk: item.jenis_rk,
+                        nama_rk: item.nama_rk,
+                        jumlah_minyak: item.jumlah_minyak,
+                        jumlah_gas: item.jumlah_gas,
+                        wilayah_kerja: item.wilayah_kerja,
+                        urutan: i,
+                    }),
+                })
+            )
+        ).catch(() => {
+            fetchRkItems();
         });
     }
 
@@ -1317,6 +1314,10 @@ const AchievementTab = () => {
         setSaveLoading(false);
     }
 
+    const groupedRkItems: [string, RKItem[]][] = jenisRkOptions
+        .filter((jenis) => rkItems.some((item) => item.jenis_rk === jenis))
+        .map((jenis) => [jenis, rkItems.filter((item) => item.jenis_rk === jenis)]);
+
     // Kelompokkan kehumasanItems per wilayah_kerja untuk tampilan admin.
     // Urutan relatif dalam tiap grup tetap ikut urutan array asli (yang sudah
     // diurutkan server berdasarkan `urutan`), jadi konsisten dengan halaman publik.
@@ -1674,29 +1675,50 @@ const AchievementTab = () => {
                                 const { source } = event.operation;
                                 if (!isSortable(source)) return;
 
-                                const { initialIndex, index } = source;
-                                if (initialIndex === index) return;
+                                const { initialIndex, index, group } = source;
+                                if (initialIndex === index || group === undefined) return;
 
-                                setRkItems((items) => {
-                                    const newItems = [...items];
-                                    const [moved] = newItems.splice(initialIndex, 1);
-                                    newItems.splice(index, 0, moved);
+                                setRkItems((currentItems) => {
+                                    // initialIndex/index di sini adalah index DALAM GRUP,
+                                    // jadi perlu dipetakan balik ke posisi global sebelum splice.
+                                    const groupItems = currentItems.filter((it) => it.jenis_rk === group);
+                                    const movedItem = groupItems[initialIndex];
+                                    const targetItem = groupItems[index];
+                                    if (!movedItem || !targetItem) return currentItems;
+
+                                    const globalFrom = currentItems.findIndex((it) => it.id === movedItem.id);
+                                    const globalTo = currentItems.findIndex((it) => it.id === targetItem.id);
+
+                                    const newItems = [...currentItems];
+                                    const [moved] = newItems.splice(globalFrom, 1);
+                                    newItems.splice(globalTo, 0, moved);
+
+                                    reorderRkInGroup(group as string, newItems);
                                     return newItems;
                                 });
-                                reorderRk(initialIndex, index);
                             }}
                         >
-                            <ul className="flex flex-col gap-2">
-                                {rkItems.map((item, index) => (
-                                    <SortableRkItem
-                                        key={item.id}
-                                        item={item}
-                                        index={index}
-                                        onEdit={startEditRk}
-                                        onDelete={handleDeleteRk}
-                                    />
+                            <div className="grid grid-cols-2 gap-4">
+                                {groupedRkItems.map(([jenis, items]) => (
+                                    <div key={jenis} className="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+                                        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">
+                                            {jenis} <span className="font-normal normal-case text-slate-400">({items.length} data)</span>
+                                        </p>
+                                        <ul className="flex flex-col gap-2">
+                                            {items.map((item, index) => (
+                                                <SortableRkItem
+                                                    key={item.id}
+                                                    item={item}
+                                                    index={index}
+                                                    group={jenis}
+                                                    onEdit={startEditRk}
+                                                    onDelete={handleDeleteRk}
+                                                />
+                                            ))}
+                                        </ul>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
                         </DragDropProvider>
                     )}
                 </div>
@@ -2053,7 +2075,7 @@ const AchievementTab = () => {
                     </div>
                 </>
             )}
-            
+
             {/* ---------- Card Kehumasan ---------- */}
             {activeTab === "kehumasan" && (
                 <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
