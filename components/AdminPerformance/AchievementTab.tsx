@@ -2034,7 +2034,7 @@ const AchievementTab = () => {
                                             <div className="min-w-0">
                                                 <span className="truncate font-semibold text-blue-900">{item.title}</span>
                                                 <p className="mt-0.5 truncate text-xs text-slate-400">
-                                                    {item.realisasi.toLocaleString("id-ID")} / {item.target.toLocaleString("id-ID")} {item.unit} ({persen}%) · {item.periode}
+                                                    {item.realisasi.toLocaleString("en-EN")} / {item.target.toLocaleString("en-EN")} {item.unit} ({persen}%) · {item.periode}
                                                 </p>
                                             </div>
                                             <div className="flex shrink-0 gap-1">

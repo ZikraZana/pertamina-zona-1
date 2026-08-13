@@ -717,8 +717,8 @@ const AchievementsContent = () => {
                                                 key={item.id}
                                                 title={item.title}
                                                 unit="Juta USD"
-                                                realisasi={item.realisasi.toLocaleString("id-ID")}
-                                                target={item.target.toLocaleString("id-ID")}
+                                                realisasi={item.realisasi.toLocaleString("en-EN")}
+                                                target={item.target.toLocaleString("en-EN")}
                                                 percentValue={item.target > 0 ? Math.round((item.realisasi / item.target) * 100) : 0}
                                                 periode={item.periode}
                                                 accentColor={i % 2 === 0 ? "amber" : "sky"}
@@ -771,7 +771,7 @@ const AchievementsContent = () => {
                         </div>
 
                         {/* Detail per field */}
-                        <div className="flex flex-col gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             {groupedKehumasan.map(([field, awards]) => (
                                 <FieldAwardCard
                                     key={field}

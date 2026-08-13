@@ -161,7 +161,7 @@ const PerformanceContent = () => {
     const [previewError, setPreviewError] = useState<string | null>(null);
     const [downloadLoading, setDownloadLoading] = useState(false);
     const [activeCategory, setActiveCategory] = useState<"weekly" | "biweekly" | "monthly" | "others" | null>(null);
-    const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
+    const [viewMode, setViewMode] = useState<"calendar" | "list">("list");
     const isMonthlyMode = activeCategory === "monthly";
 
 
