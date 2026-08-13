@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 
 // GET: ambil semua data security
 export async function GET() {
@@ -27,37 +28,53 @@ export async function GET() {
 export async function POST(req: NextRequest) {
     try {
         const supabase = await createClient();
-        const body = await req.json();
+
+        const { user, err } = await requireAdmin(supabase);
+        if (err) return err;
+
+        const body = await req.json().catch(() => null);
+        if (!body) {
+            return NextResponse.json({ error: "Body tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
+        }
         const { judul, wilayah_kerja, tanggal, urutan } = body;
 
-        if (!judul || !wilayah_kerja || !tanggal) {
-            return NextResponse.json(
-                { error: "judul, wilayah_kerja, dan tanggal wajib diisi" },
-                { status: 400 }
-            );
+        if (typeof judul !== "string" || !judul.trim()) {
+            return NextResponse.json({ error: 'Field "judul" wajib diisi.', code: "VALIDATION_ERROR" }, { status: 400 });
+        }
+        if (typeof wilayah_kerja !== "string" || !wilayah_kerja.trim()) {
+            return NextResponse.json({ error: 'Field "wilayah_kerja" wajib diisi.', code: "VALIDATION_ERROR" }, { status: 400 });
+        }
+        if (typeof tanggal !== "string" || isNaN(Date.parse(tanggal))) {
+            return NextResponse.json({ error: 'Field "tanggal" harus berupa tanggal yang valid.', code: "VALIDATION_ERROR" }, { status: 400 });
+        }
+        let urutanNumber = 0;
+        if (urutan !== undefined && urutan !== null) {
+            const parsed = Number(urutan);
+            if (!Number.isInteger(parsed) || parsed < 0) {
+                return NextResponse.json({ error: 'Field "urutan" harus berupa bilangan bulat dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
+            }
+            urutanNumber = parsed;
         }
 
         const { data, error } = await supabase
             .from("achievement_hsse_security")
-            .insert([
-                {
-                    judul,
-                    wilayah_kerja,
-                    tanggal,
-                    urutan: urutan ?? 0,
-                },
-            ])
+            .insert([{ judul, wilayah_kerja, tanggal, urutan: urutanNumber }])
             .select()
             .single();
 
         if (error) throw error;
 
+        const { error: logError } = await supabase.from("activity_logs").insert({
+            actor_id: user!.id,
+            action: "insert",
+            entity_type: "achievement_hsse_security",
+            entity_label: judul,
+        });
+        if (logError) console.error("Gagal mencatat activity log:", logError.message);
+
         return NextResponse.json({ data }, { status: 201 });
     } catch (err: any) {
         console.error("Gagal menambah data security:", err);
-        return NextResponse.json(
-            { error: err.message ?? "Gagal menambah data security" },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: err.message ?? "Gagal menambah data security" }, { status: 500 });
     }
 }
