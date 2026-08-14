@@ -437,7 +437,7 @@ const AchievementsContent = () => {
         }
         async function fetchNaratif() {
             try {
-                const res = await fetch('/api/achievement/top-project-naratif');
+                const res = await fetch('/api/achievement/top-project/top-project-naratif');
                 const json = await res.json();
                 setNaratifItems(json.data ?? []);
             }
@@ -448,7 +448,7 @@ const AchievementsContent = () => {
 
         async function fetchAbi() {
             try {
-                const res = await fetch('/api/achievement/top-project-abi');
+                const res = await fetch('/api/achievement/top-project/top-project-abi');
                 const json = await res.json();
                 setAbiItems(json.data ?? []);
             }

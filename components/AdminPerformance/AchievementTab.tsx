@@ -1133,7 +1133,7 @@ const AchievementTab = () => {
     async function fetchNaratifItems() {
         setNaratifListLoading(true);
         try {
-            const res = await fetch("/api/achievement/top-project-naratif");
+            const res = await fetch("/api/achievement/top-project/top-project-naratif");
             const json = await res.json();
             setNaratifItems(json.data ?? []);
         } finally {
@@ -1167,7 +1167,7 @@ const AchievementTab = () => {
                 ? naratifItems.find((it) => it.id === naratifEditingId)?.urutan ?? 0
                 : naratifItems.length,
         };
-        const url = naratifEditingId ? `/api/achievement/top-project-naratif/${naratifEditingId}` : "/api/achievement/top-project-naratif";
+        const url = naratifEditingId ? `/api/achievement/top-project/top-project-naratif/${naratifEditingId}` : "/api/achievement/top-project/top-project-naratif";
         const method = naratifEditingId ? "PATCH" : "POST";
         const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
         const json = await res.json();
@@ -1185,7 +1185,7 @@ const AchievementTab = () => {
 
     async function handleDeleteNaratif(id: string) {
         if (!window.confirm("Hapus data ini?")) return;
-        await fetch(`/api/achievement/top-project-naratif/${id}`, { method: "DELETE" });
+        await fetch(`/api/achievement/top-project/top-project-naratif/${id}`, { method: "DELETE" });
         await fetchNaratifItems();
     }
 
@@ -1193,7 +1193,7 @@ const AchievementTab = () => {
     async function fetchAbiItems() {
         setAbiListLoading(true);
         try {
-            const res = await fetch("/api/achievement/top-project-abi");
+            const res = await fetch("/api/achievement/top-project/top-project-abi");
             const json = await res.json();
             setAbiItems(json.data ?? []);
         } finally {
@@ -1241,7 +1241,7 @@ const AchievementTab = () => {
                 ? abiItems.find((it) => it.id === abiEditingId)?.urutan ?? 0
                 : abiItems.length,
         };
-        const url = abiEditingId ? `/api/achievement/top-project-abi/${abiEditingId}` : "/api/achievement/top-project-abi";
+        const url = abiEditingId ? `/api/achievement/top-project/top-project-abi/${abiEditingId}` : "/api/achievement/top-project/top-project-abi";
         const method = abiEditingId ? "PATCH" : "POST";
         const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
         const json = await res.json();
@@ -1259,7 +1259,7 @@ const AchievementTab = () => {
 
     async function handleDeleteAbi(id: string) {
         if (!window.confirm("Hapus data ini?")) return;
-        await fetch(`/api/achievement/top-project-abi/${id}`, { method: "DELETE" });
+        await fetch(`/api/achievement/top-project/top-project-abi/${id}`, { method: "DELETE" });
         await fetchAbiItems();
     }
 

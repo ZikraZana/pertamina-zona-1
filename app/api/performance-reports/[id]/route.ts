@@ -145,6 +145,9 @@ export async function PATCH(
         .single();
 
     if (updateError) {
+        if (updateData.file_path) {
+            await supabase.storage.from("performance-reports").remove([updateData.file_path]);
+        }
         return NextResponse.json({ error: updateError.message, code: "SERVER_ERROR" }, { status: 500 });
     }
 
