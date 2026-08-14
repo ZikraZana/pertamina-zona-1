@@ -104,10 +104,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         await supabase.storage.from("achievement-photos").remove([oldImageToDelete]);
     }
 
-    const { error: logError } = await supabase.from("activity_logs").insert({
-        actor_id: user!.id, action: "update", entity_type: "achievement_kehumasan", entity_label: wilayah_kerja as string,
-    });
-    if (logError) console.error("Gagal mencatat activity log:", logError.message);
+    // skip_log=true dikirim saat PATCH ini dipanggil dari reorder (drag-and-drop) --
+    // reorder tidak dicatat ke activity log sama sekali.
+    if (formData.get("skip_log") !== "true") {
+        const { error: logError } = await supabase.from("activity_logs").insert({
+            actor_id: user!.id, action: "update", entity_type: "achievement_kehumasan", entity_label: wilayah_kerja as string,
+        });
+        if (logError) console.error("Gagal mencatat activity log:", logError.message);
+    }
 
     return NextResponse.json({ data });
 }

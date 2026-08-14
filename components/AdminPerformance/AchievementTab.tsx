@@ -697,6 +697,7 @@ const AchievementTab = () => {
                         jumlah_gas: item.jumlah_gas,
                         wilayah_kerja: item.wilayah_kerja,
                         urutan: i,
+                        skip_log: true,
                     }),
                 })
             )
@@ -825,6 +826,7 @@ const AchievementTab = () => {
                         nama_acara: item.nama_acara,
                         wilayah_kerja: item.wilayah_kerja,
                         urutan: i,
+                        skip_log: true,
                     }),
                 })
             )
@@ -1057,6 +1059,7 @@ const AchievementTab = () => {
                 formData.append("sub_kategori", item.sub_kategori);
                 formData.append("medali", item.medali);
                 formData.append("urutan", String(i));
+                formData.append("skip_log", "true");
                 // tidak append "image" -- reorder tidak pernah mengubah foto,
                 // jadi backend akan pertahankan image_path yang sudah ada
 
@@ -1087,6 +1090,7 @@ const AchievementTab = () => {
                     formData.append("medali", item.medali);
                     formData.append("urutan", String(item.urutan));
                     formData.append("urutan_wilayah", String(groupIndex));
+                    formData.append("skip_log", "true");
                     // tidak append "image" -- reorder tidak pernah mengubah foto
 
                     return fetch(`/api/achievement/kehumasan/${item.id}`, {

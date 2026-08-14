@@ -55,10 +55,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     if (error) return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
 
-    const { error: logError } = await supabase.from("activity_logs").insert({
-        actor_id: user!.id, action: "update", entity_type: "achievement_rencana_kerja", entity_label: body.nama_rk,
-    });
-    if (logError) console.error("Gagal mencatat activity log:", logError.message);
+    // skip_log: true dikirim saat PATCH ini dipanggil dari reorder (drag-and-drop) --
+    // reorder tidak dicatat ke activity log sama sekali.
+    if (!body.skip_log) {
+        const { error: logError } = await supabase.from("activity_logs").insert({
+            actor_id: user!.id, action: "update", entity_type: "achievement_rencana_kerja", entity_label: body.nama_rk,
+        });
+        if (logError) console.error("Gagal mencatat activity log:", logError.message);
+    }
 
     return NextResponse.json({ data });
 }
