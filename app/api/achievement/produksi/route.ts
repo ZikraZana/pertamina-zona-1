@@ -8,7 +8,7 @@ export async function GET() {
 
     const { data, error } = await supabase
         .from("achievement_produksi")
-        .select("jenis, realisasi, target, periode, unit");
+        .select("type, realization, target, period, unit");
 
     if (error) {
         return NextResponse.json({ error: error.message, code: "SERVER_ERROR" }, { status: 500 });
@@ -17,7 +17,7 @@ export async function GET() {
     return NextResponse.json({ data });
 }
 
-// PATCH /api/achievement/produksi — admin only, update salah satu jenis
+// PATCH /api/achievement/produksi — admin only, update salah satu type
 export async function PATCH(request: Request) {
     const supabase = await createClient();
 
@@ -27,18 +27,18 @@ export async function PATCH(request: Request) {
     const body = await request.json().catch(() => null);
     if (!body) return NextResponse.json({ error: "Body tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
 
-    const { jenis, realisasi, target, periode, unit } = body;
+    const { type, realization, target, period, unit } = body;
 
-    if (!["minyak", "gas", "migas"].includes(jenis)) {
-        return NextResponse.json({ error: "Jenis tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
+    if (!["minyak", "gas", "migas"].includes(type)) {
+        return NextResponse.json({ error: "type tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
     }
-    if (typeof realisasi !== "number" || !Number.isFinite(realisasi) || realisasi < 0) {
+    if (typeof realization !== "number" || !Number.isFinite(realization) || realization < 0) {
         return NextResponse.json({ error: 'Field "realisasi" harus berupa angka dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
     if (typeof target !== "number" || !Number.isFinite(target) || target < 0) {
         return NextResponse.json({ error: 'Field "target" harus berupa angka dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
-    if (typeof periode !== "string" || !periode.trim()) {
+    if (typeof period !== "string" || !period.trim()) {
         return NextResponse.json({ error: 'Field "periode" wajib diisi.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
     if (typeof unit !== "string" || !unit.trim()) {
@@ -48,14 +48,14 @@ export async function PATCH(request: Request) {
     const { data, error } = await supabase
         .from("achievement_produksi")
         .update({
-            realisasi,
+            realization,
             target,
-            periode,
+            period,
             unit,
             updated_by: user.id,
             updated_at: new Date().toISOString(),
         })
-        .eq("jenis", jenis)
+        .eq("type", type)
         .select()
         .single();
 
@@ -65,7 +65,7 @@ export async function PATCH(request: Request) {
         actor_id: user.id,
         action: "update",
         entity_type: "achievement_produksi",
-        entity_label: `Produksi ${jenis}`,
+        entity_label: `Produksi ${type}`,
     });
     if (logError) console.error("Gagal mencatat activity log:", logError.message);
 

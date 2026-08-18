@@ -18,14 +18,14 @@ const TABS: { key: TabKey; label: string; icon: string }[] = [
 // ============================================================
 
 function ProductionCard({
-    title, unit, realisasi, target, percentValue, periode, accentColor,
+    title, unit, realization, target, percentValue, period, accentColor,
 }: {
     title: string;
     unit: string;
-    realisasi: string;
+    realization: string;
     target: string;
     percentValue: number;
-    periode: string;
+    period: string;
     accentColor: "amber" | "sky" | "emerald";
 }) {
     const colors = {
@@ -39,7 +39,7 @@ function ProductionCard({
             <div className="flex items-start justify-between">
                 <div>
                     <p className="text-sm font-semibold text-slate-500">{title}</p>
-                    <p className="mt-0.5 text-xs text-slate-400">{periode}</p>
+                    <p className="mt-0.5 text-xs text-slate-400">{period}</p>
                 </div>
                 <span className={`rounded-full px-2.5 text-center py-1 text-xs font-bold ${colors.chip}`}>
                     {percentValue}% RKAP
@@ -47,7 +47,7 @@ function ProductionCard({
             </div>
 
             <div className="mt-5 flex items-baseline gap-2">
-                <span className="text-4xl font-extrabold tracking-tight text-slate-900">{realisasi}</span>
+                <span className="text-4xl font-extrabold tracking-tight text-slate-900">{realization}</span>
                 <span className="text-sm font-medium text-slate-400">{unit}</span>
             </div>
 
@@ -275,10 +275,10 @@ function getResponsiveGridClass(count: number): string {
 }
 
 type ProduksiData = {
-    jenis: "minyak" | "gas" | "migas";
-    realisasi: number;
+    type: "minyak" | "gas" | "migas";
+    realization: number;
     target: number;
-    periode: string;
+    period: string;
     unit: string;
 }
 
@@ -365,7 +365,7 @@ const AchievementsContent = () => {
                 const json = await res.json();
                 const map: Record<string, ProduksiData> = {};
                 for (const row of json.data ?? []) {
-                    map[row.jenis] = row
+                    map[row.type] = row
                 }
                 setProduksiData(map);
             }
@@ -523,10 +523,10 @@ const AchievementsContent = () => {
                                 <ProductionCard
                                     title="Produksi Minyak"
                                     unit={produksiData.minyak.unit ?? "-"}
-                                    realisasi={formatAngkaID(produksiData.minyak.realisasi ?? "-")}
+                                    realization={formatAngkaID(produksiData.minyak.realization ?? "-")}
                                     target={formatAngkaID(produksiData.minyak.target ?? "-")}
-                                    percentValue={Math.round((produksiData.minyak.realisasi / produksiData.minyak.target) * 100) || 0}
-                                    periode={produksiData.minyak.periode ?? "-"}
+                                    percentValue={Math.round((produksiData.minyak.realization / produksiData.minyak.target) * 100) || 0}
+                                    period={produksiData.minyak.period ?? "-"}
                                     accentColor="amber"
                                 />
                             </>
@@ -535,10 +535,10 @@ const AchievementsContent = () => {
                             <ProductionCard
                                 title="Produksi Gas"
                                 unit={produksiData.gas.unit ?? "-"}
-                                realisasi={formatAngkaID(produksiData.gas.realisasi ?? "-")}
+                                realization={formatAngkaID(produksiData.gas.realization ?? "-")}
                                 target={formatAngkaID(produksiData.gas.target ?? "-")}
-                                percentValue={Math.round((produksiData.gas.realisasi / produksiData.gas.target) * 100) || 0}
-                                periode={produksiData.gas.periode ?? "-"}
+                                percentValue={Math.round((produksiData.gas.realization / produksiData.gas.target) * 100) || 0}
+                                period={produksiData.gas.period ?? "-"}
                                 accentColor="sky"
                             />
                         )}
@@ -546,10 +546,10 @@ const AchievementsContent = () => {
                             <ProductionCard
                                 title="Produksi Migas"
                                 unit={produksiData.migas.unit ?? "-"}
-                                realisasi={formatAngkaID(produksiData.migas.realisasi ?? "-")}
+                                realization={formatAngkaID(produksiData.migas.realization ?? "-")}
                                 target={formatAngkaID(produksiData.migas.target ?? "-")}
-                                percentValue={Math.round((produksiData.migas.realisasi / produksiData.migas.target) * 100) || 0}
-                                periode={produksiData.migas.periode ?? "-"}
+                                percentValue={Math.round((produksiData.migas.realization / produksiData.migas.target) * 100) || 0}
+                                period={produksiData.migas.period ?? "-"}
                                 accentColor="emerald"
                             />
                         )}
@@ -646,10 +646,10 @@ const AchievementsContent = () => {
                         <ProductionCard
                             title="Reduksi Emisi"
                             unit="Ton CO2eq"
-                            realisasi="22.484"
+                            realization="22.484"
                             target="18.582"
                             percentValue={121}
-                            periode="YTD Oktober 2025"
+                            period="YTD Oktober 2025"
                             accentColor="sky"
                         />
                     </div>
@@ -717,10 +717,10 @@ const AchievementsContent = () => {
                                                 key={item.id}
                                                 title={item.title}
                                                 unit="Juta USD"
-                                                realisasi={item.realization.toLocaleString("en-EN")}
+                                                realization={item.realization.toLocaleString("en-EN")}
                                                 target={item.target.toLocaleString("en-EN")}
                                                 percentValue={item.target > 0 ? Math.round((item.realization / item.target) * 100) : 0}
-                                                periode={item.period}
+                                                period={item.period}
                                                 accentColor={i % 2 === 0 ? "amber" : "sky"}
                                             />
                                         ))}

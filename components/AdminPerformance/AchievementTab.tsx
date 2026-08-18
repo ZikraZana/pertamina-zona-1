@@ -5,20 +5,20 @@ import { isSortable, useSortable } from "@dnd-kit/react/sortable";
 import { useEffect, useState } from "react";
 
 type ProduksiData = {
-    jenis: "minyak" | "gas" | "migas";
-    realisasi: number;
+    type: "minyak" | "gas" | "migas";
+    realization: number;
     target: number;
-    periode: string;
+    period: string;
     unit: string;
 };
 
 // State form realisasi/target disimpan sebagai string mentah selagi diketik
 // (mis. "1," di tengah mengetik "1,000") supaya tidak "terpotong" tiap keystroke.
 type ProduksiFormState = {
-    jenis: "minyak" | "gas" | "migas";
-    realisasi: string;
+    type: "minyak" | "gas" | "migas";
+    realization: string;
     target: string;
-    periode: string;
+    period: string;
     unit: string;
 };
 
@@ -585,7 +585,7 @@ const AchievementTab = () => {
             const json = await res.json();
             const map: Record<string, ProduksiData> = {};
             for (const row of json.data ?? []) {
-                map[row.jenis] = row;
+                map[row.type] = row;
             }
             setData(map);
         } finally {
@@ -1267,10 +1267,10 @@ const AchievementTab = () => {
         const current = data[selectedJenis];
         if (current) {
             setForm({
-                jenis: current.jenis,
-                realisasi: current.realisasi.toLocaleString("en-US"),
+                type: current.type,
+                realization: current.realization.toLocaleString("en-US"),
                 target: current.target.toLocaleString("en-US"),
-                periode: current.periode,
+                period: current.period,
                 unit: current.unit,
             });
             setSaveSuccess(false);
@@ -1283,7 +1283,7 @@ const AchievementTab = () => {
     }
 
     /** Khusus field angka (realisasi/target): saring karakter tidak valid sebelum disimpan ke state. */
-    function updateNumberField(key: "realisasi" | "target", raw: string) {
+    function updateNumberField(key: "realization" | "target", raw: string) {
         setForm((prev) => (prev ? { ...prev, [key]: sanitizeNumberInput(raw) } : prev));
     }
 
@@ -1299,10 +1299,10 @@ const AchievementTab = () => {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                jenis: form.jenis,
-                realisasi: parseFormattedNumber(form.realisasi),
+                type: form.type,
+                realization: parseFormattedNumber(form.realization),
                 target: parseFormattedNumber(form.target),
-                periode: form.periode,
+                period: form.period,
                 unit: form.unit,
             }),
         });
@@ -1381,19 +1381,19 @@ const AchievementTab = () => {
                     <h2 className="mb-4 text-sm font-bold text-blue-900">Produksi</h2>
 
                     <div className="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1">
-                        {(["minyak", "gas", "migas"] as const).map((jenis) => (
+                        {(["minyak", "gas", "migas"] as const).map((type) => (
                             <button
-                                key={jenis}
+                                key={type}
                                 type="button"
-                                onClick={() => setSelectedJenis(jenis)}
+                                onClick={() => setSelectedJenis(type)}
                                 className={[
                                     "flex-1 cursor-pointer rounded-md py-1.5 text-xs font-semibold capitalize transition-colors",
-                                    selectedJenis === jenis
+                                    selectedJenis === type
                                         ? "bg-white text-blue-900 shadow-sm"
                                         : "text-slate-500 hover:text-slate-700",
                                 ].join(" ")}
                             >
-                                Produksi {jenis}
+                                Produksi {type}
                             </button>
                         ))}
                     </div>
@@ -1403,16 +1403,16 @@ const AchievementTab = () => {
                     ) : form ? (
                         <>
                             {(() => {
-                                const realisasi = parseFormattedNumber(form.realisasi);
+                                const realization = parseFormattedNumber(form.realization);
                                 const target = parseFormattedNumber(form.target);
-                                const persen = target > 0 ? Math.round((realisasi / target) * 100) : 0;
+                                const persen = target > 0 ? Math.round((realization / target) * 100) : 0;
 
                                 return (
                                     <div className="mb-4 rounded-lg bg-slate-50 p-3">
                                         <div className="mb-2 flex items-end justify-between">
                                             <div>
-                                                <p className="text-lg font-bold text-blue-900">{realisasi.toLocaleString("en-US")} <span className="text-xs font-normal text-slate-400">{form.unit}</span></p>
-                                                <p className="text-[11px] text-slate-400">dari target {target.toLocaleString("en-US")} {form.unit} · {form.periode}</p>
+                                                <p className="text-lg font-bold text-blue-900">{realization.toLocaleString("en-US")} <span className="text-xs font-normal text-slate-400">{form.unit}</span></p>
+                                                <p className="text-[11px] text-slate-400">dari target {target.toLocaleString("en-US")} {form.unit} · {form.period}</p>
                                             </div>
                                             <span className="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-800">{persen}%</span>
                                         </div>
@@ -1434,8 +1434,8 @@ const AchievementTab = () => {
                                             type="text"
                                             inputMode="decimal"
                                             placeholder="mis. 1,234.5"
-                                            value={form.realisasi}
-                                            onChange={(e) => updateNumberField("realisasi", e.target.value)}
+                                            value={form.realization}
+                                            onChange={(e) => updateNumberField("realization", e.target.value)}
                                             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
                                         />
                                     </div>
@@ -1469,8 +1469,8 @@ const AchievementTab = () => {
                                     <label className="mb-1 block text-xs font-semibold text-slate-600">Periode</label>
                                     <input
                                         type="month"
-                                        value={labelToMonthValue(form.periode)}
-                                        onChange={(e) => updateField("periode", monthValueToLabel(e.target.value))}
+                                        value={labelToMonthValue(form.period)}
+                                        onChange={(e) => updateField("period", monthValueToLabel(e.target.value))}
                                         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
                                     />
                                 </div>
