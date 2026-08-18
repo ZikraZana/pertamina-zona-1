@@ -40,7 +40,13 @@ export async function PUT(
 
         const { data, error } = await supabase
             .from("achievement_hsse_security")
-            .update({ judul, wilayah_kerja, tanggal, urutan: urutanNumber })
+            .update({
+                judul,
+                wilayah_kerja,
+                tanggal,
+                urutan: urutanNumber,
+                updated_by: user.id,
+            })
             .eq("id", id)
             .select()
             .single();

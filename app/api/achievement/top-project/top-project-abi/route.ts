@@ -54,6 +54,7 @@ export async function POST(request: Request) {
             target,
             periode: body.periode,
             urutan: urutan ?? 0,
+            created_by: user.id,
         })
         .select()
         .single();

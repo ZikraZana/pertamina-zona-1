@@ -40,6 +40,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
             nama_acara: namaAcara,
             wilayah_kerja: body.wilayah_kerja,
             urutan: urutan ?? existing.urutan,
+            updated_at: new Date().toISOString(),
+            updated_by: user.id,
         })
         .eq("id", id)
 

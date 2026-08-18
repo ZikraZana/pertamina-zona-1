@@ -43,6 +43,7 @@ export async function POST(request: Request) {
             title: body.title,
             detail: body.detail,
             urutan: urutan ?? 0,
+            created_by: user.id,
         })
         .select()
         .single();

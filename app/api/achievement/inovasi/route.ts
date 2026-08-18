@@ -7,7 +7,7 @@ export async function GET() {
 
     const { data, error } = await supabase
         .from('achievement_inovasi')
-        .select('id, pencapaian, nama_inovasi, nama_acara, wilayah_kerja, urutan')
+        .select('id, pencapaian, nama_inovasi, nama_acara, wilayah_kerja, urutan, created_at, created_by')
         .order('urutan', { ascending: true })
 
     if (error) {
@@ -50,6 +50,7 @@ export async function POST(request: Request) {
             nama_acara: namaAcara,
             wilayah_kerja: body.wilayah_kerja,
             urutan: count ?? 0,
+            created_by: user.id,
         })
         .select()
         .single();

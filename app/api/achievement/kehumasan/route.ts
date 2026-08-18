@@ -112,6 +112,7 @@ export async function POST(request: Request) {
             urutan: urutanNumber,
             urutan_wilayah: urutanWilayahNumber,
             image_path: imagePath,
+            created_by: user.id,
         })
         .select()
         .single();

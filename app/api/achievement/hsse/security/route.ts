@@ -58,7 +58,13 @@ export async function POST(req: NextRequest) {
 
         const { data, error } = await supabase
             .from("achievement_hsse_security")
-            .insert([{ judul, wilayah_kerja, tanggal, urutan: urutanNumber }])
+            .insert([{
+                judul,
+                wilayah_kerja,
+                tanggal,
+                urutan: urutanNumber,
+                created_by: user.id,
+            }])
             .select()
             .single();
 
