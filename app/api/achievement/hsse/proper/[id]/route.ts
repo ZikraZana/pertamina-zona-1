@@ -47,6 +47,7 @@ export async function PUT(
                 tahun: tahunNumber,
                 keterangan: keterangan ?? null,
                 urutan: urutanNumber,
+                updated_by: user.id,
             })
             .eq("id", id)
             .select()

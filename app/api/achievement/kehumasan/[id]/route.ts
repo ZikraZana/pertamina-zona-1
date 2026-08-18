@@ -93,6 +93,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
             urutan: urutanNumber,
             urutan_wilayah: urutanWilayahNumber,
             image_path: imagePath,
+            updated_at: new Date(),
+            updated_by: user.id,
         })
         .eq("id", id)
         .select()

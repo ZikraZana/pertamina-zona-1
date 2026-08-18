@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
                 tahun: tahunNumber,
                 keterangan: keterangan ?? null,
                 urutan: urutanNumber,
+                created_by: user.id,
             }])
             .select()
             .single();

@@ -32,6 +32,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
             title: body.title,
             detail: body.detail,
             urutan: urutan ?? 0,
+            updated_at: new Date(),
+            updated_by: user.id,
         })
         .eq("id", id)
         .select()
