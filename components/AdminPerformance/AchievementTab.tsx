@@ -43,9 +43,9 @@ type AbiItem = {
     id: string;
     title: string;
     unit: string;
-    realisasi: number;
+    realization: number;
     target: number;
-    periode: string;
+    period: string;
     urutan: number;
 };
 
@@ -573,7 +573,7 @@ const AchievementTab = () => {
     const [abiItems, setAbiItems] = useState<AbiItem[]>([]);
     const [abiListLoading, setAbiListLoading] = useState(true);
     const [abiFormOpen, setAbiFormOpen] = useState(false);
-    const [abiForm, setAbiForm] = useState({ title: "", unit: "", realisasi: "", target: "", periode: "" });
+    const [abiForm, setAbiForm] = useState({ title: "", unit: "", realization: "", target: "", period: "" });
     const [abiEditingId, setAbiEditingId] = useState<string | null>(null);
     const [abiLoading, setAbiLoading] = useState(false);
     const [abiError, setAbiError] = useState<string | null>(null);
@@ -1202,7 +1202,7 @@ const AchievementTab = () => {
     }
 
     function resetAbiForm() {
-        setAbiForm({ title: "", unit: "", realisasi: "", target: "", periode: "" });
+        setAbiForm({ title: "", unit: "", realization: "", target: "", period: "" });
         setAbiEditingId(null);
         setAbiFormOpen(false);
         setAbiError(null);
@@ -1212,9 +1212,9 @@ const AchievementTab = () => {
         setAbiForm({
             title: item.title,
             unit: item.unit,
-            realisasi: String(item.realisasi),
+            realization: String(item.realization),
             target: String(item.target),
-            periode: item.periode,
+            period: item.period,
         });
         setAbiEditingId(item.id);
         setAbiFormOpen(true);
@@ -1225,7 +1225,7 @@ const AchievementTab = () => {
         e.preventDefault();
         setAbiError(null);
 
-        if (!abiForm.realisasi.trim() || !abiForm.target.trim()) {
+        if (!abiForm.realization.trim() || !abiForm.target.trim()) {
             setAbiError("Realisasi dan Target wajib diisi.");
             return;
         }
@@ -1234,9 +1234,9 @@ const AchievementTab = () => {
         const payload = {
             title: abiForm.title,
             unit: abiForm.unit,
-            realisasi: Number(abiForm.realisasi),
+            realization: Number(abiForm.realization),
             target: Number(abiForm.target),
-            periode: abiForm.periode,
+            period: abiForm.period,
             urutan: abiEditingId
                 ? abiItems.find((it) => it.id === abiEditingId)?.urutan ?? 0
                 : abiItems.length,
@@ -2030,8 +2030,8 @@ const AchievementTab = () => {
                             <form onSubmit={handleSubmitAbi} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
                                 <input placeholder="Judul (misal ABI NBD Asset Integrity)" value={abiForm.title} onChange={(e) => setAbiForm({ ...abiForm, title: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
                                 <input placeholder="Unit (misal Juta USD)" value={abiForm.unit} onChange={(e) => setAbiForm({ ...abiForm, unit: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                <input placeholder="Periode/Keterangan (misal 18 ABI NBD, Cost Saving 21%)" value={abiForm.periode} onChange={(e) => setAbiForm({ ...abiForm, periode: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                <input placeholder="Realisasi" type="number" step="any" min="0" value={abiForm.realisasi} onChange={(e) => setAbiForm({ ...abiForm, realisasi: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                                <input placeholder="Periode/Keterangan (misal 18 ABI NBD, Cost Saving 21%)" value={abiForm.period} onChange={(e) => setAbiForm({ ...abiForm, period: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
+                                <input placeholder="Realisasi" type="number" step="any" min="0" value={abiForm.realization} onChange={(e) => setAbiForm({ ...abiForm, realization: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
                                 <input placeholder="Target" type="number" step="any" min="0" value={abiForm.target} onChange={(e) => setAbiForm({ ...abiForm, target: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
 
                                 {abiError && (
@@ -2054,13 +2054,13 @@ const AchievementTab = () => {
                         ) : (
                             <ul className="flex flex-col gap-2">
                                 {abiItems.map((item) => {
-                                    const persen = item.target > 0 ? Math.round((item.realisasi / item.target) * 100) : 0;
+                                    const persen = item.target > 0 ? Math.round((item.realization / item.target) * 100) : 0;
                                     return (
                                         <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
                                             <div className="min-w-0">
                                                 <span className="truncate font-semibold text-blue-900">{item.title}</span>
                                                 <p className="mt-0.5 truncate text-xs text-slate-400">
-                                                    {item.realisasi.toLocaleString("en-EN")} / {item.target.toLocaleString("en-EN")} {item.unit} ({persen}%) · {item.periode}
+                                                    {item.realization.toLocaleString("en-EN")} / {item.target.toLocaleString("en-EN")} {item.unit} ({persen}%) · {item.period}
                                                 </p>
                                             </div>
                                             <div className="flex shrink-0 gap-1">

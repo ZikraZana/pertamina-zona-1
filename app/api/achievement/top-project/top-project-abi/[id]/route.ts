@@ -11,17 +11,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const body = await request.json().catch(() => null);
     if (!body) return NextResponse.json({ error: "Body tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
 
-    const stringFields = ["title", "unit", "periode"] as const;
+    const stringFields = ["title", "unit", "period"] as const;
     for (const field of stringFields) {
         if (typeof body[field] !== "string" || !body[field].trim()) {
             return NextResponse.json({ error: `Field "${field}" wajib diisi.`, code: "VALIDATION_ERROR" }, { status: 400 });
         }
     }
 
-    const { realisasi, target, urutan } = body;
+    const { realization, target, urutan } = body;
     const isValidNumber = (value: unknown) => typeof value === "number" && Number.isFinite(value) && value >= 0;
 
-    if (!isValidNumber(realisasi)) {
+    if (!isValidNumber(realization)) {
         return NextResponse.json({ error: 'Field "realisasi" harus berupa angka dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
     if (!isValidNumber(target)) {
@@ -39,9 +39,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         .update({
             title: body.title,
             unit: body.unit,
-            realisasi,
+            realization,
             target,
-            periode: body.periode,
+            period: body.period,
             urutan: urutan ?? 0,
             updated_at: new Date(),
             updated_by: user.id,

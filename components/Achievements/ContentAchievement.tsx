@@ -337,9 +337,9 @@ type AbiItem = {
     id: string;
     title: string;
     unit: string;
-    realisasi: number;
+    realization: number;
     target: number;
-    periode: string;
+    period: string;
     urutan: number;
 };
 
@@ -717,10 +717,10 @@ const AchievementsContent = () => {
                                                 key={item.id}
                                                 title={item.title}
                                                 unit="Juta USD"
-                                                realisasi={item.realisasi.toLocaleString("en-EN")}
+                                                realisasi={item.realization.toLocaleString("en-EN")}
                                                 target={item.target.toLocaleString("en-EN")}
-                                                percentValue={item.target > 0 ? Math.round((item.realisasi / item.target) * 100) : 0}
-                                                periode={item.periode}
+                                                percentValue={item.target > 0 ? Math.round((item.realization / item.target) * 100) : 0}
+                                                periode={item.period}
                                                 accentColor={i % 2 === 0 ? "amber" : "sky"}
                                             />
                                         ))}

@@ -7,7 +7,7 @@ export async function GET() {
 
     const { data, error } = await supabase
         .from("achievement_top_project_abi")
-        .select('id, title, unit, realisasi, target, periode, urutan')
+        .select('id, title, unit, realization, target, period, urutan')
         .order('urutan', { ascending: true });
 
     if (error) {
@@ -25,17 +25,17 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => null);
     if (!body) return NextResponse.json({ error: "Body tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
 
-    const stringFields = ["title", "unit", "periode"] as const;
+    const stringFields = ["title", "unit", "period"] as const;
     for (const field of stringFields) {
         if (typeof body[field] !== "string" || !body[field].trim()) {
             return NextResponse.json({ error: `Field "${field}" wajib diisi.`, code: "VALIDATION_ERROR" }, { status: 400 });
         }
     }
 
-    const { realisasi, target, urutan } = body;
+    const { realization, target, urutan } = body;
     const isValidNumber = (value: unknown) => typeof value === "number" && Number.isFinite(value) && value >= 0;
 
-    if (!isValidNumber(realisasi)) {
+    if (!isValidNumber(realization)) {
         return NextResponse.json({ error: 'Field "realisasi" harus berupa angka dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
     if (!isValidNumber(target)) {
@@ -50,9 +50,9 @@ export async function POST(request: Request) {
         .insert({
             title: body.title,
             unit: body.unit,
-            realisasi,
+            realization,
             target,
-            periode: body.periode,
+            period: body.period,
             urutan: urutan ?? 0,
             created_by: user.id,
         })
