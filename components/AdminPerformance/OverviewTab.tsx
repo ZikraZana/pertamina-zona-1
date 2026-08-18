@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 // ============================================================
-// TIPE DATA WILAYAH KERJA (harus sama dengan yang di ContentOverview.tsx & /api/wilayah)
+// TIPE DATA WILAYAH KERJA
 // ============================================================
 
 type WilayahData = {
@@ -21,63 +21,28 @@ type WilayahData = {
     tanggal_produksi: string | null;
     nama_fasilitas: string | null;
     jenis_fasilitas: string | null;
-    jumlah: string | null;
-    sumur_eksplorasi_active: string | null;
-    sumur_eksplorasi_non_active: string | null;
-    sumur_eksplorasi_total: string | null;
-    producer_active: string | null;
-    producer_non_active: string | null;
-    producer_total: string | null;
-    injector_active: string | null;
-    injector_non_active: string | null;
-    injector_total: string | null;
-    sumur_total_active: string | null;
-    sumur_total_non_active: string | null;
-    sumur_total_total: string | null;
-    process_facilities_active: string | null;
-    process_facilities_non_active: string | null;
-    process_facilities_total: string | null;
-    offshore_platforms_active: string | null;
-    offshore_platforms_non_active: string | null;
-    offshore_platforms_total: string | null;
-    swamp_platforms_active: string | null;
-    swamp_platforms_non_active: string | null;
-    swamp_platforms_total: string | null;
-    gas_compressors_active: string | null;
-    gas_compressors_non_active: string | null;
-    gas_compressors_total: string | null;
-    pipeline_active: string | null;
-    pipeline_non_active: string | null;
-    pipeline_total: string | null;
+    jumlah_fasilitas: string | null;
     drilling_rigs: string | null;
     workover_rigs: string | null;
+};
+
+type AsetData = {
+    id: string;
+    wilayah_kerja: string;
+    tipe_aset: string;
+    kategori: string;
+    jumlah_active: string | null;
+    jumlah_non_active: string | null;
+    total: string | null;
 };
 
 const emptyWilayah = (kode: string): WilayahData => ({
     kode,
     nama_wilayah: null, provinsi: null, kabupaten_kota: null, jenis_wk: null, tahun_berdiri: null,
     luas_wilayah: null, part_interest: null, kkp: null, produksi_minyak: null, produksi_gas: null,
-    tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah: null,
-    sumur_eksplorasi_active: null, sumur_eksplorasi_non_active: null, sumur_eksplorasi_total: null,
-    producer_active: null, producer_non_active: null, producer_total: null,
-    injector_active: null, injector_non_active: null, injector_total: null,
-    sumur_total_active: null, sumur_total_non_active: null, sumur_total_total: null,
-    process_facilities_active: null, process_facilities_non_active: null, process_facilities_total: null,
-    offshore_platforms_active: null, offshore_platforms_non_active: null, offshore_platforms_total: null,
-    swamp_platforms_active: null, swamp_platforms_non_active: null, swamp_platforms_total: null,
-    gas_compressors_active: null, gas_compressors_non_active: null, gas_compressors_total: null,
-    pipeline_active: null, pipeline_non_active: null, pipeline_total: null,
+    tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah_fasilitas: null,
     drilling_rigs: null, workover_rigs: null,
 });
-
-const DEFAULT_WILAYAH_LIST: { kode: string; nama: string }[] = [
-    { kode: "nso", nama: "North Sumatra Offshore (NSO)" },
-    { kode: "p-susu", nama: "Pangkalan Susu" },
-    { kode: "rantau", nama: "Rantau" },
-    { kode: "lirik", nama: "Lirik" },
-    { kode: "jambi", nama: "Jambi" },
-    { kode: "jambi-merang", nama: "Jambi Merang" },
-];
 
 const TEXT_FIELDS: { key: keyof WilayahData; label: string }[] = [
     { key: "nama_wilayah", label: "Nama Wilayah Kerja" },
@@ -110,22 +75,26 @@ const PRODUKSI_FIELDS: { key: keyof WilayahData; label: string; placeholder?: st
 const FASILITAS_FIELDS: { key: keyof WilayahData; label: string }[] = [
     { key: "nama_fasilitas", label: "Nama Fasilitas" },
     { key: "jenis_fasilitas", label: "Jenis Fasilitas" },
-    { key: "jumlah", label: "Jumlah" },
+    { key: "jumlah_fasilitas", label: "Jumlah" },
 ];
 
-const SUMUR_GROUPS: { prefix: string; label: string }[] = [
-    { prefix: "sumur_eksplorasi", label: "Exploration & Delineation" },
-    { prefix: "producer", label: "Producer" },
-    { prefix: "injector", label: "Injector" },
-    { prefix: "sumur_total", label: "Total Sumur" },
+// ============================================================
+// DAFTAR KATEGORI ASET
+// ============================================================
+
+const WELLS_CATEGORIES: string[] = [
+    "Exploration & Delineation",
+    "Producer",
+    "Injector",
+    "Total Sumur",
 ];
 
-const SURFACE_GROUPS: { prefix: string; label: string }[] = [
-    { prefix: "process_facilities", label: "Process Facilities" },
-    { prefix: "offshore_platforms", label: "Offshore Platforms" },
-    { prefix: "swamp_platforms", label: "Swamp Platforms" },
-    { prefix: "gas_compressors", label: "Gas Compressors" },
-    { prefix: "pipeline", label: "Pipeline" },
+const SURFACE_CATEGORIES: string[] = [
+    "Process Facilities",
+    "Offshore Platforms",
+    "Swamp Platforms",
+    "Gas Compressors",
+    "Pipeline",
 ];
 
 const RIG_FIELDS: { key: keyof WilayahData; label: string }[] = [
@@ -134,13 +103,13 @@ const RIG_FIELDS: { key: keyof WilayahData; label: string }[] = [
 ];
 
 const OverviewTab = () => {
-    const [wilayahMap, setWilayahMap] = useState<Record<string, WilayahData>>({});
+    const [wilayahList, setWilayahList] = useState<WilayahData[]>([]);
+    const [asetList, setAsetList] = useState<AsetData[]>([]);
+    const [asetLoading, setAsetLoading] = useState(false);
+
     const [dataLoading, setDataLoading] = useState(true);
     const [selectedKode, setSelectedKode] = useState<string | null>(null);
     const [form, setForm] = useState<WilayahData | null>(null);
-
-    const [newKode, setNewKode] = useState("");
-    const [showAddForm, setShowAddForm] = useState(false);
 
     const [saveLoading, setSaveLoading] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
@@ -149,9 +118,9 @@ const OverviewTab = () => {
     async function fetchOverview() {
         setDataLoading(true);
         try {
-            const res = await fetch("/api/wilayah");
+            const res = await fetch("/api/overview/wilayah_kerja");
             const json = await res.json();
-            setWilayahMap(json.data ?? {});
+            setWilayahList(json.data ?? []);
         } catch (err) {
             console.error("Gagal memuat data overview:", err);
         } finally {
@@ -159,38 +128,74 @@ const OverviewTab = () => {
         }
     }
 
+    async function fetchAset(kode: string) {
+        setAsetLoading(true);
+        try {
+            const res = await fetch(`/api/overview/wilayah_aset?wilayah_kerja=${encodeURIComponent(kode)}`);
+            const json = await res.json();
+            setAsetList(json.data ?? []);
+        } catch (err) {
+            console.error("Gagal memuat data aset:", err);
+        } finally {
+            setAsetLoading(false);
+        }
+    }
+
     useEffect(() => {
         fetchOverview();
     }, []);
 
-    const wilayahList = useMemo(() => {
-        const list = [...DEFAULT_WILAYAH_LIST];
-        for (const kode of Object.keys(wilayahMap)) {
-            if (!list.some((w) => w.kode === kode)) {
-                list.push({ kode, nama: wilayahMap[kode]?.nama_wilayah || kode });
-            }
-        }
-        return list.map((w) => ({ ...w, nama: wilayahMap[w.kode]?.nama_wilayah || w.nama }));
-    }, [wilayahMap]);
+    const sidebarList = useMemo(() => {
+        return wilayahList.map((w) => ({ kode: w.kode, nama: w.nama_wilayah || w.kode }));
+    }, [wilayahList]);
 
     function selectWilayah(kode: string) {
         setSelectedKode(kode);
-        setForm(wilayahMap[kode] ? { ...emptyWilayah(kode), ...wilayahMap[kode] } : emptyWilayah(kode));
+        const existing = wilayahList.find((w) => w.kode === kode);
+        setForm(existing ? { ...emptyWilayah(kode), ...existing } : emptyWilayah(kode));
         setSaveError(null);
         setSaveSuccess(false);
-    }
-
-    function handleAddWilayah(e: React.FormEvent) {
-        e.preventDefault();
-        const kode = newKode.trim().toLowerCase().replace(/\s+/g, "-");
-        if (!kode) return;
-        selectWilayah(kode);
-        setNewKode("");
-        setShowAddForm(false);
+        fetchAset(kode);
     }
 
     function updateField(key: keyof WilayahData, value: string) {
         setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
+    }
+
+    // ------------------------------------------------------------
+    // handleChangeAset — sekarang identifikasi baris pakai (tipeAset + kategori),
+    // BUKAN id, karena kategori yang belum ada datanya di database belum punya id.
+    // Kalau baris untuk kategori itu belum ada di asetList, kita BUAT baris baru
+    // di state (belum ke database, baru kesimpen pas "Simpan Perubahan").
+    // ------------------------------------------------------------
+    function handleChangeAset(
+        tipeAset: string,
+        kategori: string,
+        field: "jumlah_active" | "jumlah_non_active" | "total",
+        value: string
+    ) {
+        setAsetList((prev) => {
+            const idx = prev.findIndex((a) => a.tipe_aset === tipeAset && a.kategori === kategori);
+
+            if (idx === -1) {
+                // Baris belum ada -> buat baru. id sementara pakai string kosong,
+                // nanti backend yang generate id asli waktu disimpan.
+                const newItem: AsetData = {
+                    id: "",
+                    wilayah_kerja: selectedKode ?? "",
+                    tipe_aset: tipeAset,
+                    kategori,
+                    jumlah_active: null,
+                    jumlah_non_active: null,
+                    total: null,
+                    [field]: value,
+                };
+                return [...prev, newItem];
+            }
+
+            // Baris sudah ada -> update field-nya saja
+            return prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item));
+        });
     }
 
     async function handleSave(e: React.FormEvent) {
@@ -204,7 +209,7 @@ const OverviewTab = () => {
         const { kode, ...fields } = form;
 
         try {
-            const res = await fetch(`/api/wilayah/${encodeURIComponent(kode)}`, {
+            const res = await fetch(`/api/overview/wilayah_kerja/${encodeURIComponent(kode)}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(fields),
@@ -231,7 +236,7 @@ const OverviewTab = () => {
             <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                 <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">Wilayah Kerja</p>
                 {dataLoading && <p className="text-xs text-slate-400">Memuat...</p>}
-                {wilayahList.map((w) => (
+                {sidebarList.map((w) => (
                     <button
                         key={w.kode}
                         onClick={() => selectWilayah(w.kode)}
@@ -286,23 +291,32 @@ const OverviewTab = () => {
                         </FieldSection>
 
                         <FieldSection title="Number of Assets — Wells">
-                        <AssetTable
-                            headerLabel="Wells"
-                            totalPrefix="sumur_total"
-                            groups={SUMUR_GROUPS}
-                            form={form}
-                            updateField={updateField}
-                        />
-                    </FieldSection>
+                            {asetLoading ? (
+                                <p className="text-xs text-slate-400">Memuat...</p>
+                            ) : (
+                                <AsetTable
+                                    headerLabel="Wells"
+                                    categories={WELLS_CATEGORIES}
+                                    tipeAset="wells"
+                                    asetList={asetList}
+                                    onChange={handleChangeAset}
+                                />
+                            )}
+                        </FieldSection>
 
-                    <FieldSection title="Number of Assets — Surface Facilities">
-                        <AssetTable
-                            headerLabel="Surface Facilities"
-                            groups={SURFACE_GROUPS}
-                            form={form}
-                            updateField={updateField}
-                        />
-                    </FieldSection>
+                        <FieldSection title="Number of Assets — Surface Facilities">
+                            {asetLoading ? (
+                                <p className="text-xs text-slate-400">Memuat...</p>
+                            ) : (
+                                <AsetTable
+                                    headerLabel="Surface Facilities"
+                                    categories={SURFACE_CATEGORIES}
+                                    tipeAset="surface_facilities"
+                                    asetList={asetList}
+                                    onChange={handleChangeAset}
+                                />
+                            )}
+                        </FieldSection>
 
                         <FieldSection title="Rigs">
                             {RIG_FIELDS.map((f) => (
@@ -406,59 +420,21 @@ function DateInput({
     );
 }
 
-function TripleField({
-    label, prefix, form, updateField,
-}: {
-    label: string;
-    prefix: string;
-    form: WilayahData;
-    updateField: (key: keyof WilayahData, value: string) => void;
-}) {
-    const activeKey = `${prefix}_active` as keyof WilayahData;
-    const nonActiveKey = `${prefix}_non_active` as keyof WilayahData;
-    const totalKey = `${prefix}_total` as keyof WilayahData;
-
-    return (
-        <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs font-semibold text-slate-600">{label}</label>
-            <div className="grid grid-cols-3 gap-2">
-                <input
-                    type="text"
-                    value={form[activeKey] ?? ""}
-                    onChange={(e) => updateField(activeKey, e.target.value)}
-                    placeholder="Active"
-                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-blue-500"
-                />
-                <input
-                    type="text"
-                    value={form[nonActiveKey] ?? ""}
-                    onChange={(e) => updateField(nonActiveKey, e.target.value)}
-                    placeholder="Non-Active"
-                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-blue-500"
-                />
-                <input
-                    type="text"
-                    value={form[totalKey] ?? ""}
-                    onChange={(e) => updateField(totalKey, e.target.value)}
-                    placeholder="Total"
-                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-blue-500"
-                />
-            </div>
-        </div>
-    );
-}
-
-function AssetTable({
-    headerLabel, totalPrefix, groups, form, updateField,
+// ============================================================
+// AsetTable — render dari daftar kategori TETAP (categories),
+// isi nilainya dicari dari asetList (data database) kalau ada.
+// ============================================================
+function AsetTable({
+    headerLabel, categories, tipeAset, asetList, onChange,
 }: {
     headerLabel: string;
-    totalPrefix?: string;
-    groups: { prefix: string; label: string }[];
-    form: WilayahData;
-    updateField: (key: keyof WilayahData, value: string) => void;
+    categories: string[];
+    tipeAset: string;
+    asetList: AsetData[];
+    onChange: (tipeAset: string, kategori: string, field: "jumlah_active" | "jumlah_non_active" | "total", value: string) => void;
 }) {
-    function cellKey(prefix: string, suffix: "active" | "non_active" | "total") {
-        return `${prefix}_${suffix}` as keyof WilayahData;
+    function findItem(kategori: string) {
+        return asetList.find((a) => a.tipe_aset === tipeAset && a.kategori === kategori);
     }
 
     return (
@@ -473,30 +449,21 @@ function AssetTable({
                     </tr>
                 </thead>
                 <tbody>
-                    {groups.map((g) => {
-                        const isTotal = g.prefix === totalPrefix;
+                    {categories.map((kategori) => {
+                        const item = findItem(kategori);
                         return (
-                            <tr
-                                key={g.prefix}
-                                className={[
-                                    "border-b border-slate-100 last:border-b-0",
-                                    isTotal ? "bg-slate-50 font-semibold" : "",
-                                ].join(" ")}
-                            >
-                                <td className="px-4 py-2 text-slate-600">{g.label}</td>
-                                {(["active", "non_active", "total"] as const).map((suffix) => {
-                                    const key = cellKey(g.prefix, suffix);
-                                    return (
-                                        <td key={suffix} className="px-2 py-2">
-                                            <input
-                                                type="text"
-                                                value={form[key] ?? ""}
-                                                onChange={(e) => updateField(key, e.target.value)}
-                                                className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-center text-sm outline-none focus:border-blue-500"
-                                            />
-                                        </td>
-                                    );
-                                })}
+                            <tr key={kategori} className="border-b border-slate-100 last:border-b-0">
+                                <td className="px-4 py-2 text-slate-600">{kategori}</td>
+                                {(["jumlah_active", "jumlah_non_active", "total"] as const).map((field) => (
+                                    <td key={field} className="px-2 py-2">
+                                        <input
+                                            type="text"
+                                            value={item?.[field] ?? ""}
+                                            onChange={(e) => onChange(tipeAset, kategori, field, e.target.value)}
+                                            className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-center text-sm outline-none focus:border-blue-500"
+                                        />
+                                    </td>
+                                ))}
                             </tr>
                         );
                     })}
