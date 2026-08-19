@@ -208,6 +208,7 @@ const OverviewTab = () => {
         const { kode, ...fields } = form;
 
         try {
+            // 1. Simpan data wilayah_kerja
             const res = await fetch(`/api/overview/wilayah_kerja/${encodeURIComponent(kode)}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
@@ -216,12 +217,32 @@ const OverviewTab = () => {
             const json = await res.json();
 
             if (!res.ok) {
-                toastError(json.error || "Gagal menyimpan perubahan.");
+                toastError(json.error || "Gagal menyimpan perubahan wilayah kerja.");
                 return;
             }
 
-            toastSuccess("Perubahan wilayah kerja berhasil disimpan.");
+            // 2. Simpan data wilayah_aset — lewati baris yang belum pernah diisi sama sekali
+            const asetToSave = asetList.filter(
+                (item) => item.id !== "" || item.jumlah_active || item.jumlah_non_active || item.total
+            );
+
+            if (asetToSave.length > 0) {
+                const asetRes = await fetch("/api/overview/wilayah_aset", {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(asetToSave),
+                });
+                const asetJson = await asetRes.json();
+
+                if (!asetRes.ok) {
+                    toastError(asetJson.error || "Gagal menyimpan perubahan aset.");
+                    return;
+                }
+            }
+
+            toastSuccess("Perubahan berhasil disimpan.");
             await fetchOverview();
+            await fetchAset(kode);
         } catch {
             toastError("Gagal menyimpan perubahan. Periksa koneksi internet.");
         } finally {
