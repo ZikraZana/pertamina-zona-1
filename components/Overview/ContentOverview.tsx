@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 type WilayahData = {
+    kode: string;
     nama_wilayah: string | null;
     provinsi: string | null;
     kabupaten_kota: string | null;
@@ -16,37 +17,35 @@ type WilayahData = {
     tanggal_produksi: string | null;
     nama_fasilitas: string | null;
     jenis_fasilitas: string | null;
-    jumlah: string | null;
-    sumur_eksplorasi_active: string | null;
-    sumur_eksplorasi_non_active: string | null;
-    sumur_eksplorasi_total: string | null;
-    producer_active: string | null;
-    producer_non_active: string | null;
-    producer_total: string | null;
-    injector_active: string | null;
-    injector_non_active: string | null;
-    injector_total: string | null;
-    sumur_total_active: string | null;
-    sumur_total_non_active: string | null;
-    sumur_total_total: string | null;
-    process_facilities_active: string | null;
-    process_facilities_non_active: string | null;
-    process_facilities_total: string | null;
-    offshore_platforms_active: string | null;
-    offshore_platforms_non_active: string | null;
-    offshore_platforms_total: string | null;
-    swamp_platforms_active: string | null;
-    swamp_platforms_non_active: string | null;
-    swamp_platforms_total: string | null;
-    gas_compressors_active: string | null;
-    gas_compressors_non_active: string | null;
-    gas_compressors_total: string | null;
-    pipeline_active: string | null;
-    pipeline_non_active: string | null;
-    pipeline_total: string | null;
+    jumlah_fasilitas: string | null;
     drilling_rigs: string | null;
     workover_rigs: string | null;
 };
+
+type AsetData = {
+    id: string;
+    wilayah_kerja: string;
+    tipe_aset: string;
+    kategori: string;
+    jumlah_active: string | null;
+    jumlah_non_active: string | null;
+    total: string | null;
+};
+
+const WELLS_CATEGORIES: string[] = [
+    "Exploration & Delineation",
+    "Producer",
+    "Injector",
+    "Total Sumur",
+];
+
+const SURFACE_CATEGORIES: string[] = [
+    "Process Facilities",
+    "Offshore Platforms",
+    "Swamp Platforms",
+    "Gas Compressors",
+    "Pipeline",
+];
 
 type FacilityImage = {
     src: string;
@@ -66,24 +65,36 @@ const ContentOverview = () => {
         let activeKey: string | null = null;
 
         // ===== DATA WILAYAH KERJA (diambil dari Supabase lewat /api/wilayah) =====
-        let wilayahDataMap: Record<string, WilayahData> = {};
+        let wilayahList: WilayahData[] = [];
+        let asetList: AsetData[] = [];
         let cancelled = false;
         let refreshActivePanel: (() => void) | null = null;
 
         async function loadOverviewData() {
             try {
-                const res = await fetch('/api/wilayah');
+                const res = await fetch('/api/overview/wilayah_kerja');
                 if (!res.ok) return;
                 const json = await res.json();
                 if (cancelled) return;
-                wilayahDataMap = json.data ?? {};
+                wilayahList = json.data ?? [];
                 if (activeKey && refreshActivePanel) {
                     refreshActivePanel();
                 }
-                // Data produksi baru masuk — hitung ulang total statistik
                 runStatCountUp();
             } catch (err) {
                 console.error('Gagal memuat data overview:', err);
+            }
+        }
+
+        async function loadAsetData(kode: string) {
+            try {
+                const res = await fetch(`/api/overview/wilayah_aset?wilayah_kerja=${encodeURIComponent(kode)}`);
+                if (!res.ok) return;
+                const json = await res.json();
+                if (cancelled) return;
+                asetList = json.data ?? [];
+            } catch (err) {
+                console.error('Gagal memuat data aset:', err);
             }
         }
 
@@ -421,7 +432,7 @@ const ContentOverview = () => {
         }
 
         // Data kabupaten/kota per provinsi untuk tooltip di "Cakupan Lokasi"
-// Sesuaikan isinya agar jumlahnya sama dengan angka yang tampil di UI (1, 4, 3, 5, 1)
+        // Sesuaikan isinya agar jumlahnya sama dengan angka yang tampil di UI (1, 4, 3, 5, 1)
         const kabupatenKotaByProvinsi: Record<string, string[]> = {
             'Aceh': [
                 'Lepas Pantai Kab. Aceh Timur',
@@ -596,9 +607,7 @@ const ContentOverview = () => {
             let totalGasMmscfd = 0;
             let tanggalTerbaru: string | null = null;
 
-            for (const kode of Object.keys(wilayahDataMap)) {
-                const w = wilayahDataMap[kode];
-
+            for (const w of wilayahList) {
                 const minyak = parseFloat(w.produksi_minyak ?? '');
                 if (!isNaN(minyak)) totalMinyakMbopd += minyak;
 
@@ -661,6 +670,7 @@ const ContentOverview = () => {
             openCards();
             selectProvinsi(provinsiCode);
             loadWilayahKerja(key, nama);
+            loadAsetData(key);
         }
 
         function closePanel() {
@@ -685,10 +695,13 @@ const ContentOverview = () => {
             titleEl.textContent = namaWilayah;
 
             const emptyWilayahData: WilayahData = {
-                nama_wilayah: null, provinsi: null, kabupaten_kota: null, jenis_wk: null, tahun_berdiri: null, luas_wilayah: null, part_interest: null, kkp: null, produksi_minyak: null, produksi_gas: null, tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah: null, sumur_eksplorasi_active: null, sumur_eksplorasi_non_active: null, sumur_eksplorasi_total: null, producer_active: null, producer_non_active: null, producer_total: null, injector_active: null, injector_non_active: null, injector_total: null, sumur_total_active: null, sumur_total_non_active: null, sumur_total_total: null, process_facilities_active: null, process_facilities_non_active: null, process_facilities_total: null, offshore_platforms_active: null, offshore_platforms_non_active: null, offshore_platforms_total: null, swamp_platforms_active: null, swamp_platforms_non_active: null, swamp_platforms_total: null, gas_compressors_active: null, gas_compressors_non_active: null, gas_compressors_total: null, pipeline_active: null, pipeline_non_active: null, pipeline_total: null, drilling_rigs: null, workover_rigs: null,
+                kode, nama_wilayah: null, provinsi: null, kabupaten_kota: null, jenis_wk: null, tahun_berdiri: null,
+                luas_wilayah: null, part_interest: null, kkp: null, produksi_minyak: null, produksi_gas: null,
+                tanggal_produksi: null, nama_fasilitas: null, jenis_fasilitas: null, jumlah_fasilitas: null,
+                drilling_rigs: null, workover_rigs: null,
             };
 
-            const d: WilayahData = wilayahDataMap[kode] ?? emptyWilayahData;
+            const d: WilayahData = wilayahList.find((w) => w.kode === kode) ?? emptyWilayahData;
 
             lastData = d;
             lastNama = namaWilayah;
@@ -713,6 +726,41 @@ const ContentOverview = () => {
 
         let lastData: WilayahData | null = null;
         let lastNama = '';
+
+        function renderAsetTable(headerLabel: string, categories: string[], tipeAset: string) {
+            const rows = categories
+                .map((kategori, i) => {
+                    const item = asetList.find((a) => a.tipe_aset === tipeAset && a.kategori === kategori);
+                    const rowClass = kategori === 'Total Sumur'
+                        ? 'bg-blue-100 font-semibold'
+                        : (i % 2 === 0 ? 'bg-white' : 'bg-blue-50');
+                    return `
+                <tr class="${rowClass}">
+                    <td class="px-2 py-1">${kategori}</td>
+                    <td class="px-2 py-1 text-center">${item?.jumlah_active ?? '-'}</td>
+                    <td class="px-2 py-1 text-center">${item?.jumlah_non_active ?? '-'}</td>
+                    <td class="px-2 py-1 text-center">${item?.total ?? '-'}</td>
+                </tr>
+            `;
+                })
+                .join('');
+
+            return `
+        <table class="col-span-3 mb-3 w-full overflow-hidden rounded-lg border border-slate-200 text-xs">
+            <thead>
+                <tr class="bg-blue-900 text-white">
+                    <th class="px-2 py-1.5 text-left font-semibold">${headerLabel}</th>
+                    <th class="w-16 px-2 py-1.5 text-center font-semibold">Active</th>
+                    <th class="w-16 px-2 py-1.5 text-center font-semibold">Non-Active</th>
+                    <th class="w-16 px-2 py-1.5 text-center font-semibold">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+        </table>
+    `;
+        }
 
         function openDetailCard(type: string) {
             if (!lastData) return;
@@ -746,90 +794,13 @@ const ContentOverview = () => {
                   <p class="col-span-3 font-semibold text-blue-900">Fasilitas</p>
                   ${row('Nama Fasilitas', d.nama_fasilitas)}
                   ${row('Jenis Fasilitas', d.jenis_fasilitas)}
-                  ${row('Jumlah', d.jumlah)}
+                  ${row('Jumlah', d.jumlah_fasilitas)}
                   <hr class="col-span-3 my-3">
 
-                  <p class="col-span-3 mb-2 font-semibold text-blue-900">Number of Assets</p>
+                    <p class="col-span-3 mb-2 font-semibold text-blue-900">Number of Assets</p>
 
-                  <table class="col-span-3 mb-3 w-full overflow-hidden rounded-lg border border-slate-200 text-xs">
-                    <thead>
-                      <tr class="bg-blue-900 text-white">
-                        <th class="px-2 py-1.5 text-left font-semibold">Wells</th>
-                        <th class="w-16 px-2 py-1.5 text-center font-semibold">Active</th>
-                        <th class="w-16 px-2 py-1.5 text-center font-semibold">Non-Active</th>
-                        <th class="w-16 px-2 py-1.5 text-center font-semibold">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr class="bg-white">
-                        <td class="px-2 py-1">Exploration & Delineation</td>
-                        <td class="px-2 py-1 text-center">${d.sumur_eksplorasi_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.sumur_eksplorasi_non_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.sumur_eksplorasi_total ?? '-'}</td>
-                      </tr>
-                      <tr class="bg-blue-50">
-                        <td class="px-2 py-1">Producer</td>
-                        <td class="px-2 py-1 text-center">${d.producer_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.producer_non_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.producer_total ?? '-'}</td>
-                      </tr>
-                      <tr class="bg-white">
-                        <td class="px-2 py-1">Injector</td>
-                        <td class="px-2 py-1 text-center">${d.injector_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.injector_non_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.injector_total ?? '-'}</td>
-                      </tr>
-                      <tr class="bg-blue-100 font-semibold">
-                        <td class="px-2 py-1">Total</td>
-                        <td class="px-2 py-1 text-center">${d.sumur_total_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.sumur_total_non_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.sumur_total_total ?? '-'}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-
-                  <table class="col-span-3 mb-3 w-full overflow-hidden rounded-lg border border-slate-200 text-xs">
-                    <thead>
-                      <tr class="bg-blue-900 text-white">
-                        <th class="px-2 py-1.5 text-left font-semibold">Surface Facilities</th>
-                        <th class="w-16 px-2 py-1.5 text-center font-semibold">Active</th>
-                        <th class="w-16 px-2 py-1.5 text-center font-semibold">Non-Active</th>
-                        <th class="w-16 px-2 py-1.5 text-center font-semibold">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr class="bg-white">
-                        <td class="px-2 py-1">Process Facilities</td>
-                        <td class="px-2 py-1 text-center">${d.process_facilities_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d. process_facilities_non_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.process_facilities_total ?? '-'}</td>
-                      </tr>
-                      <tr class="bg-blue-50">
-                        <td class="px-2 py-1">Offshore Platforms</td>
-                        <td class="px-2 py-1 text-center">${d.offshore_platforms_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.offshore_platforms_non_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.offshore_platforms_total ?? '-'}</td>
-                      </tr>
-                      <tr class="bg-white">
-                        <td class="px-2 py-1">Swamp Platforms</td>
-                        <td class="px-2 py-1 text-center">${d.swamp_platforms_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.swamp_platforms_non_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.swamp_platforms_total ?? '-'}</td>
-                      </tr>
-                      <tr class="bg-blue-50">
-                        <td class="px-2 py-1">Gas Compressors</td>
-                        <td class="px-2 py-1 text-center">${d.gas_compressors_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.gas_compressors_non_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.gas_compressors_total ?? '-'}</td>
-                      </tr>
-                      <tr class="bg-white">
-                        <td class="px-2 py-1">Pipeline</td>
-                        <td class="px-2 py-1 text-center">${d.pipeline_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.pipeline_non_active ?? '-'}</td>
-                        <td class="px-2 py-1 text-center">${d.pipeline_total ?? '-'}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  ${renderAsetTable('Wells', WELLS_CATEGORIES, 'wells')}
+                  ${renderAsetTable('Surface Facilities', SURFACE_CATEGORIES, 'surface_facilities')}
 
                   <div class="col-span-3 mb-3 grid grid-cols-2 gap-2">
                     <div class="rounded-lg border border-lime-200 bg-lime-50 p-2 text-xs">
@@ -1073,7 +1044,7 @@ const ContentOverview = () => {
         // Fallback: kalau splash sudah lebih dulu selesai sebelum listener ini terpasang
         // (mis. transisi Navbar sudah kelar duluan), tetap jalankan setelah jeda singkat.
         const fallbackTimer = setTimeout(triggerStatCountUp, 2200);
-        
+
         return () => {
             cancelled = true;
             window.removeEventListener("splash-finished", triggerStatCountUp);
