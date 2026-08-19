@@ -8,6 +8,7 @@ import PerformanceReportTab from "./PerformanceReportTab";
 import AdminLog from "./AdminLog";
 import AdminProfile from "./AdminProfile";
 import AchievementTab from "./AchievementTab";
+import { confirmAction, toastSuccess, toastError } from "@/lib/alert";
 
 const AdminPerformanceContent = () => {
     const supabase = useMemo(() => createClient(), []);
@@ -37,10 +38,14 @@ const AdminPerformanceContent = () => {
     }
 
     async function handleLogout() {
-        setLoginError(null);
+        const confirmed = await confirmAction("Keluar dari akun?", "Anda akan logout dari sesi admin ini.", "Ya, Logout");
+        if (!confirmed) return;
+
         const { error } = await supabase.auth.signOut();
         if (error) {
-            setLoginError("Gagal Logout");
+            toastError("Gagal logout. Coba lagi.");
+        } else {
+            toastSuccess("Berhasil logout.");
         }
     }
 

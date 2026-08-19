@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useMemo, useState } from "react";
+import { toastSuccess, toastError } from "@/lib/alert";
 
 type Props = {
     userId: string;
@@ -36,8 +37,6 @@ const AdminProfile = ({ userId, userEmail }: Props) => {
 
     async function handleSaveName(e: React.FormEvent) {
         e.preventDefault();
-        setNameError(null);
-        setNameSuccess(false);
         setNameLoading(true);
 
         const { error } = await supabase
@@ -46,9 +45,9 @@ const AdminProfile = ({ userId, userEmail }: Props) => {
             .eq("id", userId);
 
         if (error) {
-            setNameError("Gagal menyimpan nama.");
+            toastError("Gagal menyimpan nama.");
         } else {
-            setNameSuccess(true);
+            toastSuccess("Nama berhasil disimpan.");
         }
         setNameLoading(false);
     }
@@ -63,16 +62,14 @@ const AdminProfile = ({ userId, userEmail }: Props) => {
 
     async function handleChangePassword(e: React.FormEvent) {
         e.preventDefault();
-        setPasswordError(null);
-        setPasswordSuccess(false);
 
         if (newPassword !== confirmPassword) {
-            setPasswordError("Konfirmasi password baru tidak cocok.");
+            toastError("Konfirmasi password baru tidak cocok.");
             return;
         }
 
         if (newPassword.length < 6) {
-            setPasswordError("Password baru minimal 6 karakter.");
+            toastError("Password baru minimal 6 karakter.");
             return;
         }
 
@@ -85,7 +82,7 @@ const AdminProfile = ({ userId, userEmail }: Props) => {
         });
 
         if (verifyError) {
-            setPasswordError("Password lama salah.");
+            toastError("Password lama salah.");
             setPasswordLoading(false);
             return;
         }
@@ -96,9 +93,9 @@ const AdminProfile = ({ userId, userEmail }: Props) => {
         });
 
         if (updateError) {
-            setPasswordError("Gagal mengubah password.");
+            toastError("Gagal mengubah password.");
         } else {
-            setPasswordSuccess(true);
+            toastSuccess("Password berhasil diubah.");
             setOldPassword("");
             setNewPassword("");
             setConfirmPassword("");
@@ -130,13 +127,6 @@ const AdminProfile = ({ userId, userEmail }: Props) => {
                             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
                         />
                     </div>
-
-                    {nameError && (
-                        <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{nameError}</p>
-                    )}
-                    {nameSuccess && (
-                        <p className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">Nama tersimpan.</p>
-                    )}
 
                     <button
                         type="submit"
@@ -184,13 +174,6 @@ const AdminProfile = ({ userId, userEmail }: Props) => {
                             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
                         />
                     </div>
-
-                    {passwordError && (
-                        <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{passwordError}</p>
-                    )}
-                    {passwordSuccess && (
-                        <p className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">Password berhasil diubah.</p>
-                    )}
 
                     <button
                         type="submit"
