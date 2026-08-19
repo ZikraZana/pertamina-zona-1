@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import JSZip from "jszip"
+import { confirmDelete, toastSuccess, toastError } from "@/lib/alert";
 
 // ============================================================
 // TIPE DATA LAPORAN
@@ -462,15 +463,13 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
 
     async function handleUpload(e: React.FormEvent) {
         e.preventDefault();
-        setUploadError(null);
-        setUploadSuccess(null);
 
         if (!uploadFile) {
-            setUploadError("Pilih File PDF terlebih dahulu")
+            toastError("Pilih file laporan terlebih dahulu.");
             return;
         }
         if (!uploadDate) {
-            setUploadError("Tanggal Laporan wajib diisi")
+            toastError("Tanggal Laporan wajib diisi.");
             return;
         }
 
@@ -489,8 +488,8 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
         const json = await res.json();
 
         if (!res.ok) {
-            setUploadError(json.error ?? "Gagal mengunggah laporan")
-            setUploadLoading(false)
+            toastError(json.error ?? "Gagal mengunggah laporan.");
+            setUploadLoading(false);
             return;
         }
 
@@ -498,13 +497,13 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
         setUploadDate("");
         setUploadFile(null);
         setUploadLoading(false);
-        setUploadSuccess("Laporan berhasil diunggah.");
+        toastSuccess("Laporan berhasil diunggah.");
     }
 
     async function handleDelete() {
         if (!previewReport) return;
 
-        const confirmed = window.confirm(`Hapus laporan "${previewReport.title}"?`);
+        const confirmed = await confirmDelete(`Laporan "${previewReport.title}" akan dihapus secara permanen.`);
         if (!confirmed) return;
 
         const res = await fetch(`/api/performance-reports/${previewReport.id}`, {
@@ -513,11 +512,12 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
         const json = await res.json()
 
         if (!res.ok) {
-            setPreviewError(json.error ?? "Gagal menghapus laporan")
+            toastError(json.error ?? "Gagal menghapus laporan.");
             return;
         }
         closePreview();
         await fetchReports();
+        toastSuccess("Laporan berhasil dihapus.");
     }
 
     function startEdit() {
@@ -533,10 +533,8 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
         e.preventDefault();
         if (!previewReport) return;
 
-        setEditError(null);
-
         if (!editDate) {
-            setEditError("Tanggal Laporan wajib diisi")
+            toastError("Tanggal Laporan wajib diisi.");
             return;
         }
 
@@ -555,15 +553,16 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
         const json = await res.json();
 
         if (!res.ok) {
-            setEditError(json.error ?? "Gagal mengedit laporan")
-            setEditLoading(false)
+            toastError(json.error ?? "Gagal mengedit laporan.");
+            setEditLoading(false);
             return;
         }
 
         setPreviewReport(json.report);
         setIsEditing(false);
-        setEditLoading(false)
+        setEditLoading(false);
         await fetchReports();
+        toastSuccess("Perubahan laporan berhasil disimpan.");
     }
 
     // ============================================================
@@ -592,13 +591,6 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                         <h3 className="text-sm font-bold text-blue-900">Unggah Laporan</h3>
                         <p className="text-xs text-slate-400">Judul laporan akan otomatis mengikuti nama file yang diupload.</p>
                     </div>
-
-                    {uploadError && (
-                        <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{uploadError}</p>
-                    )}
-                    {uploadSuccess && (
-                        <p className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-600">{uploadSuccess}</p>
-                    )}
 
                     <div className="flex flex-col gap-4 sm:flex-row">
                         <label
@@ -1122,10 +1114,6 @@ const PerformanceReportTab = ({ userEmail, role, onLogout }: Props) => {
                                         <h3 className="text-sm font-bold text-blue-900">Edit Laporan</h3>
                                         <p className="text-xs text-slate-400">Kosongkan file kalau tidak ingin mengganti laporan.</p>
                                     </div>
-
-                                    {editError && (
-                                        <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{editError}</p>
-                                    )}
 
                                     <div>
                                         <label className="mb-1 block text-xs font-semibold text-slate-600">Tanggal Laporan</label>

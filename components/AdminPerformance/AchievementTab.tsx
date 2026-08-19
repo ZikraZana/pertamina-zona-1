@@ -3,6 +3,7 @@
 import { DragDropProvider } from "@dnd-kit/react";
 import { isSortable, useSortable } from "@dnd-kit/react/sortable";
 import { useEffect, useState } from "react";
+import { confirmDelete, confirmAction, toastSuccess, toastError } from "@/lib/alert";
 
 type ProduksiData = {
     type: "minyak" | "gas" | "migas";
@@ -642,10 +643,9 @@ const AchievementTab = () => {
 
     async function handleSubmitRk(e: React.FormEvent) {
         e.preventDefault();
-        setRkError(null);
 
         if (!rkForm.jumlah_minyak.trim() && !rkForm.jumlah_gas.trim()) {
-            setRkError("Isi minimal salah satu: Jumlah Minyak atau Jumlah Gas.");
+            toastError("Isi minimal salah satu: Jumlah Minyak atau Jumlah Gas.");
             return;
         }
 
@@ -664,7 +664,7 @@ const AchievementTab = () => {
         const json = await res.json();
 
         if (!res.ok) {
-            setRkError(json.error ?? "Gagal menyimpan data.");
+            toastError(json.error ?? "Gagal menyimpan data.");
             setRkLoading(false);
             return;
         }
@@ -672,12 +672,15 @@ const AchievementTab = () => {
         await fetchRkItems();
         resetRkForm();
         setRkLoading(false);
+        toastSuccess(rkEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
     }
 
     async function handleDeleteRk(id: string) {
-        if (!window.confirm("Hapus data ini?")) return;
+        const confirmed = await confirmDelete();
+        if (!confirmed) return;
         await fetch(`/api/achievement/rencana-kerja/${id}`, { method: "DELETE" });
         await fetchRkItems();
+        toastSuccess("Data berhasil dihapus.");
     }
 
     // Sama seperti reorderRkInGroup dulunya reorderRk (berbasis index global) --
@@ -740,18 +743,20 @@ const AchievementTab = () => {
             });
             if (!res.ok) {
                 const json = await res.json();
-                alert(json.error ?? "Gagal mengubah nama jenis.");
+                toastError(json.error ?? "Gagal mengubah nama jenis.");
                 return;
             }
             await fetchRkItems();
             setRenamingJenis(null);
+            toastSuccess("Nama jenis berhasil diubah.");
         } finally {
             setJenisActionLoading(false);
         }
     }
 
     async function handleDeleteJenis(jenis: string, count: number) {
-        if (!window.confirm(`Hapus jenis "${jenis}" beserta ${count} data di dalamnya? Tindakan ini tidak bisa dibatalkan.`)) return;
+        const confirmed = await confirmDelete(`Jenis "${jenis}" beserta ${count} data di dalamnya akan dihapus secara permanen.`);
+        if (!confirmed) return;
 
         setJenisActionLoading(true);
         try {
@@ -760,10 +765,11 @@ const AchievementTab = () => {
             });
             if (!res.ok) {
                 const json = await res.json();
-                alert(json.error ?? "Gagal menghapus jenis.");
+                toastError(json.error ?? "Gagal menghapus jenis.");
                 return;
             }
             await fetchRkItems();
+            toastSuccess("Jenis dan seluruh datanya berhasil dihapus.");
         } finally {
             setJenisActionLoading(false);
         }
@@ -798,16 +804,27 @@ const AchievementTab = () => {
         setInovasiLoading(true);
         const url = inovasiEditingId ? `/api/achievement/inovasi/${inovasiEditingId}` : "/api/achievement/inovasi";
         const method = inovasiEditingId ? "PATCH" : "POST";
-        await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(inovasiForm) });
+        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(inovasiForm) });
+        const json = await res.json();
+
+        if (!res.ok) {
+            toastError(json.error ?? "Gagal menyimpan data.");
+            setInovasiLoading(false);
+            return;
+        }
+
         await fetchInovasiItems();
         resetInovasiForm();
         setInovasiLoading(false);
+        toastSuccess(inovasiEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
     }
 
     async function handleDeleteInovasi(id: string) {
-        if (!window.confirm("Hapus data ini?")) return;
+        const confirmed = await confirmDelete();
+        if (!confirmed) return;
         await fetch(`/api/achievement/inovasi/${id}`, { method: "DELETE" });
         await fetchInovasiItems();
+        toastSuccess("Data berhasil dihapus.");
     }
 
     /**
@@ -888,7 +905,7 @@ const AchievementTab = () => {
         const json = await res.json();
 
         if (!res.ok) {
-            setProperError(json.error ?? "Gagal menyimpan data.");
+            toastError(json.error ?? "Gagal menyimpan data.");
             setProperLoading(false);
             return;
         }
@@ -896,12 +913,15 @@ const AchievementTab = () => {
         await fetchProperItems();
         resetProperForm();
         setProperLoading(false);
+        toastSuccess(properEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
     }
 
     async function handleDeleteProper(id: string) {
-        if (!window.confirm("Hapus data ini?")) return;
+        const confirmed = await confirmDelete();
+        if (!confirmed) return;
         await fetch(`/api/achievement/hsse/proper/${id}`, { method: "DELETE" });
         await fetchProperItems();
+        toastSuccess("Data berhasil dihapus.");
     }
 
     // ---------- Fungsi Security ----------
@@ -951,7 +971,7 @@ const AchievementTab = () => {
         const json = await res.json();
 
         if (!res.ok) {
-            setSecurityError(json.error ?? "Gagal menyimpan data.");
+            toastError(json.error ?? "Gagal menyimpan data.");
             setSecurityLoading(false);
             return;
         }
@@ -959,12 +979,15 @@ const AchievementTab = () => {
         await fetchSecurityItems();
         resetSecurityForm();
         setSecurityLoading(false);
+        toastSuccess(securityEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
     }
 
     async function handleDeleteSecurity(id: string) {
-        if (!window.confirm("Hapus data ini?")) return;
+        const confirmed = await confirmDelete();
+        if (!confirmed) return;
         await fetch(`/api/achievement/hsse/security/${id}`, { method: "DELETE" });
         await fetchSecurityItems();
+        toastSuccess("Data berhasil dihapus.");
     }
 
     // ---------- Fungsi Kehumasan ----------
@@ -1027,7 +1050,7 @@ const AchievementTab = () => {
         const json = await res.json();
 
         if (!res.ok) {
-            setKehumasanError(json.error ?? "Gagal menyimpan data.");
+            toastError(json.error ?? "Gagal menyimpan data.");
             setKehumasanLoading(false);
             return;
         }
@@ -1035,12 +1058,15 @@ const AchievementTab = () => {
         await fetchKehumasanItems();
         resetKehumasanForm();
         setKehumasanLoading(false);
+        toastSuccess(kehumasanEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
     }
 
     async function handleDeleteKehumasan(id: string) {
-        if (!window.confirm("Hapus data ini?")) return;
+        const confirmed = await confirmDelete();
+        if (!confirmed) return;
         await fetch(`/api/achievement/kehumasan/${id}`, { method: "DELETE" });
         await fetchKehumasanItems();
+        toastSuccess("Data berhasil dihapus.");
     }
 
     /**
@@ -1157,7 +1183,6 @@ const AchievementTab = () => {
 
     async function handleSubmitNaratif(e: React.FormEvent) {
         e.preventDefault();
-        setNaratifError(null);
         setNaratifLoading(true);
 
         const payload = {
@@ -1173,7 +1198,7 @@ const AchievementTab = () => {
         const json = await res.json();
 
         if (!res.ok) {
-            setNaratifError(json.error ?? "Gagal menyimpan data.");
+            toastError(json.error ?? "Gagal menyimpan data.");
             setNaratifLoading(false);
             return;
         }
@@ -1181,12 +1206,15 @@ const AchievementTab = () => {
         await fetchNaratifItems();
         resetNaratifForm();
         setNaratifLoading(false);
+        toastSuccess(naratifEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
     }
 
     async function handleDeleteNaratif(id: string) {
-        if (!window.confirm("Hapus data ini?")) return;
+        const confirmed = await confirmDelete();
+        if (!confirmed) return;
         await fetch(`/api/achievement/top-project/top-project-naratif/${id}`, { method: "DELETE" });
         await fetchNaratifItems();
+        toastSuccess("Data berhasil dihapus.");
     }
 
     // ---------- Fungsi ABI NBD ----------
@@ -1226,7 +1254,7 @@ const AchievementTab = () => {
         setAbiError(null);
 
         if (!abiForm.realization.trim() || !abiForm.target.trim()) {
-            setAbiError("Realisasi dan Target wajib diisi.");
+            toastError("Realisasi dan Target wajib diisi.");
             return;
         }
 
@@ -1247,7 +1275,7 @@ const AchievementTab = () => {
         const json = await res.json();
 
         if (!res.ok) {
-            setAbiError(json.error ?? "Gagal menyimpan data.");
+            toastError(json.error ?? "Gagal menyimpan data.");
             setAbiLoading(false);
             return;
         }
@@ -1255,12 +1283,15 @@ const AchievementTab = () => {
         await fetchAbiItems();
         resetAbiForm();
         setAbiLoading(false);
+        toastSuccess(abiEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
     }
 
     async function handleDeleteAbi(id: string) {
-        if (!window.confirm("Hapus data ini?")) return;
+        const confirmed = await confirmDelete();
+        if (!confirmed) return;
         await fetch(`/api/achievement/top-project/top-project-abi/${id}`, { method: "DELETE" });
         await fetchAbiItems();
+        toastSuccess("Data berhasil dihapus.");
     }
 
     useEffect(() => {
@@ -1292,8 +1323,6 @@ const AchievementTab = () => {
         if (!form) return;
 
         setSaveLoading(true);
-        setSaveError(null);
-        setSaveSuccess(false);
 
         const res = await fetch("/api/achievement/produksi", {
             method: "PATCH",
@@ -1310,9 +1339,9 @@ const AchievementTab = () => {
         const json = await res.json();
 
         if (!res.ok) {
-            setSaveError(json.error ?? "Gagal menyimpan.");
+            toastError(json.error ?? "Gagal menyimpan.");
         } else {
-            setSaveSuccess(true);
+            toastSuccess("Data produksi berhasil disimpan.");
             await fetchData();
         }
         setSaveLoading(false);

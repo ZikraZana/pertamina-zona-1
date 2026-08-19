@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { toastSuccess, toastError } from "@/lib/alert";
 
 // ============================================================
 // TIPE DATA WILAYAH KERJA (harus sama dengan yang di ContentOverview.tsx & /api/wilayah)
@@ -198,8 +199,6 @@ const OverviewTab = () => {
         if (!form) return;
 
         setSaveLoading(true);
-        setSaveError(null);
-        setSaveSuccess(false);
 
         const { kode, ...fields } = form;
 
@@ -212,14 +211,14 @@ const OverviewTab = () => {
             const json = await res.json();
 
             if (!res.ok) {
-                setSaveError(json.error || "Gagal menyimpan perubahan.");
+                toastError(json.error || "Gagal menyimpan perubahan.");
                 return;
             }
 
-            setSaveSuccess(true);
+            toastSuccess("Perubahan wilayah kerja berhasil disimpan.");
             await fetchOverview();
         } catch {
-            setSaveError("Gagal menyimpan perubahan. Periksa koneksi internet.");
+            toastError("Gagal menyimpan perubahan. Periksa koneksi internet.");
         } finally {
             setSaveLoading(false);
         }
@@ -286,32 +285,29 @@ const OverviewTab = () => {
                         </FieldSection>
 
                         <FieldSection title="Number of Assets — Wells">
-                        <AssetTable
-                            headerLabel="Wells"
-                            totalPrefix="sumur_total"
-                            groups={SUMUR_GROUPS}
-                            form={form}
-                            updateField={updateField}
-                        />
-                    </FieldSection>
+                            <AssetTable
+                                headerLabel="Wells"
+                                totalPrefix="sumur_total"
+                                groups={SUMUR_GROUPS}
+                                form={form}
+                                updateField={updateField}
+                            />
+                        </FieldSection>
 
-                    <FieldSection title="Number of Assets — Surface Facilities">
-                        <AssetTable
-                            headerLabel="Surface Facilities"
-                            groups={SURFACE_GROUPS}
-                            form={form}
-                            updateField={updateField}
-                        />
-                    </FieldSection>
+                        <FieldSection title="Number of Assets — Surface Facilities">
+                            <AssetTable
+                                headerLabel="Surface Facilities"
+                                groups={SURFACE_GROUPS}
+                                form={form}
+                                updateField={updateField}
+                            />
+                        </FieldSection>
 
                         <FieldSection title="Rigs">
                             {RIG_FIELDS.map((f) => (
                                 <TextInput key={f.key} label={f.label} value={form[f.key]} onChange={(v) => updateField(f.key, v)} />
                             ))}
                         </FieldSection>
-
-                        {saveError && <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{saveError}</p>}
-                        {saveSuccess && <p className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">Perubahan tersimpan.</p>}
 
                         <button
                             type="submit"
