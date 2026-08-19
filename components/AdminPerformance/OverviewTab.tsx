@@ -255,7 +255,13 @@ const OverviewTab = () => {
             {/* ---------- Daftar wilayah kerja ---------- */}
             <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                 <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">Wilayah Kerja</p>
-                {dataLoading && <p className="text-xs text-slate-400">Memuat...</p>}
+                {dataLoading && (
+                    <div className="flex flex-col gap-2">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <div key={i} className="h-9 animate-pulse rounded-lg bg-slate-100" />
+                        ))}
+                    </div>
+                )}
                 {sidebarList.map((w) => (
                     <button
                         key={w.kode}

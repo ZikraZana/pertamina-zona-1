@@ -1144,9 +1144,9 @@ const AchievementTab = () => {
 
     async function fetchWilayahKerjaList() {
         try {
-            const res = await fetch("/api/wilayah");
+            const res = await fetch("/api/overview/wilayah_kerja");
             const json = await res.json();
-            const names = Object.values(json.data ?? {})
+            const names = (json.data ?? [])
                 .map((w: any) => w.nama_wilayah)
                 .filter(Boolean);
             setWilayahKerjaList(names);
