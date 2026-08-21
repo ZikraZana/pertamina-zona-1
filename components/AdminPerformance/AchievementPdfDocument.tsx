@@ -379,40 +379,7 @@ function SectionHsse({ proper, security }: { proper: ProperItem[]; security: Sec
         <View style={styles.sectionWrapper}>
             <Text style={styles.sectionTitle}>3. HSSE</Text>
 
-            <Text style={styles.subSectionTitle}>PROPER</Text>
-            {proper.length === 0 ? (
-                <Text style={styles.emptyText}>Belum ada data PROPER.</Text>
-            ) : (
-                <View>
-                    <TableHeader labels={['Wilayah Kerja', 'Peringkat', 'Tahun', 'Keterangan']} />
-                    {proper.map((item) => (
-                        <View key={item.id} style={styles.tableRow}>
-                            <Text style={styles.tableCell}>{item.wilayah_kerja}</Text>
-                            <Text style={styles.tableCell}>{item.peringkat}</Text>
-                            <Text style={styles.tableCell}>{item.tahun}</Text>
-                            <Text style={styles.tableCell}>{item.keterangan ?? '-'}</Text>
-                        </View>
-                    ))}
-                </View>
-            )}
-
-            <Text style={styles.subSectionTitle}>Security</Text>
-            {security.length === 0 ? (
-                <Text style={styles.emptyText}>Belum ada data security.</Text>
-            ) : (
-                <View>
-                    <TableHeader labels={['Judul', 'Wilayah Kerja', 'Tanggal']} />
-                    {security.map((item) => (
-                        <View key={item.id} style={styles.tableRow}>
-                            <Text style={styles.tableCell}>{item.judul}</Text>
-                            <Text style={styles.tableCell}>{item.wilayah_kerja}</Text>
-                            <Text style={styles.tableCell}>
-                                {new Date(item.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            </Text>
-                        </View>
-                    ))}
-                </View>
-            )}
+            
         </View>
     );
 }
@@ -424,21 +391,7 @@ function SectionInovasi({ items }: { items: InovasiItem[] }) {
     return (
         <View style={styles.sectionWrapper}>
             <Text style={styles.sectionTitle}>4. Inovasi</Text>
-            {items.length === 0 ? (
-                <Text style={styles.emptyText}>Belum ada data inovasi.</Text>
-            ) : (
-                <View>
-                    <TableHeader labels={['Pencapaian', 'Nama Inovasi', 'Acara', 'Wilayah Kerja']} />
-                    {items.map((item) => (
-                        <View key={item.id} style={styles.tableRow}>
-                            <Text style={styles.tableCell}>{item.pencapaian}</Text>
-                            <Text style={styles.tableCell}>{item.nama_inovasi}</Text>
-                            <Text style={styles.tableCell}>{item.nama_acara ?? '-'}</Text>
-                            <Text style={styles.tableCell}>{item.wilayah_kerja}</Text>
-                        </View>
-                    ))}
-                </View>
-            )}
+            
         </View>
     );
 }
@@ -451,56 +404,7 @@ function SectionTopProject({ naratif, abi }: { naratif: NaratifItem[]; abi: AbiI
         <View style={styles.sectionWrapper}>
             <Text style={styles.sectionTitle}>5. Top Project</Text>
 
-            <Text style={styles.subSectionTitle}>Pencapaian</Text>
-            {naratif.length === 0 ? (
-                <Text style={styles.emptyText}>Belum ada data pencapaian.</Text>
-            ) : (
-                <View>
-                    <TableHeader labels={['Judul', 'Detail']} />
-                    {naratif.map((item) => (
-                        <View key={item.id} style={styles.tableRow}>
-                            <Text style={styles.tableCell}>{item.title}</Text>
-                            <Text style={styles.tableCell}>{item.detail}</Text>
-                        </View>
-                    ))}
-                </View>
-            )}
-
-            <Text style={styles.subSectionTitle}>ABI NBD</Text>
-
-            <View>
-                {abi.map((item) => (
-                    <View style={styles.topAbiCard}>
-                        <View style={styles.headerRowTopAbi}>
-                            <View>
-                                <Text style={styles.cardTitleTopAbi}>Proyek Strategis Peningkatan Kapasitas Produksi.</Text>
-                                <Text style={styles.cardPeriodTopAbi}></Text>
-                            </View>
-                            <Text style={styles.chipTopAbi}>% RKAP</Text>
-                        </View>
-                        <View style={styles.bigNumberRowTopAbi}>
-                            <Text style={styles.bigNumberTopAbi}></Text>
-                            <Text style={styles.unitTextTopAbi}></Text>
-                        </View>
-                    </View>
-                ))}
-            </View>
-
-            {/* {abi.length === 0 ? (
-                <Text style={styles.emptyText}>Belum ada data ABI NBD.</Text>
-            ) : (
-                <View>
-                    <TableHeader labels={['Judul', 'Realisasi', 'Target', 'Periode']} />
-                    {abi.map((item) => (
-                        <View key={item.id} style={styles.tableRow}>
-                            <Text style={styles.tableCell}>{item.title}</Text>
-                            <Text style={styles.tableCell}>{item.realization.toLocaleString('en-US')} {item.unit}</Text>
-                            <Text style={styles.tableCell}>{item.target.toLocaleString('en-US')} {item.unit}</Text>
-                            <Text style={styles.tableCell}>{item.period}</Text>
-                        </View>
-                    ))}
-                </View>
-            )} */}
+            
         </View>
     );
 }
@@ -519,23 +423,7 @@ function SectionKehumasan({ items }: { items: KehumasanItem[] }) {
     return (
         <View style={styles.sectionWrapper}>
             <Text style={styles.sectionTitle}>6. Kehumasan</Text>
-            {groupKeys.length === 0 ? (
-                <Text style={styles.emptyText}>Belum ada data kehumasan.</Text>
-            ) : (
-                groupKeys.map((wilayah) => (
-                    <View key={wilayah}>
-                        <Text style={styles.subSectionTitle}>{wilayah}</Text>
-                        <TableHeader labels={['Kategori', 'Sub Kategori', 'Medali']} />
-                        {groups[wilayah].map((item) => (
-                            <View key={item.id} style={styles.tableRow}>
-                                <Text style={styles.tableCell}>{item.kategori}</Text>
-                                <Text style={styles.tableCell}>{item.sub_kategori}</Text>
-                                <Text style={[styles.tableCell, { textTransform: 'capitalize' }]}>{item.medali}</Text>
-                            </View>
-                        ))}
-                    </View>
-                ))
-            )}
+            
         </View>
     );
 }
