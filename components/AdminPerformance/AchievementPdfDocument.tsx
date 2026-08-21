@@ -160,10 +160,71 @@ const styles = StyleSheet.create({
     // end Produksi //
 
     // start Rencana Kerja //
-    sectionRKFlex: {
-        flexDirection: 'row'
+    rkGridContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
     },
-
+    rkGridItem: {
+        width: '48%',
+        marginBottom: 12,
+    },
+    rkCard: {
+        borderRadius: 16,
+        border: '1px solid #e2e8f0',
+        padding: 16,
+    },
+    rkCardTitle: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: '#64748b',
+    },
+    rkCardSubtitle: {
+        fontSize: 9,
+        color: '#94a3b8',
+        marginTop: 2,
+        marginBottom: 10,
+    },
+    rkItemRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 6,
+        borderBottom: '1px solid #f1f5f9',
+    },
+    rkBadgeWrap: {
+        width: 18,
+        height: 18,
+        borderRadius: 999,
+        backgroundColor: '#f59e0b',
+        justifyContent: 'center',   // center vertikal
+        alignItems: 'center',        // center horizontal
+        marginRight: 8,
+    },
+    rkBadgeText: {
+        color: '#ffffff',
+        fontSize: 8,
+        fontWeight: 'bold',
+    },
+    rkItemTextWrap: {
+        flex: 1,
+        minWidth: 0,
+    },
+    rkItemLabel: {
+        fontSize: 9,
+        fontWeight: 'bold',
+        color: '#1e293b',
+    },
+    rkItemField: {
+        fontSize: 8,
+        color: '#94a3b8',
+    },
+    rkItemValue: {
+        width: 90,
+        textAlign: 'right',
+        fontSize: 8,
+        fontWeight: 'bold',
+        color: '#d97706',
+    },
     // end Rencana Kerja //
 
     // start Top Project //
@@ -332,6 +393,32 @@ function SectionProduksi({ items }: { items: ProduksiItem[] }) {
 // ============================================================
 // SECTION 2: RENCANA KERJA — dikelompokkan per jenis_rk
 // ============================================================
+function RkCard({ jenis, items }: { jenis: string; items: RkItem[] }) {
+    return (
+        <View style={styles.rkCard}>
+            <Text style={styles.rkCardTitle}>Capaian RK {jenis}</Text>
+            <Text style={styles.rkCardSubtitle}>Realisasi produksi terbaik</Text>
+
+            {items.map((item, i) => (
+                <View key={item.id} style={styles.rkItemRow}>
+                    <View style={styles.rkBadgeWrap}>
+                        <Text style={styles.rkBadgeText}>{i + 1}</Text>
+                    </View>
+                    <View style={styles.rkItemTextWrap}>
+                        <Text style={styles.rkItemLabel}>{item.nama_rk}</Text>
+                        <Text style={styles.rkItemField}>{item.wilayah_kerja}</Text>
+                    </View>
+                    <Text style={styles.rkItemValue}>
+                        {item.jumlah_minyak !== null ? `${item.jumlah_minyak.toLocaleString('en-US')} BOPD` : ''}
+                        {item.jumlah_minyak !== null && item.jumlah_gas !== null ? ' / ' : ''}
+                        {item.jumlah_gas !== null ? `${item.jumlah_gas.toLocaleString('en-US')} MMSCFD` : ''}
+                    </Text>
+                </View>
+            ))}
+        </View>
+    );
+}
+
 function SectionRencanaKerja({ items }: { items: RkItem[] }) {
     const groups: Record<string, RkItem[]> = {};
     for (const item of items) {
@@ -343,30 +430,17 @@ function SectionRencanaKerja({ items }: { items: RkItem[] }) {
     return (
         <View style={styles.sectionWrapper}>
             <Text style={styles.sectionTitle}>2. Rencana Kerja</Text>
-
-            <View>
-
-            </View>
-
-
-            {/* {groupKeys.length === 0 ? (
+            {groupKeys.length === 0 ? (
                 <Text style={styles.emptyText}>Belum ada data rencana kerja.</Text>
             ) : (
-                groupKeys.map((jenis) => (
-                    <View key={jenis}>
-                        <Text style={styles.subSectionTitle}>{jenis}</Text>
-                        <TableHeader labels={['Nama RK', 'Wilayah Kerja', 'Minyak (BOPD)', 'Gas (MMSCFD)']} />
-                        {groups[jenis].map((item) => (
-                            <View key={item.id} style={styles.tableRow}>
-                                <Text style={styles.tableCell}>{item.nama_rk}</Text>
-                                <Text style={styles.tableCell}>{item.wilayah_kerja}</Text>
-                                <Text style={styles.tableCell}>{item.jumlah_minyak ?? '-'}</Text>
-                                <Text style={styles.tableCell}>{item.jumlah_gas ?? '-'}</Text>
-                            </View>
-                        ))}
-                    </View>
-                ))
-            )} */}
+                <View style={styles.rkGridContainer}>
+                    {groupKeys.map((jenis) => (
+                        <View key={jenis} style={styles.rkGridItem}>
+                            <RkCard jenis={jenis} items={groups[jenis].slice(0,5)} />
+                        </View>
+                    ))}
+                </View>
+            )}
         </View>
     );
 }
@@ -379,7 +453,7 @@ function SectionHsse({ proper, security }: { proper: ProperItem[]; security: Sec
         <View style={styles.sectionWrapper}>
             <Text style={styles.sectionTitle}>3. HSSE</Text>
 
-            
+
         </View>
     );
 }
@@ -391,7 +465,7 @@ function SectionInovasi({ items }: { items: InovasiItem[] }) {
     return (
         <View style={styles.sectionWrapper}>
             <Text style={styles.sectionTitle}>4. Inovasi</Text>
-            
+
         </View>
     );
 }
@@ -404,7 +478,7 @@ function SectionTopProject({ naratif, abi }: { naratif: NaratifItem[]; abi: AbiI
         <View style={styles.sectionWrapper}>
             <Text style={styles.sectionTitle}>5. Top Project</Text>
 
-            
+
         </View>
     );
 }
@@ -423,7 +497,7 @@ function SectionKehumasan({ items }: { items: KehumasanItem[] }) {
     return (
         <View style={styles.sectionWrapper}>
             <Text style={styles.sectionTitle}>6. Kehumasan</Text>
-            
+
         </View>
     );
 }
