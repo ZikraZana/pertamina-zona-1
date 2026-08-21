@@ -83,13 +83,158 @@ const styles = StyleSheet.create({
     },
 
 
-    // Produksi
+    // start Produksi //
     produksiCard: {
         borderRadius: 16,
         border: '1px solid #e2e8f0',
         padding: 20,
         marginBottom: 12,
-    }
+    },
+    cardTitle: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: '#64748b',
+        textTransform: 'capitalize',
+    },
+    cardPeriod: {
+        fontSize: 9,
+        color: '#94a3b8',
+        marginTop: 2,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+    },
+    chip: {
+        borderRadius: 999,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        fontSize: 9,
+        fontWeight: 'bold',
+        backgroundColor: '#dbeafe',
+        color: '#1d4ed8',
+    },
+    bigNumberRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        marginTop: 16,
+    },
+    bigNumber: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#0f172a',
+        marginRight: 6,
+    },
+    unitText: {
+        fontSize: 10,
+        color: '#94a3b8',
+    },
+    cardFlex: {
+        flexDirection: 'row',
+        gap: 8,
+        marginBottom: 8,
+    },
+    barTrack: {
+        height: 6,
+        borderRadius: 999,
+        backgroundColor: '#f1f5f9',
+        marginTop: 10,
+        overflow: 'hidden',
+    },
+    barFill: {
+        height: '100%',
+        borderRadius: 999,
+        backgroundColor: '#1d4ed8',
+    },
+    bottomRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 6,
+    },
+    smallLabel: {
+        fontSize: 8,
+        color: '#94a3b8',
+    },
+
+    // end Produksi //
+
+    // start Rencana Kerja //
+    sectionRKFlex: {
+        flexDirection: 'row'
+    },
+
+    // end Rencana Kerja //
+
+    // start Top Project //
+    topAbiCard: {
+        borderRadius: 16,
+        border: '1px solid #e2e8f0',
+        padding: 20,
+        marginBottom: 12,
+    },
+
+    cardTitleTopAbi: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: '#64748b',
+        textTransform: 'capitalize',
+    },
+
+    cardPeriodTopAbi: {
+        fontSize: 9,
+        color: '#94a3b8',
+        marginTop: 2,
+    },
+
+    headerRowTopAbi: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        flex: 1,
+    },
+
+    textContainerTopAbi: {
+        flex: 1,
+        paddingRight: 12,
+    },
+
+    chipTopAbi: {
+        borderRadius: 999,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        fontSize: 9,
+        fontWeight: 'bold',
+        backgroundColor: '#dbeafe',
+        color: '#1d4ed8'
+    },
+
+    bigNumberRowTopAbi: {
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        marginTop: '16'
+    },
+
+    bigNumberTopAbi: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#0f172a',
+        marginRight: 6,
+    },
+
+    unitTextTopAbi: {
+        fontSize: 10,
+        color: '#94a3b8',
+    },
+
+    cardFlexTopAbi: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+
+    // end Top Project //
+
+
 
 });
 
@@ -132,33 +277,55 @@ function TableHeader({ labels }: { labels: string[] }) {
 // ============================================================
 // SECTION 1: PRODUKSI
 // ============================================================
-function SectionProduksi({ items }: { items: ProduksiItem[] }) {
+function ProduksiCard({ item }: { item: ProduksiItem | undefined }) {
+    const realization = item?.realization ?? 0;
+    const target = item?.target || 1;
+    const percent = Math.round((realization / target) * 100);
+
     return (
-        <view>
+        <View style={styles.produksiCard}>
+            <View style={styles.headerRow}>
+                <View>
+                    <Text style={styles.cardTitle}>{item?.type}</Text>
+                    <Text style={styles.cardPeriod}>{item?.period}</Text>
+                </View>
+                <Text style={styles.chip}>{percent}% RKAP</Text>
+            </View>
+
+            <View style={styles.bigNumberRow}>
+                <Text style={styles.bigNumber}>{item?.realization?.toLocaleString('en-US') ?? '-'}</Text>
+                <Text style={styles.unitText}>{item?.unit}</Text>
+            </View>
+
+            <View style={styles.barTrack}>
+                <View style={[styles.barFill, { width: `${Math.min(percent, 100)}%` }]} />
+            </View>
+            <View style={styles.bottomRow}>
+                <Text style={styles.smallLabel}>Realisasi</Text>
+                <Text style={styles.smallLabel}>Target: {item?.target?.toLocaleString('en-US') ?? '-'} {item?.unit}</Text>
+            </View>
+        </View>
+    );
+}
+
+function SectionProduksi({ items }: { items: ProduksiItem[] }) {
+    const minyak = items.find((i) => i.type === 'minyak');
+    const gas = items.find((i) => i.type === 'gas');
+    const migas = items.find((i) => i.type === 'migas');
+
+    return (
+        <View style={styles.sectionWrapper}>
             <Text style={styles.sectionTitle}>1. Produksi</Text>
-
-            <view style={styles.produksiCard}>
-                <Text>ebew</Text>
-            </view>
-
-        </view>
-        // <View style={styles.sectionWrapper}>
-        //     {items.length === 0 ? (
-        //         <Text style={styles.emptyText}>Belum ada data produksi.</Text>
-        //     ) : (
-        //         <View>
-        //             <TableHeader labels={['Jenis', 'Realisasi', 'Target', 'Periode']} />
-        //             {items.map((item) => (
-        //                 <View key={item.type} style={styles.tableRow}>
-        //                     <Text style={[styles.tableCell, { textTransform: 'capitalize' }]}>{item.type}</Text>
-        //                     <Text style={styles.tableCell}>{item.realization.toLocaleString('en-US')} {item.unit}</Text>
-        //                     <Text style={styles.tableCell}>{item.target.toLocaleString('en-US')} {item.unit}</Text>
-        //                     <Text style={styles.tableCell}>{item.period}</Text>
-        //                 </View>
-        //             ))}
-        //         </View>
-        //     )}
-        // </View>
+            {items.length === 0 ? (
+                <Text style={styles.emptyText}>Belum ada data produksi.</Text>
+            ) : (
+                <View style={styles.cardFlex}>
+                    <ProduksiCard item={minyak} />
+                    <ProduksiCard item={gas} />
+                    <ProduksiCard item={migas} />
+                </View>
+            )}
+        </View>
     );
 }
 
@@ -176,7 +343,13 @@ function SectionRencanaKerja({ items }: { items: RkItem[] }) {
     return (
         <View style={styles.sectionWrapper}>
             <Text style={styles.sectionTitle}>2. Rencana Kerja</Text>
-            {groupKeys.length === 0 ? (
+
+            <View>
+
+            </View>
+
+
+            {/* {groupKeys.length === 0 ? (
                 <Text style={styles.emptyText}>Belum ada data rencana kerja.</Text>
             ) : (
                 groupKeys.map((jenis) => (
@@ -193,7 +366,7 @@ function SectionRencanaKerja({ items }: { items: RkItem[] }) {
                         ))}
                     </View>
                 ))
-            )}
+            )} */}
         </View>
     );
 }
@@ -294,7 +467,26 @@ function SectionTopProject({ naratif, abi }: { naratif: NaratifItem[]; abi: AbiI
             )}
 
             <Text style={styles.subSectionTitle}>ABI NBD</Text>
-            {abi.length === 0 ? (
+
+            <View>
+                {abi.map((item) => (
+                    <View style={styles.topAbiCard}>
+                        <View style={styles.headerRowTopAbi}>
+                            <View>
+                                <Text style={styles.cardTitleTopAbi}>Proyek Strategis Peningkatan Kapasitas Produksi.</Text>
+                                <Text style={styles.cardPeriodTopAbi}></Text>
+                            </View>
+                            <Text style={styles.chipTopAbi}>% RKAP</Text>
+                        </View>
+                        <View style={styles.bigNumberRowTopAbi}>
+                            <Text style={styles.bigNumberTopAbi}></Text>
+                            <Text style={styles.unitTextTopAbi}></Text>
+                        </View>
+                    </View>
+                ))}
+            </View>
+
+            {/* {abi.length === 0 ? (
                 <Text style={styles.emptyText}>Belum ada data ABI NBD.</Text>
             ) : (
                 <View>
@@ -308,7 +500,7 @@ function SectionTopProject({ naratif, abi }: { naratif: NaratifItem[]; abi: AbiI
                         </View>
                     ))}
                 </View>
-            )}
+            )} */}
         </View>
     );
 }
