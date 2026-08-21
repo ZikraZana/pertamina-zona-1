@@ -578,6 +578,10 @@ const AchievementTab = () => {
     const [abiEditingId, setAbiEditingId] = useState<string | null>(null);
     const [abiLoading, setAbiLoading] = useState(false);
     const [abiError, setAbiError] = useState<string | null>(null);
+    const [printModalOpen, setPrintModalOpen] = useState(false);
+    const [printUrl, setPrintUrl] = useState<string | null>(null);
+    const [printLoading, setPrintLoading] = useState(false);
+    const [printError, setPrintError] = useState<string | null>(null);
 
     async function fetchData() {
         setDataLoading(true);
@@ -1347,6 +1351,34 @@ const AchievementTab = () => {
         setSaveLoading(false);
     }
 
+    async function openPrintModal() {
+        setPrintModalOpen(true);
+        setPrintLoading(true);
+        setPrintError(null);
+
+        try {
+            const res = await fetch("/api/achievement/print");
+            if (!res.ok) {
+                const json = await res.json();
+                setPrintError(json.error ?? "Gagal membuat PDF.");
+                return;
+            }
+            const blob = await res.blob();
+            setPrintUrl(URL.createObjectURL(blob));
+        } catch {
+            setPrintError("Gagal membuat PDF. Periksa koneksi internet.");
+        } finally {
+            setPrintLoading(false);
+        }
+    }
+
+    function closePrintModal() {
+        if (printUrl) URL.revokeObjectURL(printUrl);
+        setPrintUrl(null);
+        setPrintModalOpen(false);
+        setPrintError(null);
+    }
+
     const groupedRkItems: [string, RKItem[]][] = jenisRkOptions
         .filter((jenis) => rkItems.some((item) => item.jenis_rk === jenis))
         .map((jenis) => [jenis, rkItems.filter((item) => item.jenis_rk === jenis)]);
@@ -1377,6 +1409,17 @@ const AchievementTab = () => {
 
     return (
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+            {/* ---------- Tombol Print ---------- */}
+            <div className="flex justify-end">
+                <button
+                    type="button"
+                    onClick={openPrintModal}
+                    className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+                >
+                    🖨️ Print Semua Achievement
+                </button>
+            </div>
+
             {/* ---------- Tab Navigasi ---------- */}
             <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
                 {(
@@ -2221,9 +2264,66 @@ const AchievementTab = () => {
                             </div>
                         </DragDropProvider>
                     )}
+
+
+
+                </div>
+            )
+            }
+            {/* ---------- Modal Preview PDF ---------- */}
+            {printModalOpen && (
+                <div
+                    className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 p-3 sm:p-6"
+                    onClick={closePrintModal}
+                >
+                    <div
+                        className="flex h-full max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+                            <h3 className="text-sm font-bold text-blue-900 sm:text-base">Laporan Achievement — Zona 1</h3>
+                            <div className="flex items-center gap-2">
+                                {printUrl && (
+                                    <a
+                                        href={printUrl}
+                                        download="laporan-achievement-zona-1.pdf"
+                                        className="cursor-pointer rounded-lg bg-blue-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-800"
+                                    >
+                                        Download
+                                    </a>
+                                )}
+                                <button
+                                    onClick={closePrintModal}
+                                    aria-label="Tutup"
+                                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                                >
+                                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-hidden bg-slate-100">
+                            {printLoading && (
+                                <div className="flex h-full items-center justify-center">
+                                    <p className="text-sm text-slate-400">Menyiapkan PDF...</p>
+                                </div>
+                            )}
+                            {printError && (
+                                <div className="flex h-full items-center justify-center">
+                                    <p className="text-sm text-red-600">{printError}</p>
+                                </div>
+                            )}
+                            {printUrl && !printLoading && (
+                                <iframe src={printUrl} title="Laporan Achievement" className="h-full w-full" />
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
-        </div>
+        </div >
+
     );
 };
 
