@@ -1466,20 +1466,20 @@ const AchievementTab = () => {
                 <div className="min-w-0 flex-1 flex flex-col gap-4">
 
                     {activeTab === "produksi" && (
-                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                            <h2 className="mb-4 text-sm font-bold text-blue-900">Produksi</h2>
+                        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Produksi</h2>
 
-                            <div className="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1">
+                            <div className="mb-5 grid grid-cols-3 gap-3">
                                 {(["minyak", "gas", "migas"] as const).map((type) => (
                                     <button
                                         key={type}
                                         type="button"
                                         onClick={() => setSelectedJenis(type)}
                                         className={[
-                                            "flex-1 cursor-pointer rounded-md py-1.5 text-xs font-semibold capitalize transition-colors",
+                                            "cursor-pointer rounded-lg py-3 text-sm font-semibold capitalize transition-colors",
                                             selectedJenis === type
-                                                ? "bg-white text-blue-900 shadow-sm"
-                                                : "text-slate-500 hover:text-slate-700",
+                                                ? "bg-blue-900 text-white shadow-sm"
+                                                : "border border-slate-200 text-slate-600 hover:bg-slate-50",
                                         ].join(" ")}
                                     >
                                         Produksi {type}
@@ -1497,15 +1497,15 @@ const AchievementTab = () => {
                                         const persen = target > 0 ? Math.round((realization / target) * 100) : 0;
 
                                         return (
-                                            <div className="mb-4 rounded-lg bg-slate-50 p-3">
-                                                <div className="mb-2 flex items-end justify-between">
+                                            <div className="mb-5 rounded-lg bg-slate-50 p-4">
+                                                <div className="mb-3 flex items-end justify-between">
                                                     <div>
-                                                        <p className="text-lg font-bold text-blue-900">{realization.toLocaleString("en-US")} <span className="text-xs font-normal text-slate-400">{form.unit}</span></p>
-                                                        <p className="text-[11px] text-slate-400">dari target {target.toLocaleString("en-US")} {form.unit} · {form.period}</p>
+                                                        <p className="text-3xl font-bold text-blue-900">{realization.toLocaleString("en-US")} <span className="text-sm font-normal text-slate-400">{form.unit}</span></p>
+                                                        <p className="mt-1 text-xs text-slate-400">Dari target {target.toLocaleString("en-US")} {form.unit} | {form.period}</p>
                                                     </div>
-                                                    <span className="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-800">{persen}%</span>
+                                                    <span className="shrink-0 text-lg font-bold text-blue-900">{persen}%</span>
                                                 </div>
-                                                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                                                <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
                                                     <div
                                                         className="h-full rounded-full bg-blue-900 transition-all"
                                                         style={{ width: `${Math.min(persen, 100)}%` }}
@@ -1515,66 +1515,61 @@ const AchievementTab = () => {
                                         );
                                     })()}
 
-                                    <form onSubmit={handleSave} className="flex flex-col gap-3">
-                                        <div className="grid grid-cols-2 gap-3">
+                                    <form onSubmit={handleSave} className="flex flex-col gap-4">
+                                        <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="mb-1 block text-xs font-semibold text-slate-600">Realisasi</label>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Realisasi ({form.unit || "-"})</label>
                                                 <input
                                                     type="text"
                                                     inputMode="decimal"
                                                     placeholder="mis. 1,234.5"
                                                     value={form.realization}
                                                     onChange={(e) => updateNumberField("realization", e.target.value)}
-                                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                                    className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="mb-1 block text-xs font-semibold text-slate-600">Target</label>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Target ({form.unit || "-"})</label>
                                                 <input
                                                     type="text"
                                                     inputMode="decimal"
                                                     placeholder="mis. 1,234.5"
                                                     value={form.target}
                                                     onChange={(e) => updateNumberField("target", e.target.value)}
-                                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                                    className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
                                                 />
                                             </div>
                                         </div>
-                                        <div>
-                                            <label className="mb-1 block text-xs font-semibold text-slate-600">Unit</label>
-                                            <select
-                                                value={form.unit}
-                                                onChange={(e) => updateField("unit", e.target.value)}
-                                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                            >
-                                                <option value="" disabled>Pilih Unit</option>
-                                                <option value="BOPD">BOPD</option>
-                                                <option value="MMSCFD">MMSCFD</option>
-                                                <option value="MMBOEPD">MMBOEPD</option>
-                                            </select>
-                                        </div>
 
-                                        <div>
-                                            <label className="mb-1 block text-xs font-semibold text-slate-600">Periode</label>
-                                            <input
-                                                type="month"
-                                                value={labelToMonthValue(form.period)}
-                                                onChange={(e) => updateField("period", monthValueToLabel(e.target.value))}
-                                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                            />
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Unit</label>
+                                                <select
+                                                    value={form.unit}
+                                                    onChange={(e) => updateField("unit", e.target.value)}
+                                                    className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                >
+                                                    <option value="" disabled>Pilih Unit</option>
+                                                    <option value="BOPD">BOPD</option>
+                                                    <option value="MMSCFD">MMSCFD</option>
+                                                    <option value="MMBOEPD">MMBOEPD</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Periode</label>
+                                                <input
+                                                    type="month"
+                                                    value={labelToMonthValue(form.period)}
+                                                    onChange={(e) => updateField("period", monthValueToLabel(e.target.value))}
+                                                    className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                />
+                                            </div>
                                         </div>
-
-                                        {saveError && (
-                                            <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{saveError}</p>
-                                        )}
-                                        {saveSuccess && (
-                                            <p className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">Data tersimpan.</p>
-                                        )}
 
                                         <button
                                             type="submit"
                                             disabled={saveLoading}
-                                            className="w-fit cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                            className="mt-1 w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
                                         >
                                             {saveLoading ? "Menyimpan..." : "Simpan Perubahan"}
                                         </button>
