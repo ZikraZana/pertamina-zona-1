@@ -1581,12 +1581,8 @@ const AchievementTab = () => {
 
                     {/* ---------- Card Rencana Kerja ---------- */}
                     {activeTab === "rencana-kerja" && (
-                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                            <SectionHeader
-                                title="Rencana Kerja"
-                                isFormOpen={rkFormOpen}
-                                onToggle={() => (rkFormOpen ? resetRkForm() : setRkFormOpen(true))}
-                            />
+                        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Rencana Kerja</h2>
 
                             <button
                                 type="button"
@@ -1660,75 +1656,11 @@ const AchievementTab = () => {
                             )}
 
                             {rkFormOpen && (
-                                <form onSubmit={handleSubmitRk} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
-                                    {!isAddingNewJenis ? (
-                                        <select
-                                            value={rkForm.jenis_rk}
-                                            onChange={(e) => {
-                                                if (e.target.value === "__new__") {
-                                                    setIsAddingNewJenis(true);
-                                                    setNewJenisInput("");
-                                                } else {
-                                                    setRkForm({ ...rkForm, jenis_rk: e.target.value });
-                                                }
-                                            }}
-                                            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                        >
-                                            {jenisRkOptions.map((jenis) => (
-                                                <option key={jenis} value={jenis}>{jenis}</option>
-                                            ))}
-                                            <option value="__new__">+ Tambah jenis baru...</option>
-                                        </select>
-                                    ) : (
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex gap-1.5">
-                                                <input
-                                                    type="text"
-                                                    autoFocus
-                                                    placeholder="Ketik nama jenis baru, lalu klik OK"
-                                                    value={newJenisInput}
-                                                    onChange={(e) => setNewJenisInput(e.target.value)}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === "Enter") {
-                                                            e.preventDefault();
-                                                            const trimmed = newJenisInput.trim();
-                                                            if (!trimmed) return;
-                                                            setRkForm({ ...rkForm, jenis_rk: trimmed });
-                                                            setIsAddingNewJenis(false);
-                                                        }
-                                                    }}
-                                                    className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const trimmed = newJenisInput.trim();
-                                                        if (!trimmed) return;
-                                                        setRkForm({ ...rkForm, jenis_rk: trimmed });
-                                                        setIsAddingNewJenis(false);
-                                                    }}
-                                                    className="shrink-0 cursor-pointer rounded-lg bg-blue-900 px-3 text-xs font-semibold text-white hover:bg-blue-800"
-                                                >
-                                                    OK
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setIsAddingNewJenis(false)}
-                                                    className="shrink-0 cursor-pointer rounded-lg border border-slate-300 px-3 text-xs text-slate-600 hover:bg-white"
-                                                >
-                                                    ✕
-                                                </button>
-                                            </div>
-                                            <p className="text-[10px] text-slate-400">Ketik nama jenis, lalu tekan Enter atau klik OK.</p>
-                                        </div>
-                                    )}
-                                    <input placeholder="Nama RK (misal PPS-015A)" value={rkForm.nama_rk} onChange={(e) => setRkForm({ ...rkForm, nama_rk: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                    <input placeholder="Jumlah Minyak (BOPD, opsional)" type="number" step="any" min="0" value={rkForm.jumlah_minyak} onChange={(e) => setRkForm({ ...rkForm, jumlah_minyak: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
-                                    <input placeholder="Jumlah Gas (MMSCFD, opsional)" type="number" step="any" min="0" value={rkForm.jumlah_gas} onChange={(e) => setRkForm({ ...rkForm, jumlah_gas: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
+                                <form onSubmit={handleSubmitRk} className="mb-6 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
                                     <select
                                         value={rkForm.wilayah_kerja}
                                         onChange={(e) => setRkForm({ ...rkForm, wilayah_kerja: e.target.value })}
-                                        className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                        className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
                                         required
                                     >
                                         <option value="">Pilih Wilayah Kerja</option>
@@ -1737,17 +1669,118 @@ const AchievementTab = () => {
                                         ))}
                                     </select>
 
-                                    <p className="col-span-2 -mt-1 text-[11px] text-slate-400">Isi minimal salah satu: Jumlah Minyak atau Jumlah Gas.</p>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Jenis Rencana Kerja</label>
+                                            {!isAddingNewJenis ? (
+                                                <select
+                                                    value={rkForm.jenis_rk}
+                                                    onChange={(e) => {
+                                                        if (e.target.value === "__new__") {
+                                                            setIsAddingNewJenis(true);
+                                                            setNewJenisInput("");
+                                                        } else {
+                                                            setRkForm({ ...rkForm, jenis_rk: e.target.value });
+                                                        }
+                                                    }}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                >
+                                                    {jenisRkOptions.map((jenis) => (
+                                                        <option key={jenis} value={jenis}>{jenis}</option>
+                                                    ))}
+                                                    <option value="__new__">+ Tambah jenis baru...</option>
+                                                </select>
+                                            ) : (
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex gap-1.5">
+                                                        <input
+                                                            type="text"
+                                                            autoFocus
+                                                            placeholder="Ketik nama jenis baru"
+                                                            value={newJenisInput}
+                                                            onChange={(e) => setNewJenisInput(e.target.value)}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === "Enter") {
+                                                                    e.preventDefault();
+                                                                    const trimmed = newJenisInput.trim();
+                                                                    if (!trimmed) return;
+                                                                    setRkForm({ ...rkForm, jenis_rk: trimmed });
+                                                                    setIsAddingNewJenis(false);
+                                                                }
+                                                            }}
+                                                            className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const trimmed = newJenisInput.trim();
+                                                                if (!trimmed) return;
+                                                                setRkForm({ ...rkForm, jenis_rk: trimmed });
+                                                                setIsAddingNewJenis(false);
+                                                            }}
+                                                            className="shrink-0 cursor-pointer rounded-lg bg-blue-900 px-3 text-xs font-semibold text-white hover:bg-blue-800"
+                                                        >
+                                                            OK
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setIsAddingNewJenis(false)}
+                                                            className="shrink-0 cursor-pointer rounded-lg border border-slate-300 px-3 text-xs text-slate-600 hover:bg-white"
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
 
-                                    {rkError && (
-                                        <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{rkError}</p>
-                                    )}
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Rencana Kerja</label>
+                                            <input
+                                                placeholder="Contoh: PPS-015A"
+                                                value={rkForm.nama_rk}
+                                                onChange={(e) => setRkForm({ ...rkForm, nama_rk: e.target.value })}
+                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                required
+                                            />
+                                        </div>
 
-                                    <div className="col-span-2 flex gap-2">
-                                        <button type="submit" disabled={rkLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Jumlah Minyak (BOPD)</label>
+                                            <input
+                                                placeholder="Masukkan angka jumlah minyak"
+                                                type="number"
+                                                step="any"
+                                                min="0"
+                                                value={rkForm.jumlah_minyak}
+                                                onChange={(e) => setRkForm({ ...rkForm, jumlah_minyak: e.target.value })}
+                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Jumlah Gas (MMSCFD)</label>
+                                            <input
+                                                placeholder="Masukkan angka jumlah gas"
+                                                type="number"
+                                                step="any"
+                                                min="0"
+                                                value={rkForm.jumlah_gas}
+                                                onChange={(e) => setRkForm({ ...rkForm, jumlah_gas: e.target.value })}
+                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <p className="-mt-1 text-xs text-slate-400">Isi salah satu atau keduanya: Jumlah Minyak atau Jumlah Gas</p>
+
+                                    <div className="flex flex-col gap-2">
+                                        <button type="submit" disabled={rkLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
                                             {rkLoading ? "Menyimpan..." : rkEditingId ? "Simpan Perubahan" : "Tambah"}
                                         </button>
-                                        <button type="button" onClick={resetRkForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
+                                        {rkEditingId && (
+                                            <button type="button" onClick={resetRkForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+                                        )}
                                     </div>
                                 </form>
                             )}
@@ -1786,11 +1819,11 @@ const AchievementTab = () => {
                                         });
                                     }}
                                 >
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         {groupedRkItems.map(([jenis, items]) => (
                                             <div key={jenis} className="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
-                                                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">
-                                                    {jenis} <span className="font-normal normal-case text-slate-400">({items.length} data)</span>
+                                                <p className="mb-2 text-sm font-bold uppercase tracking-wide text-blue-900">
+                                                    {jenis} <span className="font-normal normal-case text-slate-400">({items.length} Data)</span>
                                                 </p>
                                                 <ul className="flex flex-col gap-2">
                                                     {items.map((item, index) => (
