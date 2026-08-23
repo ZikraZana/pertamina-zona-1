@@ -2047,27 +2047,63 @@ const AchievementTab = () => {
 
                     {/* ---------- Card Inovasi ---------- */}
                     {activeTab === "inovasi" && (
-                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                            <SectionHeader
-                                title="Inovasi"
-                                isFormOpen={inovasiFormOpen}
-                                onToggle={() => (inovasiFormOpen ? resetInovasiForm() : setInovasiFormOpen(true))}
-                            />
+                        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Inovasi</h2>
 
-                            {inovasiFormOpen && (
-                                <form onSubmit={handleSubmitInovasi} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
-                                    <input placeholder="Pencapaian (misal Best Presentation)" value={inovasiForm.pencapaian} onChange={(e) => setInovasiForm({ ...inovasiForm, pencapaian: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                    <input placeholder="Nama Inovasi" value={inovasiForm.nama_inovasi} onChange={(e) => setInovasiForm({ ...inovasiForm, nama_inovasi: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                    <input placeholder="Nama Acara (opsional)" value={inovasiForm.nama_acara} onChange={(e) => setInovasiForm({ ...inovasiForm, nama_acara: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
-                                    <input placeholder="Wilayah Kerja" value={inovasiForm.wilayah_kerja} onChange={(e) => setInovasiForm({ ...inovasiForm, wilayah_kerja: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                    <div className="col-span-2 flex gap-2">
-                                        <button type="submit" disabled={inovasiLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                            {inovasiLoading ? "Menyimpan..." : inovasiEditingId ? "Simpan Perubahan" : "Tambah"}
-                                        </button>
-                                        <button type="button" onClick={resetInovasiForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
+                            <form onSubmit={handleSubmitInovasi} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Wilayah Kerja</label>
+                                        <select
+                                            value={inovasiForm.wilayah_kerja}
+                                            onChange={(e) => setInovasiForm({ ...inovasiForm, wilayah_kerja: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            required
+                                        >
+                                            <option value="">Pilih Wilayah Kerja</option>
+                                            {wilayahKerjaList.map((nama) => (
+                                                <option key={nama} value={nama}>{nama}</option>
+                                            ))}
+                                        </select>
                                     </div>
-                                </form>
-                            )}
+                                    <div>
+                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Pencapaian</label>
+                                        <input
+                                            placeholder="Contoh: Best Presentation"
+                                            value={inovasiForm.pencapaian}
+                                            onChange={(e) => setInovasiForm({ ...inovasiForm, pencapaian: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Inovasi</label>
+                                        <input
+                                            value={inovasiForm.nama_inovasi}
+                                            onChange={(e) => setInovasiForm({ ...inovasiForm, nama_inovasi: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Acara (Opsional)</label>
+                                        <input
+                                            value={inovasiForm.nama_acara}
+                                            onChange={(e) => setInovasiForm({ ...inovasiForm, nama_acara: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <button type="submit" disabled={inovasiLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                        {inovasiLoading ? "Menyimpan..." : inovasiEditingId ? "Simpan Perubahan" : "Tambah"}
+                                    </button>
+                                    {inovasiEditingId && (
+                                        <button type="button" onClick={resetInovasiForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+                                    )}
+                                </div>
+                            </form>
 
                             {inovasiListLoading ? (
                                 <ListSkeleton />
