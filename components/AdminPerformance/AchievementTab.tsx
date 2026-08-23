@@ -522,6 +522,7 @@ const AchievementTab = () => {
     const [inovasiEditingId, setInovasiEditingId] = useState<string | null>(null);
     const [inovasiLoading, setInovasiLoading] = useState(false);
 
+    const [hsseSubTab, setHsseSubTab] = useState<"proper" | "security">("proper");
     // ---------- State PROPER ----------
     const [properItems, setProperItems] = useState<ProperItem[]>([]);
     const [properListLoading, setProperListLoading] = useState(true);
@@ -1847,173 +1848,200 @@ const AchievementTab = () => {
 
                     {/* ---------- Card HSSE (PROPER + Security) ---------- */}
                     {activeTab === "proper" && (
-                        <div className="flex flex-col gap-6">
-                            {/* --- Sub-section: PROPER --- */}
-                            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                                <SectionHeader
-                                    title="PROPER"
-                                    isFormOpen={properFormOpen}
-                                    onToggle={() => (properFormOpen ? resetProperForm() : setProperFormOpen(true))}
-                                />
+                        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">HSSE</h2>
 
-                                {properFormOpen && (
-                                    <form onSubmit={handleSubmitProper} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
-                                        <input
-                                            placeholder="Wilayah Kerja (misal Field Rantau)"
-                                            value={properForm.wilayah_kerja}
-                                            onChange={(e) => setProperForm({ ...properForm, wilayah_kerja: e.target.value })}
-                                            className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                            required
-                                        />
-                                        <select
-                                            value={properForm.peringkat}
-                                            onChange={(e) => setProperForm({ ...properForm, peringkat: e.target.value as "Biru" | "Hijau" | "Emas" })}
-                                            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                        >
-                                            <option value="Biru">Biru</option>
-                                            <option value="Hijau">Hijau</option>
-                                            <option value="Emas">Emas</option>
-                                        </select>
-                                        <input
-                                            placeholder="Tahun"
-                                            type="number"
-                                            value={properForm.tahun}
-                                            onChange={(e) => setProperForm({ ...properForm, tahun: e.target.value })}
-                                            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                            required
-                                        />
-                                        <input
-                                            placeholder="Keterangan (opsional, misal Rapor Sementara)"
-                                            value={properForm.keterangan}
-                                            onChange={(e) => setProperForm({ ...properForm, keterangan: e.target.value })}
-                                            className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                        />
-
-                                        {properError && (
-                                            <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{properError}</p>
-                                        )}
-
-                                        <div className="col-span-2 flex gap-2">
-                                            <button type="submit" disabled={properLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                                {properLoading ? "Menyimpan..." : properEditingId ? "Simpan Perubahan" : "Tambah"}
-                                            </button>
-                                            <button type="button" onClick={resetProperForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
-                                        </div>
-                                    </form>
-                                )}
-
-                                {properListLoading ? (
-                                    <ListSkeleton />
-                                ) : properItems.length === 0 ? (
-                                    <EmptyState label="Belum ada data PROPER." />
-                                ) : (
-                                    <ul className="flex flex-col gap-2">
-                                        {properItems.map((item) => (
-                                            <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
-                                                <div className="min-w-0">
-                                                    <div className="flex flex-wrap items-center gap-1.5">
-                                                        <span className="truncate font-semibold text-blue-900">{item.wilayah_kerja}</span>
-                                                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${PERINGKAT_STYLE[item.peringkat]}`}>
-                                                            {item.peringkat} {item.tahun}
-                                                        </span>
-                                                    </div>
-                                                    {item.keterangan && (
-                                                        <p className="mt-0.5 truncate text-xs text-slate-400">{item.keterangan}</p>
-                                                    )}
-                                                </div>
-                                                <div className="flex shrink-0 gap-1">
-                                                    <button onClick={() => startEditProper(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
-                                                        <PencilIcon />
-                                                    </button>
-                                                    <button onClick={() => handleDeleteProper(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
-                                                        <TrashIcon />
-                                                    </button>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
+                            <div className="mb-5 grid grid-cols-2 gap-3">
+                                {(["proper", "security"] as const).map((tab) => (
+                                    <button
+                                        key={tab}
+                                        type="button"
+                                        onClick={() => setHsseSubTab(tab)}
+                                        className={[
+                                            "cursor-pointer rounded-lg py-3 text-sm font-semibold capitalize transition-colors",
+                                            hsseSubTab === tab
+                                                ? "bg-blue-900 text-white shadow-sm"
+                                                : "border border-slate-200 text-slate-600 hover:bg-slate-50",
+                                        ].join(" ")}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
                             </div>
 
-                            {/* --- Sub-section: Security --- */}
-                            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                                <SectionHeader
-                                    title="SECURITY"
-                                    isFormOpen={securityFormOpen}
-                                    onToggle={() => (securityFormOpen ? resetSecurityForm() : setSecurityFormOpen(true))}
-                                />
+                            {hsseSubTab === "proper" && (
+                                <>
+                                    <form onSubmit={handleSubmitProper} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Wilayah Kerja</label>
+                                                <select
+                                                    value={properForm.wilayah_kerja}
+                                                    onChange={(e) => setProperForm({ ...properForm, wilayah_kerja: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                >
+                                                    <option value="">Pilih Wilayah Kerja</option>
+                                                    {wilayahKerjaList.map((nama) => (
+                                                        <option key={nama} value={nama}>{nama}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Peringkat</label>
+                                                <select
+                                                    value={properForm.peringkat}
+                                                    onChange={(e) => setProperForm({ ...properForm, peringkat: e.target.value as "Biru" | "Hijau" | "Emas" })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                >
+                                                    <option value="Biru">Biru</option>
+                                                    <option value="Hijau">Hijau</option>
+                                                    <option value="Emas">Emas</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tahun</label>
+                                                <input
+                                                    placeholder="2025"
+                                                    type="number"
+                                                    value={properForm.tahun}
+                                                    onChange={(e) => setProperForm({ ...properForm, tahun: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Keterangan (Opsional)</label>
+                                                <input
+                                                    placeholder="Contoh: Rapor Sementara"
+                                                    value={properForm.keterangan}
+                                                    onChange={(e) => setProperForm({ ...properForm, keterangan: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                />
+                                            </div>
+                                        </div>
 
-                                {securityFormOpen && (
-                                    <form onSubmit={handleSubmitSecurity} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
-                                        <input
-                                            placeholder="Judul Kejadian (misal Penggagalan ITAP...)"
-                                            value={securityForm.judul}
-                                            onChange={(e) => setSecurityForm({ ...securityForm, judul: e.target.value })}
-                                            className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                            required
-                                        />
-                                        <select
-                                            value={securityForm.wilayah_kerja}
-                                            onChange={(e) => setSecurityForm({ ...securityForm, wilayah_kerja: e.target.value })}
-                                            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                            required
-                                        >
-                                            <option value="">Pilih Wilayah Kerja</option>
-                                            {wilayahKerjaList.map((nama) => (
-                                                <option key={nama} value={nama}>{nama}</option>
-                                            ))}
-                                        </select>
-                                        <input
-                                            type="date"
-                                            value={securityForm.tanggal}
-                                            onChange={(e) => setSecurityForm({ ...securityForm, tanggal: e.target.value })}
-                                            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                            required
-                                        />
-
-                                        {securityError && (
-                                            <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{securityError}</p>
-                                        )}
-
-                                        <div className="col-span-2 flex gap-2">
-                                            <button type="submit" disabled={securityLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                                {securityLoading ? "Menyimpan..." : securityEditingId ? "Simpan Perubahan" : "Tambah"}
+                                        <div className="flex flex-col gap-2">
+                                            <button type="submit" disabled={properLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                                {properLoading ? "Menyimpan..." : properEditingId ? "Simpan Perubahan" : "Tambah"}
                                             </button>
-                                            <button type="button" onClick={resetSecurityForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
+                                            {properEditingId && (
+                                                <button type="button" onClick={resetProperForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+                                            )}
                                         </div>
                                     </form>
-                                )}
 
-                                {securityListLoading ? (
-                                    <ListSkeleton />
-                                ) : securityItems.length === 0 ? (
-                                    <EmptyState label="Belum ada data security." />
-                                ) : (
-                                    <ul className="flex flex-col gap-2">
-                                        {securityItems
-                                            .slice()
-                                            .sort((a, b) => a.urutan - b.urutan)
-                                            .map((item) => (
-                                                <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
-                                                    <div className="min-w-0 flex-1">
-                                                        <span className="truncate font-semibold text-blue-900">{item.judul}</span>
-                                                        <p className="mt-0.5 truncate text-xs text-slate-400">
-                                                            {item.wilayah_kerja} · {new Date(item.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                                    {properListLoading ? (
+                                        <ListSkeleton />
+                                    ) : properItems.length === 0 ? (
+                                        <EmptyState label="Belum ada data PROPER." />
+                                    ) : (
+                                        <ul className="flex flex-col gap-2">
+                                            {properItems.map((item) => (
+                                                <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-blue-50/40 px-4 py-3 text-sm transition-colors hover:bg-blue-50">
+                                                    <div className="min-w-0">
+                                                        <span className="truncate font-bold text-blue-900">{item.wilayah_kerja}</span>
+                                                        <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500">
+                                                            <span className={`h-2 w-2 rounded-full ${PERINGKAT_STYLE[item.peringkat].split(" ")[0]}`} />
+                                                            {item.tahun}
                                                         </p>
                                                     </div>
                                                     <div className="flex shrink-0 gap-1">
-                                                        <button onClick={() => startEditSecurity(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                        <button onClick={() => startEditProper(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
                                                             <PencilIcon />
                                                         </button>
-                                                        <button onClick={() => handleDeleteSecurity(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                        <button onClick={() => handleDeleteProper(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
                                                             <TrashIcon />
                                                         </button>
                                                     </div>
                                                 </li>
                                             ))}
-                                    </ul>
-                                )}
-                            </div>
+                                        </ul>
+                                    )}
+                                </>
+                            )}
+
+                            {hsseSubTab === "security" && (
+                                <>
+                                    <form onSubmit={handleSubmitSecurity} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Wilayah Kerja</label>
+                                                <select
+                                                    value={securityForm.wilayah_kerja}
+                                                    onChange={(e) => setSecurityForm({ ...securityForm, wilayah_kerja: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                >
+                                                    <option value="">Pilih Wilayah Kerja</option>
+                                                    {wilayahKerjaList.map((nama) => (
+                                                        <option key={nama} value={nama}>{nama}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tanggal</label>
+                                                <input
+                                                    type="date"
+                                                    value={securityForm.tanggal}
+                                                    onChange={(e) => setSecurityForm({ ...securityForm, tanggal: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="col-span-2">
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Kejadian</label>
+                                                <input
+                                                    placeholder="Contoh: Penggagalan ITAP...)"
+                                                    value={securityForm.judul}
+                                                    onChange={(e) => setSecurityForm({ ...securityForm, judul: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col gap-2">
+                                            <button type="submit" disabled={securityLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                                {securityLoading ? "Menyimpan..." : securityEditingId ? "Simpan Perubahan" : "Tambah"}
+                                            </button>
+                                            {securityEditingId && (
+                                                <button type="button" onClick={resetSecurityForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+                                            )}
+                                        </div>
+                                    </form>
+
+                                    {securityListLoading ? (
+                                        <ListSkeleton />
+                                    ) : securityItems.length === 0 ? (
+                                        <EmptyState label="Belum ada data security." />
+                                    ) : (
+                                        <ul className="flex flex-col gap-2">
+                                            {securityItems
+                                                .slice()
+                                                .sort((a, b) => a.urutan - b.urutan)
+                                                .map((item) => (
+                                                    <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-blue-50/40 px-4 py-3 text-sm transition-colors hover:bg-blue-50">
+                                                        <div className="min-w-0 flex-1">
+                                                            <span className="truncate font-bold text-blue-900">{item.judul}</span>
+                                                            <p className="mt-0.5 truncate text-xs text-slate-500">
+                                                                {item.wilayah_kerja}, {new Date(item.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex shrink-0 gap-1">
+                                                            <button onClick={() => startEditSecurity(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                                <PencilIcon />
+                                                            </button>
+                                                            <button onClick={() => handleDeleteSecurity(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                                <TrashIcon />
+                                                            </button>
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                        </ul>
+                                    )}
+                                </>
+                            )}
                         </div>
                     )}
 
@@ -2310,13 +2338,11 @@ const AchievementTab = () => {
                                 </DragDropProvider>
                             )}
 
-
-
                         </div>
-                    )
-                    }
+                    )}
                 </div>
             </div>
+
             {/* ---------- Modal Preview PDF ---------- */}
             {printModalOpen && (
                 <div
@@ -2369,8 +2395,7 @@ const AchievementTab = () => {
                     </div>
                 </div>
             )}
-        </div >
-
+        </div>
     );
 };
 
