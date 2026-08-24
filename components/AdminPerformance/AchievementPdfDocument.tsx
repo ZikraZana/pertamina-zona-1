@@ -1,303 +1,23 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
+import type { Style } from '@react-pdf/types';
 
 // ============================================================
-// PALET WARNA
+// PALET WARNA — korporat, formal
 // ============================================================
 const COLORS = {
-    blue900: '#1e3a8a',
-    blue700: '#1d4ed8',
-    blue100: '#dbeafe',
-    blue50: '#eff6ff',
-    slate800: '#1e293b',
-    slate600: '#475569',
-    slate400: '#94a3b8',
-    slate200: '#e2e8f0',
+    navy: '#0f2a4a',
+    navyLight: '#1e4870',
+    accent: '#c9a227',      // emas/kuning korporat, dipakai sangat terbatas sbg aksen
+    slate900: '#1a202c',
+    slate700: '#334155',
+    slate500: '#64748b',
+    slate300: '#cbd5e1',
+    slate100: '#f1f5f9',
+    line: '#d0d7e2',
     white: '#ffffff',
+    positive: '#0f7a4f',
+    negative: '#b91c1c',
 };
-
-const styles = StyleSheet.create({
-
-    // Basic
-    page: {
-        padding: 32,
-        fontSize: 10,
-        fontFamily: 'Helvetica',
-        color: COLORS.slate800,
-    },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: COLORS.blue900,
-        marginBottom: 4,
-    },
-    headerSubtitle: {
-        fontSize: 10,
-        color: COLORS.slate400,
-        marginBottom: 20,
-    },
-    sectionTitle: {
-        fontSize: 13,
-        fontWeight: 'bold',
-        color: COLORS.blue900,
-        marginBottom: 8,
-        marginTop: 4,
-    },
-    subSectionTitle: {
-        fontSize: 11,
-        fontWeight: 'bold',
-        color: COLORS.blue700,
-        marginBottom: 6,
-        marginTop: 10,
-    },
-    tableHeaderRow: {
-        flexDirection: 'row',
-        backgroundColor: COLORS.blue900,
-        paddingVertical: 6,
-        paddingHorizontal: 8,
-    },
-    tableHeaderCell: {
-        flex: 1,
-        color: COLORS.white,
-        fontSize: 9,
-        fontWeight: 'bold',
-    },
-    tableRow: {
-        flexDirection: 'row',
-        borderBottom: `1px solid ${COLORS.slate200}`,
-        paddingVertical: 6,
-        paddingHorizontal: 8,
-    },
-    tableCell: {
-        flex: 1,
-        fontSize: 9,
-        color: COLORS.slate600,
-    },
-    sectionWrapper: {
-        marginBottom: 24,
-    },
-    emptyText: {
-        fontSize: 9,
-        color: COLORS.slate400,
-        fontStyle: 'italic',
-        marginBottom: 8,
-    },
-
-
-    // start Produksi //
-    produksiCard: {
-        borderRadius: 16,
-        border: '1px solid #e2e8f0',
-        padding: 20,
-        marginBottom: 12,
-    },
-    cardTitle: {
-        fontSize: 11,
-        fontWeight: 'bold',
-        color: '#64748b',
-        textTransform: 'capitalize',
-    },
-    cardPeriod: {
-        fontSize: 9,
-        color: '#94a3b8',
-        marginTop: 2,
-    },
-    headerRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-    },
-    chip: {
-        borderRadius: 999,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        fontSize: 9,
-        fontWeight: 'bold',
-        backgroundColor: '#dbeafe',
-        color: '#1d4ed8',
-    },
-    bigNumberRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        marginTop: 16,
-    },
-    bigNumber: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#0f172a',
-        marginRight: 6,
-    },
-    unitText: {
-        fontSize: 10,
-        color: '#94a3b8',
-    },
-    cardFlex: {
-        flexDirection: 'row',
-        gap: 8,
-        marginBottom: 8,
-    },
-    barTrack: {
-        height: 6,
-        borderRadius: 999,
-        backgroundColor: '#f1f5f9',
-        marginTop: 10,
-        overflow: 'hidden',
-    },
-    barFill: {
-        height: '100%',
-        borderRadius: 999,
-        backgroundColor: '#1d4ed8',
-    },
-    bottomRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 6,
-    },
-    smallLabel: {
-        fontSize: 8,
-        color: '#94a3b8',
-    },
-
-    // end Produksi //
-
-    // start Rencana Kerja //
-    rkGridContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-    },
-    rkGridItem: {
-        width: '48%',
-        marginBottom: 12,
-    },
-    rkCard: {
-        borderRadius: 16,
-        border: '1px solid #e2e8f0',
-        padding: 16,
-    },
-    rkCardTitle: {
-        fontSize: 11,
-        fontWeight: 'bold',
-        color: '#64748b',
-    },
-    rkCardSubtitle: {
-        fontSize: 9,
-        color: '#94a3b8',
-        marginTop: 2,
-        marginBottom: 10,
-    },
-    rkItemRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 6,
-        borderBottom: '1px solid #f1f5f9',
-    },
-    rkBadgeWrap: {
-        width: 18,
-        height: 18,
-        borderRadius: 999,
-        backgroundColor: '#f59e0b',
-        justifyContent: 'center',   // center vertikal
-        alignItems: 'center',        // center horizontal
-        marginRight: 8,
-    },
-    rkBadgeText: {
-        color: '#ffffff',
-        fontSize: 8,
-        fontWeight: 'bold',
-    },
-    rkItemTextWrap: {
-        flex: 1,
-        minWidth: 0,
-    },
-    rkItemLabel: {
-        fontSize: 9,
-        fontWeight: 'bold',
-        color: '#1e293b',
-    },
-    rkItemField: {
-        fontSize: 8,
-        color: '#94a3b8',
-    },
-    rkItemValue: {
-        width: 90,
-        textAlign: 'right',
-        fontSize: 8,
-        fontWeight: 'bold',
-        color: '#d97706',
-    },
-    // end Rencana Kerja //
-
-    // start Top Project //
-    topAbiCard: {
-        borderRadius: 16,
-        border: '1px solid #e2e8f0',
-        padding: 20,
-        marginBottom: 12,
-    },
-
-    cardTitleTopAbi: {
-        fontSize: 11,
-        fontWeight: 'bold',
-        color: '#64748b',
-        textTransform: 'capitalize',
-    },
-
-    cardPeriodTopAbi: {
-        fontSize: 9,
-        color: '#94a3b8',
-        marginTop: 2,
-    },
-
-    headerRowTopAbi: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        flex: 1,
-    },
-
-    textContainerTopAbi: {
-        flex: 1,
-        paddingRight: 12,
-    },
-
-    chipTopAbi: {
-        borderRadius: 999,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        fontSize: 9,
-        fontWeight: 'bold',
-        backgroundColor: '#dbeafe',
-        color: '#1d4ed8'
-    },
-
-    bigNumberRowTopAbi: {
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        marginTop: '16'
-    },
-
-    bigNumberTopAbi: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#0f172a',
-        marginRight: 6,
-    },
-
-    unitTextTopAbi: {
-        fontSize: 10,
-        color: '#94a3b8',
-    },
-
-    cardFlexTopAbi: {
-        flexDirection: 'row',
-        gap: 8,
-    },
-
-    // end Top Project //
-
-
-
-});
 
 // ============================================================
 // TIPE DATA — sesuai bentuk yang dibalikin masing-masing GET API achievement
@@ -323,67 +43,457 @@ export type PdfData = {
 };
 
 // ============================================================
-// HELPER: header + baris kosong reusable, biar tidak menulis ulang di tiap section
+// STYLES
 // ============================================================
-function TableHeader({ labels }: { labels: string[] }) {
+const styles = StyleSheet.create({
+    page: {
+        paddingTop: 28,
+        paddingBottom: 40,
+        paddingHorizontal: 36,
+        fontSize: 8.5,
+        fontFamily: 'Helvetica',
+        color: COLORS.slate900,
+    },
+
+    // ---------- Kop dokumen ----------
+    coverHeader: {
+        borderBottom: `2px solid ${COLORS.navy}`,
+        paddingBottom: 10,
+        marginBottom: 14,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+    },
+    coverKicker: {
+        fontSize: 7.5,
+        color: COLORS.slate500,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+        marginBottom: 3,
+    },
+    coverTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: COLORS.navy,
+    },
+    coverMetaBox: {
+        alignItems: 'flex-end',
+    },
+    coverMetaLabel: {
+        fontSize: 7,
+        color: COLORS.slate500,
+    },
+    coverMetaValue: {
+        fontSize: 8.5,
+        color: COLORS.slate900,
+        fontWeight: 'bold',
+        marginBottom: 3,
+    },
+
+    // ---------- Section frame ----------
+    sectionBlock: {
+        marginBottom: 12,
+    },
+    sectionHeadRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: COLORS.navy,
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+        marginBottom: 6,
+    },
+    sectionNumber: {
+        fontSize: 8,
+        fontWeight: 'bold',
+        color: COLORS.accent,
+        marginRight: 6,
+    },
+    sectionHeadText: {
+        fontSize: 9,
+        fontWeight: 'bold',
+        color: COLORS.white,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    subHeadText: {
+        fontSize: 7.5,
+        fontWeight: 'bold',
+        color: COLORS.navy,
+        textTransform: 'uppercase',
+        letterSpacing: 0.3,
+        marginTop: 6,
+        marginBottom: 3,
+    },
+    emptyText: {
+        fontSize: 8,
+        color: COLORS.slate500,
+        fontStyle: 'italic',
+        paddingVertical: 3,
+    },
+
+    // ---------- Tabel generik ----------
+    table: {
+        border: `0.5px solid ${COLORS.line}`,
+    },
+    tableHeadRow: {
+        flexDirection: 'row',
+        backgroundColor: COLORS.slate100,
+        borderBottom: `0.5px solid ${COLORS.line}`,
+    },
+    tableHeadCell: {
+        fontSize: 7,
+        fontWeight: 'bold',
+        color: COLORS.slate700,
+        textTransform: 'uppercase',
+        paddingVertical: 4,
+        paddingHorizontal: 6,
+    },
+    tableRow: {
+        flexDirection: 'row',
+        borderBottom: `0.5px solid ${COLORS.line}`,
+    },
+    tableRowLast: {
+        flexDirection: 'row',
+    },
+    tableCell: {
+        fontSize: 8,
+        color: COLORS.slate900,
+        paddingVertical: 3.5,
+        paddingHorizontal: 6,
+    },
+    tableCellMuted: {
+        fontSize: 7.5,
+        color: COLORS.slate500,
+        paddingVertical: 3.5,
+        paddingHorizontal: 6,
+    },
+    tableCellRight: {
+        fontSize: 8,
+        color: COLORS.slate900,
+        paddingVertical: 3.5,
+        paddingHorizontal: 6,
+        textAlign: 'right',
+    },
+    tableCellBold: {
+        fontSize: 8,
+        fontWeight: 'bold',
+        color: COLORS.slate900,
+        paddingVertical: 3.5,
+        paddingHorizontal: 6,
+    },
+
+    // ---------- Kolom lebar (dipakai inline lewat width prop) ----------
+    colXS: { width: '10%' },
+    colS: { width: '14%' },
+    colM: { width: '20%' },
+    colL: { width: '28%' },
+    colXL: { width: '36%' },
+    colFlex: { flex: 1 },
+
+    // ---------- Status pill kecil (dipakai di dalam sel tabel) ----------
+    pill: {
+        fontSize: 6.5,
+        fontWeight: 'bold',
+        paddingVertical: 1.5,
+        paddingHorizontal: 5,
+        borderRadius: 3,
+        alignSelf: 'flex-end',
+    },
+    pillNavy: { backgroundColor: COLORS.navy, color: COLORS.white },
+    pillGold: { backgroundColor: '#fdf3d8', color: '#8a6d1a' },
+    pillGreen: { backgroundColor: '#dcf3e6', color: COLORS.positive },
+    pillBlue: { backgroundColor: '#dbe8f7', color: COLORS.navyLight },
+    pillGray: { backgroundColor: COLORS.slate100, color: COLORS.slate500 },
+
+    // ---------- Ringkasan metrik (produksi) ----------
+    metricRow: {
+        flexDirection: 'row',
+        border: `0.5px solid ${COLORS.line}`,
+        marginBottom: 12,
+    },
+    metricCell: {
+        flex: 1,
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        borderRight: `0.5px solid ${COLORS.line}`,
+    },
+    metricCellLast: {
+        flex: 1,
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+    },
+    metricLabel: {
+        fontSize: 6.5,
+        color: COLORS.slate500,
+        textTransform: 'uppercase',
+        letterSpacing: 0.4,
+        marginBottom: 3,
+    },
+    metricValueRow: {
+        flexDirection: 'row',
+        alignItems: 'baseline',
+    },
+    metricValue: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: COLORS.navy,
+    },
+    metricUnit: {
+        fontSize: 7,
+        color: COLORS.slate500,
+        marginLeft: 3,
+    },
+    metricSubRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 5,
+    },
+    metricTarget: {
+        fontSize: 6.5,
+        color: COLORS.slate500,
+    },
+    metricAchievement: {
+        fontSize: 7,
+        fontWeight: 'bold',
+    },
+    achievementPositive: { color: COLORS.positive },
+    achievementNegative: { color: COLORS.negative },
+    metricBarTrack: {
+        height: 3,
+        backgroundColor: COLORS.slate100,
+        marginTop: 4,
+    },
+    metricBarFill: {
+        height: 3,
+        backgroundColor: COLORS.navy,
+    },
+
+    // ---------- Two-column layout untuk section 5 (Top Project) ----------
+    twoColRow: {
+        flexDirection: 'row',
+    },
+    twoColLeft: {
+        width: '48%',
+        marginRight: '4%',
+    },
+    twoColRight: {
+        width: '48%',
+    },
+    naratifItem: {
+        marginBottom: 5,
+        paddingLeft: 8,
+        borderLeft: `2px solid ${COLORS.accent}`,
+    },
+    naratifItemTitle: {
+        fontSize: 7.5,
+        fontWeight: 'bold',
+        color: COLORS.navy,
+    },
+    naratifItemDetail: {
+        fontSize: 7,
+        color: COLORS.slate700,
+        marginTop: 1,
+        lineHeight: 1.3,
+    },
+
+    // ---------- Grid 2 kolom untuk Rencana Kerja ----------
+    rkGridWrap: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+    },
+    rkGridCol: {
+        width: '48.5%',
+        marginBottom: 8,
+    },
+    rkGroupBox: {
+        border: `0.5px solid ${COLORS.line}`,
+    },
+    rkGroupHeadRow: {
+        backgroundColor: COLORS.slate100,
+        paddingVertical: 4,
+        paddingHorizontal: 6,
+        borderBottom: `0.5px solid ${COLORS.line}`,
+    },
+    rkGroupHeadText: {
+        fontSize: 7,
+        fontWeight: 'bold',
+        color: COLORS.navy,
+        textTransform: 'uppercase',
+        letterSpacing: 0.3,
+    },
+    rkItemRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        paddingVertical: 3.5,
+        paddingHorizontal: 6,
+        borderBottom: `0.5px solid ${COLORS.line}`,
+    },
+    rkItemRowLast: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        paddingVertical: 3.5,
+        paddingHorizontal: 6,
+    },
+    rkItemTextCol: {
+        flexDirection: 'column',
+        flex: 1,
+        paddingRight: 6,
+    },
+    rkItemName: {
+        fontSize: 7.5,
+        color: COLORS.slate900,
+        lineHeight: 1.4,
+        marginBottom: 2,
+    },
+    rkItemWilayah: {
+        fontSize: 6.5,
+        color: COLORS.slate500,
+        lineHeight: 1.3,
+    },
+    rkItemNumbers: {
+        fontSize: 6.5,
+        color: COLORS.slate500,
+        textAlign: 'right',
+        width: 60,
+    },
+
+    hsseItemRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        paddingVertical: 3.5,
+        paddingHorizontal: 6,
+        borderBottom: `0.5px solid ${COLORS.line}`,
+    },
+    hsseItemRowLast: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        paddingVertical: 3.5,
+        paddingHorizontal: 6,
+    },
+    hsseMedalYearItemRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    hsseItemTextCol: {
+        flexDirection: 'column',
+        flex: 1,
+        paddingRight: 6,
+    },
+    hsseItemTitle: {
+        fontSize: 7.5,
+        color: COLORS.slate900,
+        lineHeight: 1.4,
+        marginBottom: 2,
+    },
+    hsseItemSub: {
+        fontSize: 6.5,
+        color: COLORS.slate500,
+        lineHeight: 1.3,
+    },
+    hsseItemMeta: {
+        fontSize: 6.5,
+        color: COLORS.slate500,
+        textAlign: 'right',
+    },
+
+
+    // ---------- Footer halaman ----------
+    footer: {
+        position: 'absolute',
+        bottom: 16,
+        left: 36,
+        right: 36,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        borderTop: `0.5px solid ${COLORS.line}`,
+        paddingTop: 5,
+    },
+    footerText: {
+        fontSize: 6.5,
+        color: COLORS.slate500,
+    },
+});
+
+// ============================================================
+// KOMPONEN BANTU
+// ============================================================
+function SectionHead({ number, title }: { number: string; title: string }) {
     return (
-        <View style={styles.tableHeaderRow}>
-            {labels.map((label) => (
-                <Text key={label} style={styles.tableHeaderCell}>{label}</Text>
+        <View style={styles.sectionHeadRow}>
+            <Text style={styles.sectionNumber}>{number}</Text>
+            <Text style={styles.sectionHeadText}>{title}</Text>
+        </View>
+    );
+}
+
+function TableHead({ columns }: { columns: { label: string; style: Style }[] }) {
+    return (
+        <View style={styles.tableHeadRow}>
+            {columns.map((col, i) => (
+                <Text key={i} style={[styles.tableHeadCell, col.style]}>{col.label}</Text>
             ))}
         </View>
     );
 }
 
-// ============================================================
-// SECTION 1: PRODUKSI
-// ============================================================
-function ProduksiCard({ item }: { item: ProduksiItem | undefined }) {
-    const realization = item?.realization ?? 0;
-    const target = item?.target || 1;
-    const percent = Math.round((realization / target) * 100);
+function MedalPill({ medali }: { medali: string }) {
+    const label = medali === 'gold' ? 'Gold' : medali === 'silver' ? 'Silver' : 'Bronze';
+    const style = medali === 'gold' ? styles.pillGold : medali === 'silver' ? styles.pillGray : styles.pillBlue;
+    return <Text style={[styles.pill, style]}>{label}</Text>;
+}
 
+function ProperPill({ peringkat }: { peringkat: string }) {
+    const style = peringkat === 'Emas' ? styles.pillGold : peringkat === 'Hijau' ? styles.pillGreen : styles.pillBlue;
+    return <Text style={[styles.pill, style]}>{peringkat}</Text>;
+}
+
+function Footer() {
     return (
-        <View style={styles.produksiCard}>
-            <View style={styles.headerRow}>
-                <View>
-                    <Text style={styles.cardTitle}>{item?.type}</Text>
-                    <Text style={styles.cardPeriod}>{item?.period}</Text>
-                </View>
-                <Text style={styles.chip}>{percent}% RKAP</Text>
-            </View>
-
-            <View style={styles.bigNumberRow}>
-                <Text style={styles.bigNumber}>{item?.realization?.toLocaleString('en-US') ?? '-'}</Text>
-                <Text style={styles.unitText}>{item?.unit}</Text>
-            </View>
-
-            <View style={styles.barTrack}>
-                <View style={[styles.barFill, { width: `${Math.min(percent, 100)}%` }]} />
-            </View>
-            <View style={styles.bottomRow}>
-                <Text style={styles.smallLabel}>Realisasi</Text>
-                <Text style={styles.smallLabel}>Target: {item?.target?.toLocaleString('en-US') ?? '-'} {item?.unit}</Text>
-            </View>
+        <View style={styles.footer} fixed>
+            <Text style={styles.footerText}>Laporan Achievement — PT Pertamina Hulu Rokan Zona 1</Text>
+            <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Halaman ${pageNumber} dari ${totalPages}`} />
         </View>
     );
 }
 
+// ============================================================
+// PRODUKSI
+// ============================================================
 function SectionProduksi({ items }: { items: ProduksiItem[] }) {
-    const minyak = items.find((i) => i.type === 'minyak');
-    const gas = items.find((i) => i.type === 'gas');
-    const migas = items.find((i) => i.type === 'migas');
-
     return (
-        <View style={styles.sectionWrapper}>
-            <Text style={styles.sectionTitle}>1. Produksi</Text>
+        <View style={styles.sectionBlock}>
+            <SectionHead number="01" title="Realisasi Produksi" />
             {items.length === 0 ? (
                 <Text style={styles.emptyText}>Belum ada data produksi.</Text>
             ) : (
-                <View style={styles.cardFlex}>
-                    <ProduksiCard item={minyak} />
-                    <ProduksiCard item={gas} />
-                    <ProduksiCard item={migas} />
+                <View style={styles.metricRow}>
+                    {items.map((item, i) => {
+                        const percent = item.target > 0 ? Math.round((item.realization / item.target) * 100) : 0;
+                        const positive = percent >= 100;
+                        const isLast = i === items.length - 1;
+                        return (
+                            <View key={item.type} style={isLast ? styles.metricCellLast : styles.metricCell}>
+                                <Text style={styles.metricLabel}>{item.type} • {item.period}</Text>
+                                <View style={styles.metricValueRow}>
+                                    <Text style={styles.metricValue}>{item.realization.toLocaleString('en-US')}</Text>
+                                    <Text style={styles.metricUnit}>{item.unit}</Text>
+                                </View>
+                                <View style={styles.metricBarTrack}>
+                                    <View style={[styles.metricBarFill, { width: `${Math.min(percent, 100)}%` }]} />
+                                </View>
+                                <View style={styles.metricSubRow}>
+                                    <Text style={styles.metricTarget}>Target {item.target.toLocaleString('en-US')} {item.unit}</Text>
+                                    <Text style={[styles.metricAchievement, positive ? styles.achievementPositive : styles.achievementNegative]}>
+                                        {percent}%
+                                    </Text>
+                                </View>
+                            </View>
+                        );
+                    })}
                 </View>
             )}
         </View>
@@ -391,54 +501,56 @@ function SectionProduksi({ items }: { items: ProduksiItem[] }) {
 }
 
 // ============================================================
-// SECTION 2: RENCANA KERJA — dikelompokkan per jenis_rk
+// RENCANA KERJA
 // ============================================================
-function RkCard({ jenis, items }: { jenis: string; items: RkItem[] }) {
-    return (
-        <View style={styles.rkCard}>
-            <Text style={styles.rkCardTitle}>Capaian RK {jenis}</Text>
-            <Text style={styles.rkCardSubtitle}>Realisasi produksi terbaik</Text>
-
-            {items.map((item, i) => (
-                <View key={item.id} style={styles.rkItemRow}>
-                    <View style={styles.rkBadgeWrap}>
-                        <Text style={styles.rkBadgeText}>{i + 1}</Text>
-                    </View>
-                    <View style={styles.rkItemTextWrap}>
-                        <Text style={styles.rkItemLabel}>{item.nama_rk}</Text>
-                        <Text style={styles.rkItemField}>{item.wilayah_kerja}</Text>
-                    </View>
-                    <Text style={styles.rkItemValue}>
-                        {item.jumlah_minyak !== null ? `${item.jumlah_minyak.toLocaleString('en-US')} BOPD` : ''}
-                        {item.jumlah_minyak !== null && item.jumlah_gas !== null ? ' / ' : ''}
-                        {item.jumlah_gas !== null ? `${item.jumlah_gas.toLocaleString('en-US')} MMSCFD` : ''}
-                    </Text>
-                </View>
-            ))}
-        </View>
-    );
-}
-
 function SectionRencanaKerja({ items }: { items: RkItem[] }) {
+    // kelompokkan per jenis_rk
+    const order: string[] = [];
     const groups: Record<string, RkItem[]> = {};
     for (const item of items) {
-        if (!groups[item.jenis_rk]) groups[item.jenis_rk] = [];
+        if (!groups[item.jenis_rk]) {
+            groups[item.jenis_rk] = [];
+            order.push(item.jenis_rk);
+        }
         groups[item.jenis_rk].push(item);
     }
-    const groupKeys = Object.keys(groups);
 
     return (
-        <View style={styles.sectionWrapper}>
-            <Text style={styles.sectionTitle}>2. Rencana Kerja</Text>
-            {groupKeys.length === 0 ? (
+        <View style={styles.sectionBlock}>
+            <SectionHead number="02" title="Rencana Kerja" />
+            {items.length === 0 ? (
                 <Text style={styles.emptyText}>Belum ada data rencana kerja.</Text>
             ) : (
-                <View style={styles.rkGridContainer}>
-                    {groupKeys.map((jenis) => (
-                        <View key={jenis} style={styles.rkGridItem}>
-                            <RkCard jenis={jenis} items={groups[jenis].slice(0,5)} />
-                        </View>
-                    ))}
+                <View style={styles.rkGridWrap}>
+                    {order.map((jenis) => {
+                        const groupItems = groups[jenis].slice(0, 5);
+                        return (
+                            <View key={jenis} style={styles.rkGridCol}>
+                                <View style={styles.rkGroupBox}>
+                                    <View style={styles.rkGroupHeadRow}>
+                                        <Text style={styles.rkGroupHeadText}>{jenis}</Text>
+                                    </View>
+                                    {groupItems.map((item, i) => {
+                                        const isLast = i === groupItems.length - 1;
+                                        return (
+                                            <View key={item.id} style={isLast ? styles.rkItemRowLast : styles.rkItemRow}>
+                                                <View style={styles.rkItemTextCol}>
+                                                    <Text style={styles.rkItemName}>{item.nama_rk}</Text>
+                                                    <Text style={styles.rkItemWilayah}>{item.wilayah_kerja}</Text>
+                                                </View>
+                                                <Text style={styles.rkItemNumbers}>
+                                                    {item.jumlah_minyak !== null ? `${item.jumlah_minyak} bbl` : ''}
+                                                    {item.jumlah_minyak !== null && item.jumlah_gas !== null ? ' / ' : ''}
+                                                    {item.jumlah_gas !== null ? `${item.jumlah_gas} mmscf` : ''}
+                                                    {item.jumlah_minyak === null && item.jumlah_gas === null ? '-' : ''}
+                                                </Text>
+                                            </View>
+                                        );
+                                    })}
+                                </View>
+                            </View>
+                        );
+                    })}
                 </View>
             )}
         </View>
@@ -446,61 +558,83 @@ function SectionRencanaKerja({ items }: { items: RkItem[] }) {
 }
 
 // ============================================================
-// SECTION 3: HSSE (PROPER + Security)
+// HSSE (PROPER + Security + Reduksi)
 // ============================================================
 function SectionHsse({ proper, security }: { proper: ProperItem[]; security: SecurityItem[] }) {
     return (
-        <View style={styles.sectionWrapper}>
-            <Text style={styles.sectionTitle}>3. HSSE</Text>
+        <View style={styles.sectionBlock}>
+            <SectionHead number="03" title="HSSE" />
 
+            <View style={styles.rkGridWrap}>
+                <View style={styles.rkGridCol}>
+                    <View style={styles.rkGroupBox}>
+                        <View style={styles.rkGroupHeadRow}>
+                            <Text style={styles.rkGroupHeadText}>Penghargaan PROPER</Text>
+                        </View>
+                        {proper.length === 0 ? (
+                            <Text style={styles.emptyText}>Belum ada data PROPER.</Text>
+                        ) : (
+                            proper.map((item, i) => (
+                                <View key={item.id} style={i === proper.length - 1 ? styles.hsseItemRowLast : styles.hsseItemRow}>
+                                    <View style={styles.hsseItemTextCol}>
+                                        <Text style={styles.hsseItemTitle}>{item.wilayah_kerja}</Text>
+                                        <Text style={styles.hsseItemSub}>{item.keterangan || '-'}</Text>
+                                    </View>
+                                    <View style={styles.hsseMedalYearItemRow}>
+                                        <ProperPill peringkat={item.peringkat} />
+                                        <Text style={styles.hsseItemMeta}>{item.tahun}</Text>
+                                    </View>
+                                </View>
+                            ))
+                        )}
+                    </View>
+                </View>
 
+                <View style={styles.rkGridCol}>
+                    <View style={styles.rkGroupBox}>
+                        <View style={styles.rkGroupHeadRow}>
+                            <Text style={styles.rkGroupHeadText}>Security</Text>
+                        </View>
+                        {security.length === 0 ? (
+                            <Text style={styles.emptyText}>Belum ada data security.</Text>
+                        ) : (
+                            security.map((item, i) => (
+                                <View key={item.id} style={i === security.length - 1 ? styles.hsseItemRowLast : styles.hsseItemRow}>
+                                    <View style={styles.hsseItemTextCol}>
+                                        <Text style={styles.hsseItemTitle}>{item.judul}</Text>
+                                        <Text style={styles.hsseItemSub}>{item.wilayah_kerja}</Text>
+                                    </View>
+                                    <Text style={styles.hsseItemMeta}>{item.tanggal}</Text>
+                                </View>
+                            ))
+                        )}
+                    </View>
+                </View>
+            </View>
+
+            {/* Refuksi */}
+            <Text style={styles.subHeadText}>Reduksi Emisi</Text>
+            <View style={styles.metricRow}>
+                <View style={styles.metricCellLast}>
+                    <Text style={styles.metricLabel}>Reduksi Emisi • YTD Oktober 2025</Text>
+                    <View style={styles.metricValueRow}>
+                        <Text style={styles.metricValue}>22.484</Text>
+                        <Text style={styles.metricUnit}>Ton CO2eq</Text>
+                    </View>
+                    <View style={styles.metricBarTrack}>
+                        <View style={[styles.metricBarFill, { width: '100%' }]} />
+                    </View>
+                    <View style={styles.metricSubRow}>
+                        <Text style={styles.metricTarget}>Target 18.582 Ton CO2eq</Text>
+                        <Text style={[styles.metricAchievement, styles.achievementPositive]}>121%</Text>
+                    </View>
+                </View>
+            </View>
         </View>
     );
 }
 
-// ============================================================
-// SECTION 4: INOVASI
-// ============================================================
-function SectionInovasi({ items }: { items: InovasiItem[] }) {
-    return (
-        <View style={styles.sectionWrapper}>
-            <Text style={styles.sectionTitle}>4. Inovasi</Text>
 
-        </View>
-    );
-}
-
-// ============================================================
-// SECTION 5: TOP PROJECT (Naratif + ABI NBD)
-// ============================================================
-function SectionTopProject({ naratif, abi }: { naratif: NaratifItem[]; abi: AbiItem[] }) {
-    return (
-        <View style={styles.sectionWrapper}>
-            <Text style={styles.sectionTitle}>5. Top Project</Text>
-
-
-        </View>
-    );
-}
-
-// ============================================================
-// SECTION 6: KEHUMASAN — dikelompokkan per wilayah_kerja
-// ============================================================
-function SectionKehumasan({ items }: { items: KehumasanItem[] }) {
-    const groups: Record<string, KehumasanItem[]> = {};
-    for (const item of items) {
-        if (!groups[item.wilayah_kerja]) groups[item.wilayah_kerja] = [];
-        groups[item.wilayah_kerja].push(item);
-    }
-    const groupKeys = Object.keys(groups);
-
-    return (
-        <View style={styles.sectionWrapper}>
-            <Text style={styles.sectionTitle}>6. Kehumasan</Text>
-
-        </View>
-    );
-}
 
 // ============================================================
 // DOKUMEN UTAMA
@@ -512,16 +646,25 @@ export function AchievementPdfDocument({ data }: { data: PdfData }) {
 
     return (
         <Document>
-            <Page size="A4" style={styles.page}>
-                <Text style={styles.headerTitle}>Laporan Achievement — Zona 1</Text>
-                <Text style={styles.headerSubtitle}>Dicetak pada {tanggalCetak}</Text>
+            <Page size="A4" style={styles.page} wrap>
+                <View style={styles.coverHeader}>
+                    <View>
+                        <Text style={styles.coverKicker}>PT Pertamina EP Zona 1</Text>
+                        <Text style={styles.coverTitle}>Laporan Achievement</Text>
+                    </View>
+                    <View style={styles.coverMetaBox}>
+                        <Text style={styles.coverMetaLabel}>Tanggal Cetak</Text>
+                        <Text style={styles.coverMetaValue}>{tanggalCetak}</Text>
+                        <Text style={styles.coverMetaLabel}>Periode Laporan</Text>
+                        <Text style={styles.coverMetaValue}>Tahun Berjalan</Text>
+                    </View>
+                </View>
 
                 <SectionProduksi items={data.produksi} />
                 <SectionRencanaKerja items={data.rencanaKerja} />
                 <SectionHsse proper={data.hsseProper} security={data.hsseSecurity} />
-                <SectionInovasi items={data.inovasi} />
-                <SectionTopProject naratif={data.topProjectNaratif} abi={data.topProjectAbi} />
-                <SectionKehumasan items={data.kehumasan} />
+
+                <Footer />
             </Page>
         </Document>
     );
