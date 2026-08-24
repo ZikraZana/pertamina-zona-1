@@ -523,6 +523,8 @@ const AchievementTab = () => {
     const [inovasiLoading, setInovasiLoading] = useState(false);
 
     const [hsseSubTab, setHsseSubTab] = useState<"proper" | "security">("proper");
+    const [topProjectSubTab, setTopProjectSubTab] = useState<"naratif" | "abi">("naratif");
+    
     // ---------- State PROPER ----------
     const [properItems, setProperItems] = useState<ProperItem[]>([]);
     const [properListLoading, setProperListLoading] = useState(true);
@@ -2145,120 +2147,203 @@ const AchievementTab = () => {
                         </div>
                     )}
 
-                    {/* ---------- Card Top Project: Naratif ---------- */}
+                    {/* ---------- Card Top Project ---------- */}
                     {activeTab === "top-project" && (
-                        <>
-                            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                                <SectionHeader
-                                    title="Top Project — Pencapaian"
-                                    isFormOpen={naratifFormOpen}
-                                    onToggle={() => (naratifFormOpen ? resetNaratifForm() : setNaratifFormOpen(true))}
-                                />
+                        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Top Project</h2>
 
-                                {naratifFormOpen && (
-                                    <form onSubmit={handleSubmitNaratif} className="mb-4 flex flex-col gap-3 rounded-lg bg-slate-50 p-3">
-                                        <input placeholder="Judul (misal New Technology Velocity String)" value={naratifForm.title} onChange={(e) => setNaratifForm({ ...naratifForm, title: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                        <input placeholder="Detail (misal PPS-12 dan PPS-15)" value={naratifForm.detail} onChange={(e) => setNaratifForm({ ...naratifForm, detail: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-
-                                        {naratifError && (
-                                            <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{naratifError}</p>
-                                        )}
-
-                                        <div className="flex gap-2">
-                                            <button type="submit" disabled={naratifLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                                {naratifLoading ? "Menyimpan..." : naratifEditingId ? "Simpan Perubahan" : "Tambah"}
-                                            </button>
-                                            <button type="button" onClick={resetNaratifForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
-                                        </div>
-                                    </form>
-                                )}
-
-                                {naratifListLoading ? (
-                                    <ListSkeleton />
-                                ) : naratifItems.length === 0 ? (
-                                    <EmptyState label="Belum ada data pencapaian." />
-                                ) : (
-                                    <ul className="flex flex-col gap-2">
-                                        {naratifItems.map((item) => (
-                                            <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
-                                                <div className="min-w-0">
-                                                    <span className="truncate font-semibold text-blue-900">{item.title}</span>
-                                                    <p className="mt-0.5 truncate text-xs text-slate-400">{item.detail}</p>
-                                                </div>
-                                                <div className="flex shrink-0 gap-1">
-                                                    <button onClick={() => startEditNaratif(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
-                                                        <PencilIcon />
-                                                    </button>
-                                                    <button onClick={() => handleDeleteNaratif(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
-                                                        <TrashIcon />
-                                                    </button>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
+                            <div className="mb-5 grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setTopProjectSubTab("naratif")}
+                                    className={[
+                                        "cursor-pointer rounded-lg py-3 text-sm font-semibold transition-colors",
+                                        topProjectSubTab === "naratif"
+                                            ? "bg-blue-900 text-white shadow-sm"
+                                            : "border border-slate-200 text-slate-600 hover:bg-slate-50",
+                                    ].join(" ")}
+                                >
+                                    Pencapaian
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setTopProjectSubTab("abi")}
+                                    className={[
+                                        "cursor-pointer rounded-lg py-3 text-sm font-semibold transition-colors",
+                                        topProjectSubTab === "abi"
+                                            ? "bg-blue-900 text-white shadow-sm"
+                                            : "border border-slate-200 text-slate-600 hover:bg-slate-50",
+                                    ].join(" ")}
+                                >
+                                    ABI NBD
+                                </button>
                             </div>
 
-                            {/* ---------- Card Top Project: ABI NBD ---------- */}
-                            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                                <SectionHeader
-                                    title="Top Project — ABI NBD"
-                                    isFormOpen={abiFormOpen}
-                                    onToggle={() => (abiFormOpen ? resetAbiForm() : setAbiFormOpen(true))}
-                                />
+                            {topProjectSubTab === "naratif" && (
+                                <>
+                                    <form onSubmit={handleSubmitNaratif} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Judul</label>
+                                            <input
+                                                placeholder="Contoh: New Technology Velocity String"
+                                                value={naratifForm.title}
+                                                onChange={(e) => setNaratifForm({ ...naratifForm, title: e.target.value })}
+                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Detail</label>
+                                            <input
+                                                placeholder="Contoh: PPS-12 dan PPS-15"
+                                                value={naratifForm.detail}
+                                                onChange={(e) => setNaratifForm({ ...naratifForm, detail: e.target.value })}
+                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                required
+                                            />
+                                        </div>
 
-                                {abiFormOpen && (
-                                    <form onSubmit={handleSubmitAbi} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
-                                        <input placeholder="Judul (misal ABI NBD Asset Integrity)" value={abiForm.title} onChange={(e) => setAbiForm({ ...abiForm, title: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                        <input placeholder="Unit (misal Juta USD)" value={abiForm.unit} onChange={(e) => setAbiForm({ ...abiForm, unit: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                        <input placeholder="Periode/Keterangan (misal 18 ABI NBD, Cost Saving 21%)" value={abiForm.period} onChange={(e) => setAbiForm({ ...abiForm, period: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                        <input placeholder="Realisasi" type="number" step="any" min="0" value={abiForm.realization} onChange={(e) => setAbiForm({ ...abiForm, realization: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                        <input placeholder="Target" type="number" step="any" min="0" value={abiForm.target} onChange={(e) => setAbiForm({ ...abiForm, target: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-
-                                        {abiError && (
-                                            <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{abiError}</p>
-                                        )}
-
-                                        <div className="col-span-2 flex gap-2">
-                                            <button type="submit" disabled={abiLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                                {abiLoading ? "Menyimpan..." : abiEditingId ? "Simpan Perubahan" : "Tambah"}
+                                        <div className="flex flex-col gap-2">
+                                            <button type="submit" disabled={naratifLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                                {naratifLoading ? "Menyimpan..." : naratifEditingId ? "Simpan Perubahan" : "Tambah"}
                                             </button>
-                                            <button type="button" onClick={resetAbiForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
+                                            {naratifEditingId && (
+                                                <button type="button" onClick={resetNaratifForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+                                            )}
                                         </div>
                                     </form>
-                                )}
 
-                                {abiListLoading ? (
-                                    <ListSkeleton />
-                                ) : abiItems.length === 0 ? (
-                                    <EmptyState label="Belum ada data ABI NBD." />
-                                ) : (
-                                    <ul className="flex flex-col gap-2">
-                                        {abiItems.map((item) => {
-                                            const persen = item.target > 0 ? Math.round((item.realization / item.target) * 100) : 0;
-                                            return (
-                                                <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition-colors hover:border-blue-200 hover:bg-blue-50/30">
+                                    {naratifListLoading ? (
+                                        <ListSkeleton />
+                                    ) : naratifItems.length === 0 ? (
+                                        <EmptyState label="Belum ada data pencapaian." />
+                                    ) : (
+                                        <ul className="flex flex-col gap-2">
+                                            {naratifItems.map((item) => (
+                                                <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-blue-50/40 px-4 py-3 text-sm transition-colors hover:bg-blue-50">
                                                     <div className="min-w-0">
-                                                        <span className="truncate font-semibold text-blue-900">{item.title}</span>
-                                                        <p className="mt-0.5 truncate text-xs text-slate-400">
-                                                            {item.realization.toLocaleString("en-EN")} / {item.target.toLocaleString("en-EN")} {item.unit} ({persen}%) · {item.period}
-                                                        </p>
+                                                        <span className="truncate font-bold text-blue-900">{item.title}</span>
+                                                        <p className="mt-0.5 truncate text-xs text-slate-500">{item.detail}</p>
                                                     </div>
                                                     <div className="flex shrink-0 gap-1">
-                                                        <button onClick={() => startEditAbi(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                        <button onClick={() => startEditNaratif(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
                                                             <PencilIcon />
                                                         </button>
-                                                        <button onClick={() => handleDeleteAbi(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                        <button onClick={() => handleDeleteNaratif(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
                                                             <TrashIcon />
                                                         </button>
                                                     </div>
                                                 </li>
-                                            );
-                                        })}
-                                    </ul>
-                                )}
-                            </div>
-                        </>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </>
+                            )}
+
+                            {topProjectSubTab === "abi" && (
+                                <>
+                                    <form onSubmit={handleSubmitAbi} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Judul</label>
+                                            <input
+                                                placeholder="Contoh: ABI NBD Asset Integrity"
+                                                value={abiForm.title}
+                                                onChange={(e) => setAbiForm({ ...abiForm, title: e.target.value })}
+                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Realisasi</label>
+                                                <input
+                                                    placeholder="0"
+                                                    type="number"
+                                                    step="any"
+                                                    min="0"
+                                                    value={abiForm.realization}
+                                                    onChange={(e) => setAbiForm({ ...abiForm, realization: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Target</label>
+                                                <input
+                                                    placeholder="0"
+                                                    type="number"
+                                                    step="any"
+                                                    min="0"
+                                                    value={abiForm.target}
+                                                    onChange={(e) => setAbiForm({ ...abiForm, target: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Unit</label>
+                                                <input
+                                                    placeholder="Contoh: Juta USD"
+                                                    value={abiForm.unit}
+                                                    onChange={(e) => setAbiForm({ ...abiForm, unit: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Periode/Keterangan</label>
+                                                <input
+                                                    placeholder="Contoh: 18 ABI NBD, Cost Saving 21%"
+                                                    value={abiForm.period}
+                                                    onChange={(e) => setAbiForm({ ...abiForm, period: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col gap-2">
+                                            <button type="submit" disabled={abiLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                                {abiLoading ? "Menyimpan..." : abiEditingId ? "Simpan Perubahan" : "Tambah"}
+                                            </button>
+                                            {abiEditingId && (
+                                                <button type="button" onClick={resetAbiForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+                                            )}
+                                        </div>
+                                    </form>
+
+                                    {abiListLoading ? (
+                                        <ListSkeleton />
+                                    ) : abiItems.length === 0 ? (
+                                        <EmptyState label="Belum ada data ABI NBD." />
+                                    ) : (
+                                        <ul className="flex flex-col gap-2">
+                                            {abiItems.map((item) => {
+                                                const persen = item.target > 0 ? Math.round((item.realization / item.target) * 100) : 0;
+                                                return (
+                                                    <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-blue-50/40 px-4 py-3 text-sm transition-colors hover:bg-blue-50">
+                                                        <div className="min-w-0">
+                                                            <span className="truncate font-bold text-blue-900">{item.title}</span>
+                                                            <p className="mt-0.5 truncate text-xs text-slate-500">
+                                                                {item.realization.toLocaleString("en-US")} / {item.target.toLocaleString("en-US")} {item.unit} ({persen}%) · {item.period}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex shrink-0 gap-1">
+                                                            <button onClick={() => startEditAbi(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                                <PencilIcon />
+                                                            </button>
+                                                            <button onClick={() => handleDeleteAbi(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                                <TrashIcon />
+                                                            </button>
+                                                        </div>
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    )}
+                                </>
+                            )}
+                        </div>
                     )}
 
                     {/* ---------- Card Kehumasan ---------- */}
