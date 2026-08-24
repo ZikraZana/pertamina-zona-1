@@ -150,10 +150,12 @@ const styles = StyleSheet.create({
     },
     tableRow: {
         flexDirection: 'row',
+        alignItems: 'center',
         borderBottom: `0.5px solid ${COLORS.line}`,
     },
     tableRowLast: {
         flexDirection: 'row',
+        alignItems: 'center',
     },
     tableCell: {
         fontSize: 8,
@@ -217,6 +219,22 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         borderRight: `0.5px solid ${COLORS.line}`,
     },
+    abiMiniCard: {
+        paddingVertical: 6,
+        paddingHorizontal: 6,
+        borderBottom: `0.5px solid ${COLORS.line}`,
+    },
+    abiMiniTitle: {
+        fontSize: 7.5,
+        fontWeight: 'bold',
+        color: COLORS.slate900,
+        marginBottom: 3,
+    },
+    abiMiniValue: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: COLORS.navy,
+    },
     metricCellLast: {
         flex: 1,
         paddingVertical: 8,
@@ -266,6 +284,11 @@ const styles = StyleSheet.create({
     metricBarFill: {
         height: 3,
         backgroundColor: COLORS.navy,
+    },
+    realisasiFont: {
+        fontSize: 7.5,
+        color: COLORS.slate500,
+        marginTop: 3,
     },
 
     // ---------- Two-column layout untuk section 5 (Top Project) ----------
@@ -464,20 +487,25 @@ function Footer() {
 // PRODUKSI
 // ============================================================
 function SectionProduksi({ items }: { items: ProduksiItem[] }) {
+    const order = ['minyak', 'gas', 'migas'];
+    const sortedItems = [...items].sort(
+        (a, b) => order.indexOf(a.type.toLowerCase()) - order.indexOf(b.type.toLowerCase())
+    );
     return (
         <View style={styles.sectionBlock}>
             <SectionHead number="01" title="Realisasi Produksi" />
-            {items.length === 0 ? (
+            {sortedItems.length === 0 ? (
                 <Text style={styles.emptyText}>Belum ada data produksi.</Text>
             ) : (
                 <View style={styles.metricRow}>
-                    {items.map((item, i) => {
+                    {sortedItems.map((item, i) => {
                         const percent = item.target > 0 ? Math.round((item.realization / item.target) * 100) : 0;
                         const positive = percent >= 100;
                         const isLast = i === items.length - 1;
                         return (
                             <View key={item.type} style={isLast ? styles.metricCellLast : styles.metricCell}>
                                 <Text style={styles.metricLabel}>{item.type} • {item.period}</Text>
+                                <Text style={styles.realisasiFont}>Realisasi</Text>
                                 <View style={styles.metricValueRow}>
                                     <Text style={styles.metricValue}>{item.realization.toLocaleString('en-US')}</Text>
                                     <Text style={styles.metricUnit}>{item.unit}</Text>
@@ -488,7 +516,7 @@ function SectionProduksi({ items }: { items: ProduksiItem[] }) {
                                 <View style={styles.metricSubRow}>
                                     <Text style={styles.metricTarget}>Target {item.target.toLocaleString('en-US')} {item.unit}</Text>
                                     <Text style={[styles.metricAchievement, positive ? styles.achievementPositive : styles.achievementNegative]}>
-                                        {percent}%
+                                        {percent}% RKAP
                                     </Text>
                                 </View>
                             </View>
@@ -539,9 +567,9 @@ function SectionRencanaKerja({ items }: { items: RkItem[] }) {
                                                     <Text style={styles.rkItemWilayah}>{item.wilayah_kerja}</Text>
                                                 </View>
                                                 <Text style={styles.rkItemNumbers}>
-                                                    {item.jumlah_minyak !== null ? `${item.jumlah_minyak} bbl` : ''}
+                                                    {item.jumlah_minyak !== null ? `${item.jumlah_minyak} BOPD` : ''}
                                                     {item.jumlah_minyak !== null && item.jumlah_gas !== null ? ' / ' : ''}
-                                                    {item.jumlah_gas !== null ? `${item.jumlah_gas} mmscf` : ''}
+                                                    {item.jumlah_gas !== null ? `${item.jumlah_gas} MMSCFD` : ''}
                                                     {item.jumlah_minyak === null && item.jumlah_gas === null ? '-' : ''}
                                                 </Text>
                                             </View>
@@ -634,7 +662,152 @@ function SectionHsse({ proper, security }: { proper: ProperItem[]; security: Sec
     );
 }
 
+// ============================================================
+// INOVASI
+// ============================================================
+function SectionInovasi({ items }: { items: InovasiItem[] }) {
+    return (
+        <View style={styles.sectionBlock}>
+            <SectionHead number="04" title="Inovasi" />
+            {items.length === 0 ? (
+                <Text style={styles.emptyText}>Belum ada data inovasi.</Text>
+            ) : (
+                <View style={styles.table}>
+                    <TableHead columns={[
+                        { label: 'No', style: styles.colXS },
+                        { label: 'Pencapaian', style: styles.colM },
+                        { label: 'Nama Inovasi / Acara', style: styles.colXL },
+                        { label: 'Wilayah Kerja', style: styles.colM },
+                    ]} />
+                    {items.map((item, i) => {
+                        const isLast = i === items.length - 1;
+                        return (
+                            <View key={item.id} style={isLast ? styles.tableRowLast : styles.tableRow}>
+                                <Text style={[styles.tableCellMuted, styles.colXS]}>{i + 1}</Text>
+                                <Text style={[styles.tableCellBold, styles.colM]}>{item.pencapaian}</Text>
+                                <Text style={[styles.tableCellMuted, styles.colXL]}>
+                                    {item.nama_inovasi}{item.nama_inovasi && item.nama_acara ? ' — ' : ''}{item.nama_acara}
+                                </Text>
+                                <Text style={[styles.tableCellMuted, styles.colM]}>{item.wilayah_kerja}</Text>
+                            </View>
+                        );
+                    })}
+                </View>
+            )}
+        </View>
+    );
+}
 
+// ============================================================
+// TOP PROJECT
+// ============================================================
+function SectionTopProject({ naratif, abi }: { naratif: NaratifItem[]; abi: AbiItem[] }) {
+    return (
+        <View style={styles.sectionBlock}>
+            <SectionHead number="05" title="Top Project" />
+
+            {naratif.length === 0 && abi.length === 0 ? (
+                <Text style={styles.emptyText}>Belum ada data top project.</Text>
+            ) : (
+                <View style={styles.rkGridWrap}>
+                    {/* Kolom kiri: Pencapaian Naratif */}
+                    <View style={styles.rkGridCol}>
+                        <View style={styles.rkGroupBox}>
+                            <View style={styles.rkGroupHeadRow}>
+                                <Text style={styles.rkGroupHeadText}>Pencapaian Naratif</Text>
+                            </View>
+                            {naratif.length === 0 ? (
+                                <Text style={styles.emptyText}>Belum ada data.</Text>
+                            ) : (
+                                naratif.map((item, i) => (
+                                    <View key={item.id} style={i === naratif.length - 1 ? styles.hsseItemRowLast : styles.hsseItemRow}>
+                                        <View style={styles.hsseItemTextCol}>
+                                            <Text style={styles.hsseItemTitle}>{item.title}</Text>
+                                            <Text style={styles.hsseItemSub}>{item.detail}</Text>
+                                        </View>
+                                    </View>
+                                ))
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Kolom kanan: Realisasi ABI NBD */}
+                    <View style={styles.rkGridCol}>
+                        <View style={styles.rkGroupBox}>
+                            <View style={styles.rkGroupHeadRow}>
+                                <Text style={styles.rkGroupHeadText}>Realisasi ABI NBD</Text>
+                            </View>
+                            {abi.length === 0 ? (
+                                <Text style={styles.emptyText}>Belum ada data.</Text>
+                            ) : (
+                                abi.map((item) => {
+                                    const percent = item.target > 0 ? Math.round((item.realization / item.target) * 100) : 0;
+                                    const positive = percent >= 100;
+                                    return (
+                                        <View key={item.id} style={styles.abiMiniCard}>
+                                            <Text style={styles.abiMiniTitle}>{item.title}</Text>
+                                            <Text style={styles.realisasiFont}>Realisasi</Text>
+                                            <View style={styles.metricValueRow}>
+                                                <Text style={styles.abiMiniValue}>{item.realization.toLocaleString('en-US')}</Text>
+                                                <Text style={styles.metricUnit}>{item.unit}</Text>
+                                            </View>
+                                            <View style={styles.metricBarTrack}>
+                                                <View style={[styles.metricBarFill, { width: `${Math.min(percent, 100)}%` }]} />
+                                            </View>
+                                            <View style={styles.metricSubRow}>
+                                                <Text style={styles.metricTarget}>Target {item.target.toLocaleString('en-US')} {item.unit}</Text>
+                                                <Text style={[styles.metricAchievement, positive ? styles.achievementPositive : styles.achievementNegative]}>
+                                                    {percent}%
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    );
+                                })
+                            )}
+                        </View>
+                    </View>
+                </View>
+            )}
+        </View>
+    );
+}
+
+// ============================================================
+// KEHUMASAN
+// ============================================================
+function SectionKehumasan({ items }: { items: KehumasanItem[] }) {
+    return (
+        <View style={styles.sectionBlock}>
+            <SectionHead number="06" title="Kehumasan" />
+            {items.length === 0 ? (
+                <Text style={styles.emptyText}>Belum ada data kehumasan.</Text>
+            ) : (
+                <View style={styles.table}>
+                    <TableHead columns={[
+                        { label: 'Wilayah Kerja', style: styles.colM },
+                        { label: 'Kategori', style: styles.colL },
+                        { label: 'Sub Kategori', style: styles.colL },
+                        { label: 'Penghargaan', style: styles.colS },
+                    ]} />
+                    {items.map((item, i) => {
+                        const isLast = i === items.length - 1;
+                        return (
+                            <View key={item.id} style={isLast ? styles.tableRowLast : styles.tableRow}>
+                                <Text style={[styles.tableCellBold, styles.colM]}>{item.wilayah_kerja}</Text>
+                                <Text style={[styles.tableCellMuted, styles.colL]}>{item.kategori}</Text>
+                                <Text style={[styles.tableCellMuted, styles.colL]}>{item.sub_kategori}</Text>
+                                <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }, styles.colS]}>
+
+                                    <MedalPill medali={item.medali} />
+                                </View>
+                            </View>
+                        );
+                    })}
+                </View>
+            )}
+        </View>
+    );
+}
 
 // ============================================================
 // DOKUMEN UTAMA
@@ -649,20 +822,21 @@ export function AchievementPdfDocument({ data }: { data: PdfData }) {
             <Page size="A4" style={styles.page} wrap>
                 <View style={styles.coverHeader}>
                     <View>
-                        <Text style={styles.coverKicker}>PT Pertamina EP Zona 1</Text>
+                        <Text style={styles.coverKicker}>PT Pertamina Hulu Rokan Zona 1</Text>
                         <Text style={styles.coverTitle}>Laporan Achievement</Text>
                     </View>
                     <View style={styles.coverMetaBox}>
                         <Text style={styles.coverMetaLabel}>Tanggal Cetak</Text>
                         <Text style={styles.coverMetaValue}>{tanggalCetak}</Text>
-                        <Text style={styles.coverMetaLabel}>Periode Laporan</Text>
-                        <Text style={styles.coverMetaValue}>Tahun Berjalan</Text>
                     </View>
                 </View>
 
                 <SectionProduksi items={data.produksi} />
                 <SectionRencanaKerja items={data.rencanaKerja} />
                 <SectionHsse proper={data.hsseProper} security={data.hsseSecurity} />
+                <SectionInovasi items={data.inovasi} />
+                <SectionTopProject naratif={data.topProjectNaratif} abi={data.topProjectAbi} />
+                <SectionKehumasan items={data.kehumasan} />
 
                 <Footer />
             </Page>
