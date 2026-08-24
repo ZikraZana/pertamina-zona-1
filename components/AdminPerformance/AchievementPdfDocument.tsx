@@ -501,7 +501,7 @@ function SectionProduksi({ items }: { items: ProduksiItem[] }) {
                     {sortedItems.map((item, i) => {
                         const percent = item.target > 0 ? Math.round((item.realization / item.target) * 100) : 0;
                         const positive = percent >= 100;
-                        const isLast = i === items.length - 1;
+                        const isLast = i === sortedItems.length - 1;
                         return (
                             <View key={item.type} style={isLast ? styles.metricCellLast : styles.metricCell}>
                                 <Text style={styles.metricLabel}>{item.type} • {item.period}</Text>
