@@ -524,7 +524,7 @@ const AchievementTab = () => {
 
     const [hsseSubTab, setHsseSubTab] = useState<"proper" | "security">("proper");
     const [topProjectSubTab, setTopProjectSubTab] = useState<"naratif" | "abi">("naratif");
-    
+
     // ---------- State PROPER ----------
     const [properItems, setProperItems] = useState<ProperItem[]>([]);
     const [properListLoading, setProperListLoading] = useState(true);
@@ -2348,52 +2348,84 @@ const AchievementTab = () => {
 
                     {/* ---------- Card Kehumasan ---------- */}
                     {activeTab === "kehumasan" && (
-                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                            <SectionHeader
-                                title="Kehumasan"
-                                isFormOpen={kehumasanFormOpen}
-                                onToggle={() => (kehumasanFormOpen ? resetKehumasanForm() : setKehumasanFormOpen(true))}
-                            />
+                        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Kehumasan</h2>
 
-                            {kehumasanFormOpen && (
-                                <form onSubmit={handleSubmitKehumasan} className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
-                                    <input placeholder="Wilayah Kerja (misal Field Rantau)" value={kehumasanForm.wilayah_kerja} onChange={(e) => setKehumasanForm({ ...kehumasanForm, wilayah_kerja: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                    <input placeholder="Kategori (misal Manajemen Krisis)" value={kehumasanForm.kategori} onChange={(e) => setKehumasanForm({ ...kehumasanForm, kategori: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                    <input placeholder="Sub Kategori (misal Krisis & Pasca Krisis)" value={kehumasanForm.sub_kategori} onChange={(e) => setKehumasanForm({ ...kehumasanForm, sub_kategori: e.target.value })} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                                    <select value={kehumasanForm.medali} onChange={(e) => setKehumasanForm({ ...kehumasanForm, medali: e.target.value as "gold" | "silver" | "bronze" })} className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500">
-                                        <option value="gold">🥇 Gold Winner</option>
-                                        <option value="silver">🥈 Silver Winner</option>
-                                        <option value="bronze">🥉 Bronze Winner</option>
-                                    </select>
-
-                                    <div className="col-span-2">
-                                        <label className="mb-1 block text-xs font-semibold text-slate-600">Foto Penghargaan (opsional)</label>
+                            <form onSubmit={handleSubmitKehumasan} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Wilayah Kerja</label>
+                                        <select
+                                            value={kehumasanForm.wilayah_kerja}
+                                            onChange={(e) => setKehumasanForm({ ...kehumasanForm, wilayah_kerja: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            required
+                                        >
+                                            <option value="">Pilih Wilayah Kerja</option>
+                                            {wilayahKerjaList.map((nama) => (
+                                                <option key={nama} value={nama}>{nama}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Peringkat</label>
+                                        <select
+                                            value={kehumasanForm.medali}
+                                            onChange={(e) => setKehumasanForm({ ...kehumasanForm, medali: e.target.value as "gold" | "silver" | "bronze" })}
+                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                        >
+                                            <option value="gold">🥇 Gold Winner</option>
+                                            <option value="silver">🥈 Silver Winner</option>
+                                            <option value="bronze">🥉 Bronze Winner</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Kategori</label>
                                         <input
-                                            type="file"
-                                            accept="image/jpeg,image/png,image/webp"
-                                            onChange={(e) => setKehumasanImageFile(e.target.files?.[0] ?? null)}
-                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-blue-700 focus:border-blue-500"
+                                            placeholder="Contoh: Manajemen Krisis"
+                                            value={kehumasanForm.kategori}
+                                            onChange={(e) => setKehumasanForm({ ...kehumasanForm, kategori: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            required
                                         />
-                                        {kehumasanExistingImagePath && !kehumasanImageFile && (
-                                            <p className="mt-1 text-[11px] text-slate-400">Sudah ada foto tersimpan. Pilih file baru untuk menggantinya, atau biarkan kosong untuk tetap memakai foto lama.</p>
-                                        )}
-                                        {kehumasanImageFile && (
-                                            <p className="mt-1 text-[11px] text-blue-700">File dipilih: {kehumasanImageFile.name}</p>
-                                        )}
                                     </div>
+                                    <div>
+                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Sub Kategori</label>
+                                        <input
+                                            placeholder="Contoh: Krisis & Pasca Krisis"
+                                            value={kehumasanForm.sub_kategori}
+                                            onChange={(e) => setKehumasanForm({ ...kehumasanForm, sub_kategori: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            required
+                                        />
+                                    </div>
+                                </div>
 
-                                    {kehumasanError && (
-                                        <p className="col-span-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{kehumasanError}</p>
+                                <div>
+                                    <label className="mb-1.5 block text-sm font-semibold text-blue-900">Foto Penghargaan (Opsional)</label>
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        onChange={(e) => setKehumasanImageFile(e.target.files?.[0] ?? null)}
+                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-blue-900 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white focus:border-blue-500"
+                                    />
+                                    {kehumasanExistingImagePath && !kehumasanImageFile && (
+                                        <p className="mt-1 text-[11px] text-slate-400">Sudah ada foto tersimpan. Pilih file baru untuk menggantinya, atau biarkan kosong untuk tetap memakai foto lama.</p>
                                     )}
+                                    {kehumasanImageFile && (
+                                        <p className="mt-1 text-[11px] text-blue-700">File dipilih: {kehumasanImageFile.name}</p>
+                                    )}
+                                </div>
 
-                                    <div className="col-span-2 flex gap-2">
-                                        <button type="submit" disabled={kehumasanLoading} className="cursor-pointer rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                            {kehumasanLoading ? "Menyimpan..." : kehumasanEditingId ? "Simpan Perubahan" : "Tambah"}
-                                        </button>
-                                        <button type="button" onClick={resetKehumasanForm} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white">Batal</button>
-                                    </div>
-                                </form>
-                            )}
+                                <div className="flex flex-col gap-2">
+                                    <button type="submit" disabled={kehumasanLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                        {kehumasanLoading ? "Menyimpan..." : kehumasanEditingId ? "Simpan Perubahan" : "Tambah"}
+                                    </button>
+                                    {kehumasanEditingId && (
+                                        <button type="button" onClick={resetKehumasanForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+                                    )}
+                                </div>
+                            </form>
 
                             {kehumasanListLoading ? (
                                 <ListSkeleton />
