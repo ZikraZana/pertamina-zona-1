@@ -45,10 +45,12 @@ function ProductionCard({
                     {percentValue}% RKAP
                 </span>
             </div>
-
-            <div className="mt-5 flex items-baseline gap-2">
-                <span className="text-4xl font-extrabold tracking-tight text-slate-900">{realization}</span>
-                <span className="text-sm font-medium text-slate-400">{unit}</span>
+            <div className="mt-5">
+                <span className="text-md text-slate-400">Realisasi</span>
+                <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-extrabold tracking-tight text-slate-900">{realization}</span>
+                    <span className="text-sm font-medium text-slate-400">{unit}</span>
+                </div>
             </div>
 
             <div className="mt-4">
@@ -58,8 +60,7 @@ function ProductionCard({
                         style={{ width: `${percentValue}%` }}
                     />
                 </div>
-                <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
-                    <span>Realisasi</span>
+                <div className="mt-2 flex items-center justify-end text-xs text-slate-400">
                     <span>Target: <span className={`font-semibold ${colors.text}`}>{target} {unit}</span></span>
                 </div>
             </div>
