@@ -800,19 +800,23 @@ const AchievementsContent = () => {
                         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
                             <p className="text-sm font-bold uppercase tracking-wide text-blue-900">Others</p>
 
-                            {/* Reduksi Emisi */}
-                            <div className="mt-4">
-                                <HSSEOthersCard
-                                    indikator="Realisasi Reduksi Emisi"
-                                    satuan="Ton CO2eq"
-                                    realisasi={22484}
-                                    target_others={18582}
-                                    tahun_target={2025}
-                                    periode="Oktober 2025"
-                                />
-                            </div>
+                            <div className="mt-4 flex flex-col gap-4">
+                                    {hsseOthers
+                                        .slice()
+                                        .sort((a, b) => a.urutan - b.urutan)
+                                        .map((item) => (
+                                            <HSSEOthersCard
+                                                key={item.id}
+                                                indikator={item.indikator}
+                                                satuan={item.satuan}
+                                                realisasi={item.realisasi}
+                                                target_others={item.target_others}
+                                                tahun_target={item.tahun_target}
+                                                periode={item.periode}
+                                            />
+                                        ))}
+                                </div>
 
-                            {/* Daftar kejadian/others lain (dari API) */}
                             
                         </div>
                     </div>

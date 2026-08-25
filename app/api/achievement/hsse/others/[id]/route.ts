@@ -2,112 +2,46 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 
-// PUT: update data HSSE - Others berdasarkan id (admin only)
+
 export async function PUT(
-    req: NextRequest,
+    request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    try {
-        const supabase = await createClient();
+    const { id } = await params;
+    const supabase = await createClient();
+    const body = await request.json();
 
-        const { user, err } = await requireAdmin(supabase);
-        if (err) return err;
+    const { indikator, realisasi, satuan, periode, tahun_target, target_others, urutan } = body;
 
-        const { id } = await params;
-        const body = await req.json().catch(() => null);
-        if (!body) {
-            return NextResponse.json({ error: "Body tidak valid.", code: "VALIDATION_ERROR" }, { status: 400 });
-        }
-        const { judul, wilayah_kerja, tanggal, urutan } = body;
+    const { data, error } = await supabase
+        .from("achievement_hsse_others")
+        .update({ indikator, realisasi, satuan, periode, tahun_target, target_others, urutan })
+        .eq("id", id)
+        .select()
+        .single();
 
-        if (typeof judul !== "string" || !judul.trim()) {
-            return NextResponse.json({ error: 'Field "judul" wajib diisi.', code: "VALIDATION_ERROR" }, { status: 400 });
-        }
-        if (typeof wilayah_kerja !== "string" || !wilayah_kerja.trim()) {
-            return NextResponse.json({ error: 'Field "wilayah_kerja" wajib diisi.', code: "VALIDATION_ERROR" }, { status: 400 });
-        }
-        if (typeof tanggal !== "string" || isNaN(Date.parse(tanggal))) {
-            return NextResponse.json({ error: 'Field "tanggal" harus berupa tanggal yang valid.', code: "VALIDATION_ERROR" }, { status: 400 });
-        }
-        let urutanNumber = 0;
-        if (urutan !== undefined && urutan !== null) {
-            const parsed = Number(urutan);
-            if (!Number.isInteger(parsed) || parsed < 0) {
-                return NextResponse.json({ error: 'Field "urutan" harus berupa bilangan bulat dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
-            }
-            urutanNumber = parsed;
-        }
-
-        const { data, error } = await supabase
-            .from("achievement_hsse_others")
-            .update({
-                judul,
-                wilayah_kerja,
-                tanggal,
-                urutan: urutanNumber,
-                updated_by: user.id,
-            })
-            .eq("id", id)
-            .select()
-            .single();
-
-        if (error) throw error;
-        if (!data) {
-            return NextResponse.json({ error: "Data HSSE others tidak ditemukan" }, { status: 404 });
-        }
-
-        const { error: logError } = await supabase.from("activity_logs").insert({
-            actor_id: user!.id,
-            action: "update",
-            entity_type: "achievement_hsse_others",
-            entity_label: judul,
-        });
-        if (logError) console.error("Gagal mencatat activity log:", logError.message);
-
-        return NextResponse.json({ data }, { status: 200 });
-    } catch (err: any) {
-        console.error("Gagal memperbarui data HSSE others:", err);
-        return NextResponse.json({ error: err.message ?? "Gagal memperbarui data HSSE others" }, { status: 500 });
+    if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    return NextResponse.json({ data });
 }
 
-// DELETE: hapus data HSSE - Others berdasarkan id (admin only)
 export async function DELETE(
-    req: NextRequest,
+    request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    try {
-        const supabase = await createClient();
+    const { id } = await params;
+    const supabase = await createClient();
 
-        const { user, err } = await requireAdmin(supabase);
-        if (err) return err;
+    const { error } = await supabase
+        .from("achievement_hsse_others")
+        .delete()
+        .eq("id", id);
 
-        const { id } = await params;
-
-        const { data: existing } = await supabase
-            .from("achievement_hsse_others")
-            .select("judul")
-            .eq("id", id)
-            .single();
-
-        const { error } = await supabase
-            .from("achievement_hsse_others")
-            .delete()
-            .eq("id", id);
-
-        if (error) throw error;
-
-        const { error: logError } = await supabase.from("activity_logs").insert({
-            actor_id: user!.id,
-            action: "delete",
-            entity_type: "achievement_hsse_others",
-            entity_label: existing?.judul ?? id,
-        });
-        if (logError) console.error("Gagal mencatat activity log:", logError.message);
-
-        return NextResponse.json({ message: "Data HSSE others berhasil dihapus" }, { status: 200 });
-    } catch (err: any) {
-        console.error("Gagal menghapus data HSSE others:", err);
-        return NextResponse.json({ error: err.message ?? "Gagal menghapus data HSSE others" }, { status: 500 });
+    if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    return NextResponse.json({ success: true });
 }

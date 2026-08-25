@@ -113,7 +113,7 @@ type HsseOthersItem = {
     realisasi: number;
     satuan: string;
     periode: string;
-    target: number;
+    target_others: number;
     tahun_target: number;
     urutan: number;
 };
@@ -599,7 +599,7 @@ const AchievementTab = () => {
     realisasi: "",
     satuan: "",
     periode: "",
-    target: "",
+    target_others: "",
     tahun_target: String(new Date().getFullYear()),
     });
     const [hsseOthersEditingId, setHsseOthersEditingId] = useState<string | null>(null);
@@ -1156,7 +1156,7 @@ const AchievementTab = () => {
         realisasi: "",
         satuan: "",
         periode: "",
-        target: "",
+        target_others: "",
         tahun_target: String(new Date().getFullYear()),
     });
     setHsseOthersEditingId(null);
@@ -1170,7 +1170,7 @@ const AchievementTab = () => {
         realisasi: String(item.realisasi),
         satuan: item.satuan,
         periode: item.periode,
-        target: String(item.target),
+        target_others: String(item.target_others),
         tahun_target: String(item.tahun_target),
     });
     setHsseOthersEditingId(item.id);
@@ -1197,7 +1197,7 @@ const AchievementTab = () => {
         realisasi: parseFormattedNumber(hsseOthersForm.realisasi),
         satuan: hsseOthersForm.satuan,
         periode: hsseOthersForm.periode,
-        target: parseFormattedNumber(hsseOthersForm.target),
+        target_others: parseFormattedNumber(hsseOthersForm.target_others),
         tahun_target: Number(hsseOthersForm.tahun_target),
         urutan,
     };
@@ -2506,8 +2506,8 @@ const AchievementTab = () => {
                                                         type="text"
                                                         inputMode="decimal"
                                                         placeholder="Masukkan Angka Target"
-                                                        value={hsseOthersForm.target}
-                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, target: sanitizeNumberInput(e.target.value) })}
+                                                        value={hsseOthersForm.target_others}
+                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, target_others: sanitizeNumberInput(e.target.value) })}
                                                         className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
                                                         required
                                                     />
@@ -2543,7 +2543,7 @@ const AchievementTab = () => {
                                                     .slice()
                                                     .sort((a, b) => a.urutan - b.urutan)
                                                     .map((item) => {
-                                                        const persen = item.target > 0 ? Math.round((item.realisasi / item.target) * 100) : 0;
+                                                        const persen = item.target_others > 0 ? Math.round((item.realisasi / item.target_others) * 100) : 0;
                                                         return (
                                                             <div
                                                                 key={item.id}
