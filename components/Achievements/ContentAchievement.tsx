@@ -239,6 +239,46 @@ function AwardPhoto({ imageUrl, alt }: { imageUrl?: string; alt: string }) {
     );
 }
 
+function HSSEOthersCard({
+    indikator, satuan, realisasi, target_others, tahun_target, periode,
+}: {
+    indikator: string;
+    satuan: string;
+    realisasi: number;
+    target_others: number;
+    tahun_target: number; // contoh: "Target 2025"
+    periode: string;
+}) {
+    const percentValue = target_others > 0 ? Math.round((realisasi / target_others) * 100) : 0;
+    const barWidth = Math.min(percentValue, 100);
+
+    return (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+            <div className="flex items-start justify-between gap-3">
+                <p className="text-sm font-bold text-blue-900">{indikator}</p>
+                <span className="shrink-0 text-sm font-bold text-blue-900">{periode}</span>
+            </div>
+            <p className="mt-1 text-xs text-slate-400">
+                Tahun {tahun_target}: {formatAngkaID(target_others)} {satuan}
+            </p>
+
+            <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-3xl font-extrabold tracking-tight text-blue-900">
+                    {formatAngkaID(realisasi)}
+                </span>
+                <span className="text-sm font-medium text-slate-400">{satuan}</span>
+            </div>
+
+            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                <div
+                    className="h-full rounded-full bg-blue-900 transition-all duration-1000 ease-out"
+                    style={{ width: `${barWidth}%` }}
+                />
+            </div>
+        </div>
+    );
+}
+
 function FieldAwardCard({ field, awards }: { field: string; awards: AwardItem[] }) {
     return (
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -345,12 +385,15 @@ type PenghargaanItem = {
     urutan: number;
 };
 
-// HSSE - Others: struktur sama seperti Security
+// HSSE - Others
 type HsseOthersItem = {
     id: string;
-    judul: string;
-    wilayah_kerja: string;
-    tanggal: string;
+    indikator: string;
+    realisasi: number;
+    satuan: string;
+    periode: string;
+    target_others: number;
+    tahun_target: number;
     urutan: number;
 };
 
@@ -671,7 +714,7 @@ const AchievementsContent = () => {
                     <div className="flex flex-col gap-4">
                         {/* PROPER */}
                         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
-                            <p className="text-sm font-semibold text-slate-500">PROPER</p>
+                            <p className="text-sm font-bold uppercase tracking-wide text-blue-900">Proper</p>
                             <div className="mt-4 flex flex-col gap-3">
                                 {proper
                                     .slice()
@@ -754,37 +797,24 @@ const AchievementsContent = () => {
                         </div>
 
                         {/* OTHERS */}
-                        {hsseOthers.length > 0 && (
-                            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
-                                <p className="text-sm font-semibold text-slate-500">OTHERS</p>
-                                <div className="mt-4 flex flex-col divide-y divide-slate-100">
-                                    {hsseOthers
-                                        .slice()
-                                        .sort((a, b) => a.urutan - b.urutan)
-                                        .map((event) => (
-                                            <div key={event.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                                                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="text-sm font-semibold text-slate-800">{event.judul}</p>
-                                                    <p className="text-xs text-slate-400">{event.wilayah_kerja}</p>
-                                                </div>
-                                                <span className="shrink-0 text-xs font-medium text-slate-400">{formatTanggalID(event.tanggal)}</span>
-                                            </div>
-                                        ))}
-                                </div>
-                            </div>
-                        )}
+                        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
+                            <p className="text-sm font-bold uppercase tracking-wide text-blue-900">Others</p>
 
-                        {/* Reduksi Emisi */}
-                        <ProductionCard
-                            title="Reduksi Emisi"
-                            unit="Ton CO2eq"
-                            realization="22.484"
-                            target="18.582"
-                            percentValue={121}
-                            period="YTD Oktober 2025"
-                            accentColor="sky"
-                        />
+                            {/* Reduksi Emisi */}
+                            <div className="mt-4">
+                                <HSSEOthersCard
+                                    indikator="Realisasi Reduksi Emisi"
+                                    satuan="Ton CO2eq"
+                                    realisasi={22484}
+                                    target_others={18582}
+                                    tahun_target={2025}
+                                    periode="Oktober 2025"
+                                />
+                            </div>
+
+                            {/* Daftar kejadian/others lain (dari API) */}
+                            
+                        </div>
                     </div>
                 )}
 
