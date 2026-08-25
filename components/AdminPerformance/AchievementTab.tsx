@@ -106,12 +106,15 @@ type SecurityFormItem = {
     urutan: number;
 };
 
-// HSSE - Others: struktur sama seperti Security (Kejadian), tabel terpisah.
+// HSSE - Others
 type HsseOthersItem = {
     id: string;
-    judul: string;
-    wilayah_kerja: string;
-    tanggal: string;
+    indikator: string;
+    realisasi: number;
+    satuan: string;
+    periode: string;
+    target: number;
+    tahun_target: number;
     urutan: number;
 };
 // ============================================================
@@ -591,7 +594,14 @@ const AchievementTab = () => {
     const [hsseOthersItems, setHsseOthersItems] = useState<HsseOthersItem[]>([]);
     const [hsseOthersListLoading, setHsseOthersListLoading] = useState(true);
     const [hsseOthersFormOpen, setHsseOthersFormOpen] = useState(false);
-    const [hsseOthersForm, setHsseOthersForm] = useState({ judul: "", wilayah_kerja: "", tanggal: "" });
+    const [hsseOthersForm, setHsseOthersForm] = useState({
+    indikator: "",
+    realisasi: "",
+    satuan: "",
+    periode: "",
+    target: "",
+    tahun_target: String(new Date().getFullYear()),
+    });
     const [hsseOthersEditingId, setHsseOthersEditingId] = useState<string | null>(null);
     const [hsseOthersLoading, setHsseOthersLoading] = useState(false);
     const [hsseOthersError, setHsseOthersError] = useState<string | null>(null);
@@ -1141,50 +1151,73 @@ const AchievementTab = () => {
     }
 
     function resetHsseOthersForm() {
-        setHsseOthersForm({ judul: "", wilayah_kerja: "", tanggal: "" });
-        setHsseOthersEditingId(null);
-        setHsseOthersFormOpen(false);
-        setHsseOthersError(null);
-    }
+    setHsseOthersForm({
+        indikator: "",
+        realisasi: "",
+        satuan: "",
+        periode: "",
+        target: "",
+        tahun_target: String(new Date().getFullYear()),
+    });
+    setHsseOthersEditingId(null);
+    setHsseOthersError(null);
+}
+    
 
     function startEditHsseOthers(item: HsseOthersItem) {
-        setHsseOthersForm({ judul: item.judul, wilayah_kerja: item.wilayah_kerja, tanggal: item.tanggal });
-        setHsseOthersEditingId(item.id);
-        setHsseOthersFormOpen(true);
-        setHsseOthersError(null);
-    }
+    setHsseOthersForm({
+        indikator: item.indikator,
+        realisasi: String(item.realisasi),
+        satuan: item.satuan,
+        periode: item.periode,
+        target: String(item.target),
+        tahun_target: String(item.tahun_target),
+    });
+    setHsseOthersEditingId(item.id);
+    setHsseOthersFormOpen(true);
+    setHsseOthersError(null);
+}
 
     async function handleSubmitHsseOthers(e: React.FormEvent) {
-        e.preventDefault();
-        setHsseOthersError(null);
-        setHsseOthersLoading(true);
+    e.preventDefault();
+    setHsseOthersError(null);
 
-        const existingItem = hsseOthersEditingId ? hsseOthersItems.find((item) => item.id === hsseOthersEditingId) : null;
-        const urutan = existingItem ? existingItem.urutan : hsseOthersItems.length;
-
-        const payload = {
-            judul: hsseOthersForm.judul,
-            wilayah_kerja: hsseOthersForm.wilayah_kerja,
-            tanggal: hsseOthersForm.tanggal,
-            urutan,
-        };
-
-        const url = hsseOthersEditingId ? `/api/achievement/hsse/others/${hsseOthersEditingId}` : "/api/achievement/hsse/others";
-        const method = hsseOthersEditingId ? "PUT" : "POST";
-        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-        const json = await res.json();
-
-        if (!res.ok) {
-            toastError(json.error ?? "Gagal menyimpan data.");
-            setHsseOthersLoading(false);
-            return;
-        }
-
-        await fetchHsseOthersItems();
-        resetHsseOthersForm();
-        setHsseOthersLoading(false);
-        toastSuccess(hsseOthersEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
+    if (!hsseOthersForm.indikator.trim() || !hsseOthersForm.satuan.trim() || !hsseOthersForm.periode.trim()) {
+        toastError("Indikator, Satuan, dan Periode wajib diisi.");
+        return;
     }
+
+    setHsseOthersLoading(true);
+
+    const existingItem = hsseOthersEditingId ? hsseOthersItems.find((item) => item.id === hsseOthersEditingId) : null;
+    const urutan = existingItem ? existingItem.urutan : hsseOthersItems.length;
+
+    const payload = {
+        indikator: hsseOthersForm.indikator,
+        realisasi: parseFormattedNumber(hsseOthersForm.realisasi),
+        satuan: hsseOthersForm.satuan,
+        periode: hsseOthersForm.periode,
+        target: parseFormattedNumber(hsseOthersForm.target),
+        tahun_target: Number(hsseOthersForm.tahun_target),
+        urutan,
+    };
+
+    const url = hsseOthersEditingId ? `/api/achievement/hsse/others/${hsseOthersEditingId}` : "/api/achievement/hsse/others";
+    const method = hsseOthersEditingId ? "PUT" : "POST";
+    const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const json = await res.json();
+
+    if (!res.ok) {
+        toastError(json.error ?? "Gagal menyimpan data.");
+        setHsseOthersLoading(false);
+        return;
+    }
+
+    await fetchHsseOthersItems();
+    resetHsseOthersForm();
+    setHsseOthersLoading(false);
+    toastSuccess(hsseOthersEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
+}
 
     async function handleDeleteHsseOthers(id: string) {
         const confirmed = await confirmDelete();
@@ -2421,87 +2454,123 @@ const AchievementTab = () => {
                                 </>
                             )}
 
-                            {hsseSubTab === "others" && (
-                                <>
-                                    <form onSubmit={handleSubmitHsseOthers} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Wilayah Kerja</label>
-                                                <select
-                                                    value={hsseOthersForm.wilayah_kerja}
-                                                    onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, wilayah_kerja: e.target.value })}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                    required
-                                                >
-                                                    <option value="">Pilih Wilayah Kerja</option>
-                                                    {wilayahKerjaList.map((nama) => (
-                                                        <option key={nama} value={nama}>{nama}</option>
-                                                    ))}
-                                                </select>
+                           {hsseSubTab === "others" && (
+                                    <>
+                                        <form onSubmit={handleSubmitHsseOthers} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="mb-1.5 block text-sm font-semibold text-blue-900">Indikator</label>
+                                                    <input
+                                                        placeholder="Contoh: Reduksi Emisi"
+                                                        value={hsseOthersForm.indikator}
+                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, indikator: e.target.value })}
+                                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                        required
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="mb-1.5 block text-sm font-semibold text-blue-900">Realisasi</label>
+                                                    <input
+                                                        type="text"
+                                                        inputMode="decimal"
+                                                        placeholder="Masukkan Angka Realisasi"
+                                                        value={hsseOthersForm.realisasi}
+                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, realisasi: sanitizeNumberInput(e.target.value) })}
+                                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                        required
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="mb-1.5 block text-sm font-semibold text-blue-900">Satuan</label>
+                                                    <input
+                                                        placeholder="Masukkan Satuan Realisasi"
+                                                        value={hsseOthersForm.satuan}
+                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, satuan: e.target.value })}
+                                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                        required
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="mb-1.5 block text-sm font-semibold text-blue-900">Periode</label>
+                                                    <input
+                                                        type="month"
+                                                        value={labelToMonthValue(hsseOthersForm.periode)}
+                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, periode: monthValueToLabel(e.target.value) })}
+                                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                        required
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="mb-1.5 block text-sm font-semibold text-blue-900">Target</label>
+                                                    <input
+                                                        type="text"
+                                                        inputMode="decimal"
+                                                        placeholder="Masukkan Angka Target"
+                                                        value={hsseOthersForm.target}
+                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, target: sanitizeNumberInput(e.target.value) })}
+                                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                        required
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tahun Target</label>
+                                                    <input
+                                                        type="number"
+                                                        placeholder="Masukkan Tahun Target"
+                                                        value={hsseOthersForm.tahun_target}
+                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, tahun_target: e.target.value })}
+                                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                        required
+                                                    />
+                                                </div>
                                             </div>
-                                            <div>
-                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tanggal</label>
-                                                <input
-                                                    type="date"
-                                                    value={hsseOthersForm.tanggal}
-                                                    onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, tanggal: e.target.value })}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="col-span-2">
-                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Kejadian</label>
-                                                <input
-                                                    placeholder="Contoh: Penggagalan ITAP...)"
-                                                    value={hsseOthersForm.judul}
-                                                    onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, judul: e.target.value })}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
 
-                                        <div className="flex flex-col gap-2">
-                                            <button type="submit" disabled={hsseOthersLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                                {hsseOthersLoading ? "Menyimpan..." : hsseOthersEditingId ? "Simpan Perubahan" : "Tambah"}
-                                            </button>
-                                            {hsseOthersEditingId && (
+                                            <div className="flex flex-col gap-2">
+                                                <button type="submit" disabled={hsseOthersLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                                    {hsseOthersLoading ? "Menyimpan..." : hsseOthersEditingId ? "Simpan Perubahan" : "Tambah"}
+                                                </button>
                                                 <button type="button" onClick={resetHsseOthersForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
-                                            )}
-                                        </div>
-                                    </form>
+                                            </div>
+                                        </form>
 
-                                    {hsseOthersListLoading ? (
-                                        <ListSkeleton />
-                                    ) : hsseOthersItems.length === 0 ? (
-                                        <EmptyState label="Belum ada data others." />
-                                    ) : (
-                                        <ul className="flex flex-col gap-2">
-                                            {hsseOthersItems
-                                                .slice()
-                                                .sort((a, b) => a.urutan - b.urutan)
-                                                .map((item) => (
-                                                    <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-blue-50/40 px-4 py-3 text-sm transition-colors hover:bg-blue-50">
-                                                        <div className="min-w-0 flex-1">
-                                                            <span className="truncate font-bold text-blue-900">{item.judul}</span>
-                                                            <p className="mt-0.5 truncate text-xs text-slate-500">
-                                                                {item.wilayah_kerja}, {new Date(item.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
-                                                            </p>
-                                                        </div>
-                                                        <div className="flex shrink-0 gap-1">
-                                                            <button onClick={() => startEditHsseOthers(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
-                                                                <PencilIcon />
-                                                            </button>
-                                                            <button onClick={() => handleDeleteHsseOthers(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
-                                                                <TrashIcon />
-                                                            </button>
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                        </ul>
-                                    )}
-                                </>
-                            )}
+                                        {hsseOthersListLoading ? (
+                                            <ListSkeleton />
+                                        ) : hsseOthersItems.length === 0 ? (
+                                            <EmptyState label="Belum ada data indikator lainnya." />
+                                        ) : (
+                                            <div className="flex flex-col gap-3">
+                                                {hsseOthersItems
+                                                    .slice()
+                                                    .sort((a, b) => a.urutan - b.urutan)
+                                                    .map((item) => {
+                                                        const persen = item.target > 0 ? Math.round((item.realisasi / item.target) * 100) : 0;
+                                                        return (
+                                                            <div
+                                                                key={item.id}
+                                                                className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-blue-50/40 px-4 py-3.5 transition-colors hover:bg-blue-50"
+                                                            >
+                                                                <div className="min-w-0 flex-1">
+                                                                    <p className="truncate text-sm font-bold text-blue-900">
+                                                                        Realisasi {item.indikator} - {item.realisasi.toLocaleString("en-US")} {item.satuan}
+                                                                    </p>
+                                                                    <p className="mt-1 text-xs text-slate-400">{item.periode}</p>
+                                                                    <p className="mt-0.5 text-xs text-slate-400">{persen}% dari Target {item.tahun_target}</p>
+                                                                </div>
+                                                                <div className="flex shrink-0 gap-1">
+                                                                    <button onClick={() => startEditHsseOthers(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                                        <PencilIcon />
+                                                                    </button>
+                                                                    <button onClick={() => handleDeleteHsseOthers(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                                        <TrashIcon />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                         </div>
                     )}
 
