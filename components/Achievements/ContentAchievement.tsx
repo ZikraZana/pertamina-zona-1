@@ -18,7 +18,7 @@ const TABS: { key: TabKey; label: string; icon: string }[] = [
 // ============================================================
 
 function ProductionCard({
-    title, unit, realization, target, percentValue, period, accentColor,
+    title, unit, realization, target, percentValue, period, accentColor, wpnb,
 }: {
     title: string;
     unit: string;
@@ -27,6 +27,7 @@ function ProductionCard({
     percentValue: number;
     period: string;
     accentColor: "amber" | "sky" | "emerald";
+    wpnb?: number;
 }) {
     const colors = {
         amber: { bar: "bg-amber-500", text: "text-amber-600", chip: "bg-amber-50 text-amber-700" },
@@ -64,6 +65,13 @@ function ProductionCard({
                     <span>Target: <span className={`font-semibold ${colors.text}`}>{target} {unit}</span></span>
                 </div>
             </div>
+
+            {wpnb !== undefined && (
+                <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">WPNB</span>
+                    <span className={`text-sm font-bold ${colors.text}`}>{wpnb}%</span>
+                </div>
+            )}
         </div>
     );
 }
@@ -276,11 +284,12 @@ function getResponsiveGridClass(count: number): string {
 }
 
 type ProduksiData = {
-    type: "minyak" | "gas" | "migas" | "wpnb";
+    type: "minyak" | "gas" | "migas";
     realization: number;
     target: number;
     period: string;
     unit: string;
+    wpnb: number;
 }
 
 type RencanaKerja = {
@@ -549,6 +558,7 @@ const AchievementsContent = () => {
                                     percentValue={Math.round((produksiData.minyak.realization / produksiData.minyak.target) * 100) || 0}
                                     period={produksiData.minyak.period ?? "-"}
                                     accentColor="amber"
+                                    wpnb={produksiData.minyak.wpnb ?? 0}
                                 />
                             </>
                         )}
@@ -561,6 +571,7 @@ const AchievementsContent = () => {
                                 percentValue={Math.round((produksiData.gas.realization / produksiData.gas.target) * 100) || 0}
                                 period={produksiData.gas.period ?? "-"}
                                 accentColor="sky"
+                                wpnb={produksiData.gas.wpnb ?? 0}
                             />
                         )}
                         {produksiData.migas && (
@@ -572,21 +583,9 @@ const AchievementsContent = () => {
                                 percentValue={Math.round((produksiData.migas.realization / produksiData.migas.target) * 100) || 0}
                                 period={produksiData.migas.period ?? "-"}
                                 accentColor="emerald"
+                                wpnb={produksiData.migas.wpnb ?? 0}
                             />
                         )}
-
-                        {/* Kotak kecil target WPNB (%) */}
-                        {produksiData.wpnb && (
-                            <div className="col-span-full flex w-full items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-5 py-3 shadow-sm sm:mx-auto sm:w-fit sm:justify-center sm:gap-8">
-                                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                                    Target WPNB
-                                </span>
-                                <span className="text-xl font-extrabold text-blue-900">
-                                    {produksiData.wpnb.target}%
-                                </span>
-                            </div>
-                        )}
-
                     </div>
                 )}
 

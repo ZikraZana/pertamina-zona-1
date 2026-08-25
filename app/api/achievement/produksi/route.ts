@@ -8,7 +8,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("achievement_produksi")
-    .select("type, realization, target, period, unit");
+    .select("type, realization, target, period, unit, wpnb");
 
   if (error) {
     return NextResponse.json(
@@ -34,27 +34,36 @@ export async function PATCH(request: Request) {
       { status: 400 },
     );
 
-  const { type, realization, target, period, unit } = body;
+  const { type, realization, target, period, unit, wpnb } = body;
 
-  // "wpnb" = kotak target WPNB (%) di bawah produksi — realisasi opsional.
-  if (!["minyak", "gas", "migas", "wpnb"].includes(type)) {
+  if (!["minyak", "gas", "migas"].includes(type)) {
     return NextResponse.json(
       { error: "type tidak valid.", code: "VALIDATION_ERROR" },
       { status: 400 },
     );
   }
-  const isWpnb = type === "wpnb";
 
-  const realizationValue =
-    isWpnb && realization === undefined ? 0 : realization;
   if (
-    typeof realizationValue !== "number" ||
-    !Number.isFinite(realizationValue) ||
-    realizationValue < 0
+    typeof realization !== "number" ||
+    !Number.isFinite(realization) ||
+    realization < 0
   ) {
     return NextResponse.json(
       {
         error: 'Field "realisasi" harus berupa angka dan tidak boleh negatif.',
+        code: "VALIDATION_ERROR",
+      },
+      { status: 400 },
+    );
+  }
+  if (
+    typeof wpnb !== "number" ||
+    !Number.isFinite(wpnb) ||
+    wpnb < 0
+  ) {
+    return NextResponse.json(
+      {
+        error: 'Field "wpnb" harus berupa angka dan tidak boleh negatif.',
         code: "VALIDATION_ERROR",
       },
       { status: 400 },
@@ -88,10 +97,11 @@ export async function PATCH(request: Request) {
     .upsert(
       {
         type,
-        realization: realizationValue,
+        realization,
         target,
         period,
         unit,
+        wpnb,
         updated_by: user.id,
         updated_at: new Date().toISOString(),
       },

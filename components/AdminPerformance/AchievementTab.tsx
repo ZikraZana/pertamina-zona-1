@@ -7,21 +7,23 @@ import { confirmDelete, confirmAction, toastSuccess, toastError } from "@/lib/al
 
 // "wpnb" = kotak kecil target WPNB (%) yang tampil di bawah 3 kartu produksi.
 type ProduksiData = {
-    type: "minyak" | "gas" | "migas" | "wpnb";
+    type: "minyak" | "gas" | "migas";
     realization: number;
     target: number;
     period: string;
     unit: string;
+    wpnb: number;
 };
 
 // State form realisasi/target disimpan sebagai string mentah selagi diketik
 // (mis. "1," di tengah mengetik "1,000") supaya tidak "terpotong" tiap keystroke.
 type ProduksiFormState = {
-    type: "minyak" | "gas" | "migas" | "wpnb";
+    type: "minyak" | "gas" | "migas";
     realization: string;
     target: string;
     period: string;
     unit: string;
+    wpnb: string;
 };
 
 type RKItem = {
@@ -498,7 +500,7 @@ function labelToMonthValue(label: string): string {
 
 const AchievementTab = () => {
     const [activeTab, setActiveTab] = useState<"produksi" | "rencana-kerja" | "proper" | "inovasi" | "kehumasan" | "top-project">("produksi");
-    const [selectedJenis, setSelectedJenis] = useState<"minyak" | "gas" | "migas" | "wpnb">("minyak");
+    const [selectedJenis, setSelectedJenis] = useState<"minyak" | "gas" | "migas">("minyak");
     const [wilayahKerjaList, setWilayahKerjaList] = useState<string[]>([]);
     const [data, setData] = useState<Record<string, ProduksiData>>({});
     const [dataLoading, setDataLoading] = useState(true);
@@ -582,7 +584,7 @@ const AchievementTab = () => {
     const [naratifLoading, setNaratifLoading] = useState(false);
     const [naratifError, setNaratifError] = useState<string | null>(null);
 
-        // ---------- State Top Project: Others ----------
+    // ---------- State Top Project: Others ----------
     const [othersItems, setOthersItems] = useState<OthersItem[]>([]);
     const [othersListLoading, setOthersListLoading] = useState(true);
     const [othersFormOpen, setOthersFormOpen] = useState(false);
@@ -1242,7 +1244,7 @@ const AchievementTab = () => {
         toastSuccess("Data berhasil dihapus.");
     }
 
-        // ---------- Fungsi Others ----------
+    // ---------- Fungsi Others ----------
     async function fetchOthersItems() {
         setOthersListLoading(true);
         try {
@@ -1381,7 +1383,7 @@ const AchievementTab = () => {
         toastSuccess("Data berhasil dihapus.");
     }
 
-        useEffect(() => {
+    useEffect(() => {
         const current = data[selectedJenis];
         if (current) {
             setForm({
@@ -1390,6 +1392,7 @@ const AchievementTab = () => {
                 target: current.target.toLocaleString("en-US"),
                 period: current.period,
                 unit: current.unit,
+                wpnb: (current.wpnb ?? 0).toLocaleString("en-US"),
             });
         } else {
             setForm({
@@ -1397,7 +1400,8 @@ const AchievementTab = () => {
                 realization: "0",
                 target: "0",
                 period: "",
-                unit: selectedJenis === "wpnb" ? "%" : "",
+                unit: "",
+                wpnb: "0",
             });
         }
         setSaveSuccess(false);
@@ -1409,7 +1413,7 @@ const AchievementTab = () => {
     }
 
     /** Khusus field angka (realisasi/target): saring karakter tidak valid sebelum disimpan ke state. */
-    function updateNumberField(key: "realization" | "target", raw: string) {
+    function updateNumberField(key: "realization" | "target" | "wpnb", raw: string) {
         setForm((prev) => (prev ? { ...prev, [key]: sanitizeNumberInput(raw) } : prev));
     }
 
@@ -1428,6 +1432,7 @@ const AchievementTab = () => {
                 target: parseFormattedNumber(form.target),
                 period: form.period,
                 unit: form.unit,
+                wpnb: parseFormattedNumber(form.wpnb),
             }),
         });
 
@@ -1560,8 +1565,8 @@ const AchievementTab = () => {
                         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                             <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Produksi</h2>
 
-                                                        <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                                {(["minyak", "gas", "migas", "wpnb"] as const).map((type) => (
+                            <div className="mb-5 grid grid-cols-3 gap-3">
+                                {(["minyak", "gas", "migas"] as const).map((type) => (
                                     <button
                                         key={type}
                                         type="button"
@@ -1573,53 +1578,13 @@ const AchievementTab = () => {
                                                 : "border border-slate-200 text-slate-600 hover:bg-slate-50",
                                         ].join(" ")}
                                     >
-                                        {type === "wpnb" ? "Target WPNB" : `Produksi ${type}`}
+                                        {`Produksi ${type}`}
                                     </button>
                                 ))}
                             </div>
 
                             {dataLoading ? (
                                 <ListSkeleton />
-                            ) : form && selectedJenis === "wpnb" ? (
-                                // Form ringkas khusus WPNB: cuma target (%) + periode.
-                                <>
-                                    <div className="mb-5 rounded-lg bg-slate-50 p-4">
-                                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Target WPNB</p>
-                                        <p className="mt-1 text-3xl font-bold text-blue-900">{parseFormattedNumber(form.target)}%</p>
-                                        {form.period && <p className="mt-1 text-xs text-slate-400">{form.period}</p>}
-                                    </div>
-
-                                    <form onSubmit={handleSave} className="flex flex-col gap-4">
-                                        <div>
-                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Target WPNB (%)</label>
-                                            <input
-                                                type="text"
-                                                inputMode="decimal"
-                                                placeholder="mis. 80"
-                                                value={form.target}
-                                                onChange={(e) => updateNumberField("target", e.target.value)}
-                                                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Periode</label>
-                                            <input
-                                                type="month"
-                                                value={labelToMonthValue(form.period)}
-                                                onChange={(e) => updateField("period", monthValueToLabel(e.target.value))}
-                                                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                            />
-                                        </div>
-
-                                        <button
-                                            type="submit"
-                                            disabled={saveLoading}
-                                            className="mt-1 w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
-                                        >
-                                            {saveLoading ? "Menyimpan..." : "Simpan Perubahan"}
-                                        </button>
-                                    </form>
-                                </>
                             ) : form ? (
                                 <>
                                     {(() => {
@@ -1697,6 +1662,18 @@ const AchievementTab = () => {
                                             </div>
                                         </div>
 
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">WPNB (%)</label>
+                                            <input
+                                                type="text"
+                                                inputMode="decimal"
+                                                placeholder="mis. 80"
+                                                value={form.wpnb}
+                                                onChange={(e) => updateNumberField("wpnb", e.target.value)}
+                                                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            />
+                                        </div>
+
                                         <button
                                             type="submit"
                                             disabled={saveLoading}
@@ -1711,9 +1688,9 @@ const AchievementTab = () => {
                     )}
 
                     {/* ---------- Card Rencana Kerja ---------- */}
-                   {activeTab === "rencana-kerja" && (
+                    {activeTab === "rencana-kerja" && (
                         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                        <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Rencana Kerja</h2>
+                            <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Rencana Kerja</h2>
 
                             {false && manageJenisOpen && (
                                 <div className="mb-4 flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
@@ -1901,8 +1878,8 @@ const AchievementTab = () => {
                                         <button type="submit" disabled={rkLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
                                             {rkLoading ? "Menyimpan..." : rkEditingId ? "Simpan Perubahan" : "Tambah"}
                                         </button>
-                                        
-                                            <button type="button" onClick={resetRkForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+
+                                        <button type="button" onClick={resetRkForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
                                     </div>
                                 </form>
                             )}
@@ -2271,7 +2248,7 @@ const AchievementTab = () => {
                         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                             <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Top Project</h2>
 
-                                                        <div className="mb-5 grid grid-cols-3 gap-3">
+                            <div className="mb-5 grid grid-cols-3 gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setTopProjectSubTab("naratif")}
@@ -2469,7 +2446,7 @@ const AchievementTab = () => {
                                                         </div>
                                                     </li>
                                                 );
-                                                                                        })}
+                                            })}
                                         </ul>
                                     )}
                                 </>
