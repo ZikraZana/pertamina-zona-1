@@ -53,6 +53,15 @@ type AbiItem = {
     urutan: number;
 };
 
+type PenghargaanItem = {
+    id: string;
+    wilayah_kerja: string;
+    predikat: "Gold" | "Silver" | "Bronze";
+    nama_kegiatan: string;
+    tahun: number;
+    urutan: number;
+};
+
 // "Others" — kategori tambahan Top Project di luar Pencapaian Naratif & ABI NBD.
 type OthersItem = {
     id: string;
@@ -90,6 +99,15 @@ type ProperItem = {
 };
 
 type SecurityFormItem = {
+    id: string;
+    judul: string;
+    wilayah_kerja: string;
+    tanggal: string;
+    urutan: number;
+};
+
+// HSSE - Others: struktur sama seperti Security (Kejadian), tabel terpisah.
+type HsseOthersItem = {
     id: string;
     judul: string;
     wilayah_kerja: string;
@@ -532,8 +550,9 @@ const AchievementTab = () => {
     const [inovasiForm, setInovasiForm] = useState({ pencapaian: "", nama_inovasi: "", nama_acara: "", wilayah_kerja: "" });
     const [inovasiEditingId, setInovasiEditingId] = useState<string | null>(null);
     const [inovasiLoading, setInovasiLoading] = useState(false);
-
-    const [hsseSubTab, setHsseSubTab] = useState<"proper" | "security">("proper");
+    
+    const [hsseSubTab, setHsseSubTab] = useState<"proper" | "security" | "others">("proper");
+    const [securityKategori, setSecurityKategori] = useState<"" | "kejadian" | "penghargaan">("");
     const [topProjectSubTab, setTopProjectSubTab] = useState<"naratif" | "abi" | "others">("naratif");
 
     // ---------- State PROPER ----------
@@ -550,7 +569,7 @@ const AchievementTab = () => {
     const [properLoading, setProperLoading] = useState(false);
     const [properError, setProperError] = useState<string | null>(null);
 
-    // ---------- State Security ----------
+        // ---------- State Security ----------
     const [securityItems, setSecurityItems] = useState<SecurityFormItem[]>([]);
     const [securityListLoading, setSecurityListLoading] = useState(true);
     const [securityFormOpen, setSecurityFormOpen] = useState(false);
@@ -558,6 +577,24 @@ const AchievementTab = () => {
     const [securityEditingId, setSecurityEditingId] = useState<string | null>(null);
     const [securityLoading, setSecurityLoading] = useState(false);
     const [securityError, setSecurityError] = useState<string | null>(null);
+
+    // ---------- State Penghargaan (Security) ----------
+    const [penghargaanItems, setPenghargaanItems] = useState<PenghargaanItem[]>([]);
+    const [penghargaanListLoading, setPenghargaanListLoading] = useState(true);
+    const [penghargaanFormOpen, setPenghargaanFormOpen] = useState(false);
+    const [penghargaanForm, setPenghargaanForm] = useState({ wilayah_kerja: "", predikat: "Gold" as "Gold" | "Silver" | "Bronze", nama_kegiatan: "", tahun: "" });
+    const [penghargaanEditingId, setPenghargaanEditingId] = useState<string | null>(null);
+    const [penghargaanLoading, setPenghargaanLoading] = useState(false);
+    const [penghargaanError, setPenghargaanError] = useState<string | null>(null);
+
+    // ---------- State HSSE - Others ----------
+    const [hsseOthersItems, setHsseOthersItems] = useState<HsseOthersItem[]>([]);
+    const [hsseOthersListLoading, setHsseOthersListLoading] = useState(true);
+    const [hsseOthersFormOpen, setHsseOthersFormOpen] = useState(false);
+    const [hsseOthersForm, setHsseOthersForm] = useState({ judul: "", wilayah_kerja: "", tanggal: "" });
+    const [hsseOthersEditingId, setHsseOthersEditingId] = useState<string | null>(null);
+    const [hsseOthersLoading, setHsseOthersLoading] = useState(false);
+    const [hsseOthersError, setHsseOthersError] = useState<string | null>(null);
 
     // ---------- State Kehumasan ----------
     const [kehumasanItems, setKehumasanItems] = useState<KehumasanItem[]>([]);
@@ -626,6 +663,8 @@ const AchievementTab = () => {
         fetchRkItems();
         fetchProperItems();
         fetchSecurityItems();
+        fetchPenghargaanItems();
+        fetchHsseOthersItems();
         fetchInovasiItems();
         fetchKehumasanItems();
         fetchWilayahKerjaList();
@@ -1014,6 +1053,144 @@ const AchievementTab = () => {
         if (!confirmed) return;
         await fetch(`/api/achievement/hsse/security/${id}`, { method: "DELETE" });
         await fetchSecurityItems();
+        toastSuccess("Data berhasil dihapus.");
+    }
+
+    // ---------- Fungsi Penghargaan (Security) ----------
+    async function fetchPenghargaanItems() {
+        setPenghargaanListLoading(true);
+        try {
+            const res = await fetch("/api/achievement/hsse/penghargaan");
+            const json = await res.json();
+            setPenghargaanItems(json.data ?? []);
+        } finally {
+            setPenghargaanListLoading(false);
+        }
+    }
+
+    function resetPenghargaanForm() {
+        setPenghargaanForm({ wilayah_kerja: "", predikat: "Gold", nama_kegiatan: "", tahun: "" });
+        setPenghargaanEditingId(null);
+        setPenghargaanFormOpen(false);
+        setPenghargaanError(null);
+    }
+
+    function startEditPenghargaan(item: PenghargaanItem) {
+        setPenghargaanForm({
+            wilayah_kerja: item.wilayah_kerja,
+            predikat: item.predikat,
+            nama_kegiatan: item.nama_kegiatan,
+            tahun: String(item.tahun),
+        });
+        setPenghargaanEditingId(item.id);
+        setPenghargaanFormOpen(true);
+        setPenghargaanError(null);
+    }
+
+    async function handleSubmitPenghargaan(e: React.FormEvent) {
+        e.preventDefault();
+        setPenghargaanError(null);
+        setPenghargaanLoading(true);
+
+        const existingItem = penghargaanEditingId ? penghargaanItems.find((item) => item.id === penghargaanEditingId) : null;
+        const urutan = existingItem ? existingItem.urutan : penghargaanItems.length;
+
+        const payload = {
+            wilayah_kerja: penghargaanForm.wilayah_kerja,
+            predikat: penghargaanForm.predikat,
+            nama_kegiatan: penghargaanForm.nama_kegiatan,
+            tahun: Number(penghargaanForm.tahun),
+            urutan,
+        };
+
+        const url = penghargaanEditingId ? `/api/achievement/hsse/penghargaan/${penghargaanEditingId}` : "/api/achievement/hsse/penghargaan";
+        const method = penghargaanEditingId ? "PUT" : "POST";
+        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const json = await res.json();
+
+        if (!res.ok) {
+            toastError(json.error ?? "Gagal menyimpan data.");
+            setPenghargaanLoading(false);
+            return;
+        }
+
+        await fetchPenghargaanItems();
+        resetPenghargaanForm();
+        setPenghargaanLoading(false);
+        toastSuccess(penghargaanEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
+    }
+
+    async function handleDeletePenghargaan(id: string) {
+        const confirmed = await confirmDelete();
+        if (!confirmed) return;
+        await fetch(`/api/achievement/hsse/penghargaan/${id}`, { method: "DELETE" });
+        await fetchPenghargaanItems();
+        toastSuccess("Data berhasil dihapus.");
+    }
+
+    // ---------- Fungsi HSSE - Others ----------
+    async function fetchHsseOthersItems() {
+        setHsseOthersListLoading(true);
+        try {
+            const res = await fetch("/api/achievement/hsse/others");
+            const json = await res.json();
+            setHsseOthersItems(json.data ?? []);
+        } finally {
+            setHsseOthersListLoading(false);
+        }
+    }
+
+    function resetHsseOthersForm() {
+        setHsseOthersForm({ judul: "", wilayah_kerja: "", tanggal: "" });
+        setHsseOthersEditingId(null);
+        setHsseOthersFormOpen(false);
+        setHsseOthersError(null);
+    }
+
+    function startEditHsseOthers(item: HsseOthersItem) {
+        setHsseOthersForm({ judul: item.judul, wilayah_kerja: item.wilayah_kerja, tanggal: item.tanggal });
+        setHsseOthersEditingId(item.id);
+        setHsseOthersFormOpen(true);
+        setHsseOthersError(null);
+    }
+
+    async function handleSubmitHsseOthers(e: React.FormEvent) {
+        e.preventDefault();
+        setHsseOthersError(null);
+        setHsseOthersLoading(true);
+
+        const existingItem = hsseOthersEditingId ? hsseOthersItems.find((item) => item.id === hsseOthersEditingId) : null;
+        const urutan = existingItem ? existingItem.urutan : hsseOthersItems.length;
+
+        const payload = {
+            judul: hsseOthersForm.judul,
+            wilayah_kerja: hsseOthersForm.wilayah_kerja,
+            tanggal: hsseOthersForm.tanggal,
+            urutan,
+        };
+
+        const url = hsseOthersEditingId ? `/api/achievement/hsse/others/${hsseOthersEditingId}` : "/api/achievement/hsse/others";
+        const method = hsseOthersEditingId ? "PUT" : "POST";
+        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const json = await res.json();
+
+        if (!res.ok) {
+            toastError(json.error ?? "Gagal menyimpan data.");
+            setHsseOthersLoading(false);
+            return;
+        }
+
+        await fetchHsseOthersItems();
+        resetHsseOthersForm();
+        setHsseOthersLoading(false);
+        toastSuccess(hsseOthersEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
+    }
+
+    async function handleDeleteHsseOthers(id: string) {
+        const confirmed = await confirmDelete();
+        if (!confirmed) return;
+        await fetch(`/api/achievement/hsse/others/${id}`, { method: "DELETE" });
+        await fetchHsseOthersItems();
         toastSuccess("Data berhasil dihapus.");
     }
 
@@ -1949,8 +2126,8 @@ const AchievementTab = () => {
                         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                             <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">HSSE</h2>
 
-                            <div className="mb-5 grid grid-cols-2 gap-3">
-                                {(["proper", "security"] as const).map((tab) => (
+                            <div className="mb-5 grid grid-cols-3 gap-3">
+                                {(["proper", "security", "others"] as const).map((tab) => (
                                     <button
                                         key={tab}
                                         type="button"
@@ -2059,8 +2236,23 @@ const AchievementTab = () => {
                                 </>
                             )}
 
-                            {hsseSubTab === "security" && (
+                                                        {hsseSubTab === "security" && (
                                 <>
+                                    <div className="mb-5">
+                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Pilih Kategori</label>
+                                        <select
+                                            value={securityKategori}
+                                            onChange={(e) => setSecurityKategori(e.target.value as "" | "kejadian" | "penghargaan")}
+                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                        >
+                                            <option value="">Pilih Kategori</option>
+                                            <option value="kejadian">Kejadian</option>
+                                            <option value="penghargaan">Penghargaan</option>
+                                        </select>
+                                    </div>
+
+                                    {securityKategori === "kejadian" && (
+                                        <>
                                     <form onSubmit={handleSubmitSecurity} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
@@ -2127,10 +2319,180 @@ const AchievementTab = () => {
                                                             </p>
                                                         </div>
                                                         <div className="flex shrink-0 gap-1">
-                                                            <button onClick={() => startEditSecurity(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                                                                                        <button onClick={() => handleDeleteSecurity(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                                <TrashIcon />
+                                                            </button>
+                                                        </div>
+                                                                                                        </li>
+                                                ))}
+                                        </ul>
+                                    )}
+                                        </>
+                                    )}
+
+                                    {securityKategori === "penghargaan" && (
+                                        <>
+                                    <form onSubmit={handleSubmitPenghargaan} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Wilayah Kerja</label>
+                                                <input
+                                                    placeholder="Contoh: 5 field (Rantau, Pangsu, Lirik, Jambi, Jambi Merang)"
+                                                    value={penghargaanForm.wilayah_kerja}
+                                                    onChange={(e) => setPenghargaanForm({ ...penghargaanForm, wilayah_kerja: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Predikat</label>
+                                                <select
+                                                    value={penghargaanForm.predikat}
+                                                    onChange={(e) => setPenghargaanForm({ ...penghargaanForm, predikat: e.target.value as "Gold" | "Silver" | "Bronze" })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                >
+                                                    <option value="Gold">Gold</option>
+                                                    <option value="Silver">Silver</option>
+                                                    <option value="Bronze">Bronze</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Kegiatan</label>
+                                                <input
+                                                    placeholder="Contoh: Audit Sistem Manajemen Pengamanan"
+                                                    value={penghargaanForm.nama_kegiatan}
+                                                    onChange={(e) => setPenghargaanForm({ ...penghargaanForm, nama_kegiatan: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tahun</label>
+                                                <input
+                                                    type="number"
+                                                    placeholder="2025"
+                                                    value={penghargaanForm.tahun}
+                                                    onChange={(e) => setPenghargaanForm({ ...penghargaanForm, tahun: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col gap-2">
+                                            <button type="submit" disabled={penghargaanLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                                {penghargaanLoading ? "Menyimpan..." : penghargaanEditingId ? "Simpan Perubahan" : "Tambah"}
+                                            </button>
+                                            {penghargaanEditingId && (
+                                                <button type="button" onClick={resetPenghargaanForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+                                            )}
+                                        </div>
+                                    </form>
+
+                                    {penghargaanListLoading ? (
+                                        <ListSkeleton />
+                                    ) : penghargaanItems.length === 0 ? (
+                                        <EmptyState label="Belum ada data penghargaan." />
+                                    ) : (
+                                        <ul className="flex flex-col gap-2">
+                                            {penghargaanItems
+                                                .slice()
+                                                .sort((a, b) => a.urutan - b.urutan)
+                                                .map((item) => (
+                                                    <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-blue-50/40 px-4 py-3 text-sm transition-colors hover:bg-blue-50">
+                                                        <div className="min-w-0 flex-1">
+                                                            <span className="truncate font-bold text-blue-900">{item.predikat} - {item.nama_kegiatan}</span>
+                                                            <p className="mt-0.5 truncate text-xs text-slate-500">{item.wilayah_kerja} | {item.tahun}</p>
+                                                        </div>
+                                                        <div className="flex shrink-0 gap-1">
+                                                            <button onClick={() => startEditPenghargaan(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
                                                                 <PencilIcon />
                                                             </button>
-                                                            <button onClick={() => handleDeleteSecurity(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                            <button onClick={() => handleDeletePenghargaan(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                                <TrashIcon />
+                                                            </button>
+                                                        </div>
+                                                                                                        </li>
+                                                ))}
+                                        </ul>
+                                    )}
+                                        </>
+                                    )}
+                                </>
+                            )}
+
+                            {hsseSubTab === "others" && (
+                                <>
+                                    <form onSubmit={handleSubmitHsseOthers} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Wilayah Kerja</label>
+                                                <select
+                                                    value={hsseOthersForm.wilayah_kerja}
+                                                    onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, wilayah_kerja: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                >
+                                                    <option value="">Pilih Wilayah Kerja</option>
+                                                    {wilayahKerjaList.map((nama) => (
+                                                        <option key={nama} value={nama}>{nama}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tanggal</label>
+                                                <input
+                                                    type="date"
+                                                    value={hsseOthersForm.tanggal}
+                                                    onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, tanggal: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="col-span-2">
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Kejadian</label>
+                                                <input
+                                                    placeholder="Contoh: Penggagalan ITAP...)"
+                                                    value={hsseOthersForm.judul}
+                                                    onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, judul: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col gap-2">
+                                            <button type="submit" disabled={hsseOthersLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                                {hsseOthersLoading ? "Menyimpan..." : hsseOthersEditingId ? "Simpan Perubahan" : "Tambah"}
+                                            </button>
+                                            {hsseOthersEditingId && (
+                                                <button type="button" onClick={resetHsseOthersForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+                                            )}
+                                        </div>
+                                    </form>
+
+                                    {hsseOthersListLoading ? (
+                                        <ListSkeleton />
+                                    ) : hsseOthersItems.length === 0 ? (
+                                        <EmptyState label="Belum ada data others." />
+                                    ) : (
+                                        <ul className="flex flex-col gap-2">
+                                            {hsseOthersItems
+                                                .slice()
+                                                .sort((a, b) => a.urutan - b.urutan)
+                                                .map((item) => (
+                                                    <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-blue-50/40 px-4 py-3 text-sm transition-colors hover:bg-blue-50">
+                                                        <div className="min-w-0 flex-1">
+                                                            <span className="truncate font-bold text-blue-900">{item.judul}</span>
+                                                            <p className="mt-0.5 truncate text-xs text-slate-500">
+                                                                {item.wilayah_kerja}, {new Date(item.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex shrink-0 gap-1">
+                                                            <button onClick={() => startEditHsseOthers(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                                <PencilIcon />
+                                                            </button>
+                                                            <button onClick={() => handleDeleteHsseOthers(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
                                                                 <TrashIcon />
                                                             </button>
                                                         </div>

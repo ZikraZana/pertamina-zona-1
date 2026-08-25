@@ -336,6 +336,24 @@ type SecurityItem = {
     urutan: number;
 };
 
+type PenghargaanItem = {
+    id: string;
+    wilayah_kerja: string;
+    predikat: "Gold" | "Silver" | "Bronze";
+    nama_kegiatan: string;
+    tahun: number;
+    urutan: number;
+};
+
+// HSSE - Others: struktur sama seperti Security
+type HsseOthersItem = {
+    id: string;
+    judul: string;
+    wilayah_kerja: string;
+    tanggal: string;
+    urutan: number;
+};
+
 type NaratifItem = {
     id: string;
     title: string;
@@ -371,6 +389,8 @@ const AchievementsContent = () => {
     const bronzeCount = kehumasan.filter((item) => item.medali === 'bronze').length;
     const [proper, setProper] = useState<Proper[]>([]);
     const [security, setSecurity] = useState<SecurityItem[]>([]);
+    const [penghargaan, setPenghargaan] = useState<PenghargaanItem[]>([]);
+    const [hsseOthers, setHsseOthers] = useState<HsseOthersItem[]>([]);
     const [naratifItems, setNaratifItems] = useState<NaratifItem[]>([]);
     const [abiItems, setAbiItems] = useState<AbiItem[]>([]);
     const [othersItems, setOthersItems] = useState<OthersItem[]>([]);
@@ -443,7 +463,7 @@ const AchievementsContent = () => {
                 console.error("Gagal mengambil data proper:", err);
             }
         }
-        async function fetchSecurity() {
+                        async function fetchSecurity() {
             try {
                 const res = await fetch('/api/achievement/hsse/security');
                 const json = await res.json();
@@ -451,6 +471,28 @@ const AchievementsContent = () => {
             }
             catch (err) {
                 console.error("Gagal mengambil data security:", err);
+            }
+        }
+
+        async function fetchPenghargaan() {
+            try {
+                const res = await fetch('/api/achievement/hsse/penghargaan');
+                const json = await res.json();
+                setPenghargaan(json.data ?? []);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data penghargaan:", err);
+            }
+        }
+
+        async function fetchHsseOthers() {
+            try {
+                const res = await fetch('/api/achievement/hsse/others');
+                const json = await res.json();
+                setHsseOthers(json.data ?? []);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data HSSE others:", err);
             }
         }
         async function fetchNaratif() {
@@ -495,6 +537,8 @@ const AchievementsContent = () => {
         fetchOthers()
         fetchProper()
         fetchSecurity()
+        fetchPenghargaan()
+        fetchHsseOthers()
     }, []);
 
     const groupedKehumasanUnordered: Record<string, AwardItem[]> = {};
@@ -656,23 +700,80 @@ const AchievementsContent = () => {
 
                         {/* SECURITY */}
                         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
-                            <p className="text-sm font-semibold text-slate-500">SECURITY</p>
-                            <div className="mt-4 flex flex-col divide-y divide-slate-100">
-                                {security
-                                    .slice()
-                                    .sort((a, b) => a.urutan - b.urutan)
-                                    .map((event) => (
-                                        <div key={event.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                                            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-sm font-semibold text-slate-800">{event.judul}</p>
-                                                <p className="text-xs text-slate-400">{event.wilayah_kerja}</p>
-                                            </div>
-                                            <span className="shrink-0 text-xs font-medium text-slate-400">{formatTanggalID(event.tanggal)}</span>
-                                        </div>
-                                    ))}
-                            </div>
+                            <p className="text-sm font-bold uppercase tracking-wide text-blue-900">Security</p>
+
+                            {security.length > 0 && (
+                                <div className="mt-4 rounded-xl bg-slate-50 p-4">
+                                    <p className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Kejadian</p>
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                        {security
+                                            .slice()
+                                            .sort((a, b) => a.urutan - b.urutan)
+                                            .map((event) => (
+                                                <div
+                                                    key={event.id}
+                                                    className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                                                >
+                                                    <p className="text-sm font-bold leading-snug text-blue-900">{event.judul}</p>
+                                                    <p className="mt-1 text-xs text-slate-400">
+                                                        {event.wilayah_kerja} · {formatTanggalID(event.tanggal)}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {penghargaan.length > 0 && (
+                                <div className="mt-4 rounded-xl bg-slate-50 p-4">
+                                    <p className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Penghargaan</p>
+                                    <div className="flex flex-col gap-2">
+                                        {penghargaan
+                                            .slice()
+                                            .sort((a, b) => a.urutan - b.urutan)
+                                            .map((item) => {
+                                                const medalIcon = { Gold: "🥇", Silver: "🥈", Bronze: "🥉" }[item.predikat];
+                                                return (
+                                                    <div
+                                                        key={item.id}
+                                                        className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm"
+                                                    >
+                                                        <div className="min-w-0">
+                                                            <p className="truncate text-sm font-bold text-blue-900">
+                                                                {medalIcon} {item.predikat.toUpperCase()} - {item.nama_kegiatan}
+                                                            </p>
+                                                            <p className="mt-0.5 text-xs text-slate-400">{item.wilayah_kerja}</p>
+                                                        </div>
+                                                        <span className="shrink-0 text-sm font-bold text-slate-500">{item.tahun}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
+
+                        {/* OTHERS */}
+                        {hsseOthers.length > 0 && (
+                            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
+                                <p className="text-sm font-semibold text-slate-500">OTHERS</p>
+                                <div className="mt-4 flex flex-col divide-y divide-slate-100">
+                                    {hsseOthers
+                                        .slice()
+                                        .sort((a, b) => a.urutan - b.urutan)
+                                        .map((event) => (
+                                            <div key={event.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                                                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-sm font-semibold text-slate-800">{event.judul}</p>
+                                                    <p className="text-xs text-slate-400">{event.wilayah_kerja}</p>
+                                                </div>
+                                                <span className="shrink-0 text-xs font-medium text-slate-400">{formatTanggalID(event.tanggal)}</span>
+                                            </div>
+                                        ))}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Reduksi Emisi */}
                         <ProductionCard
