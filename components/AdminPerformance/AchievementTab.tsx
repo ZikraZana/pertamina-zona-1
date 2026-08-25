@@ -5,8 +5,9 @@ import { isSortable, useSortable } from "@dnd-kit/react/sortable";
 import { useEffect, useState } from "react";
 import { confirmDelete, confirmAction, toastSuccess, toastError } from "@/lib/alert";
 
+// "wpnb" = kotak kecil target WPNB (%) yang tampil di bawah 3 kartu produksi.
 type ProduksiData = {
-    type: "minyak" | "gas" | "migas";
+    type: "minyak" | "gas" | "migas" | "wpnb";
     realization: number;
     target: number;
     period: string;
@@ -16,7 +17,7 @@ type ProduksiData = {
 // State form realisasi/target disimpan sebagai string mentah selagi diketik
 // (mis. "1," di tengah mengetik "1,000") supaya tidak "terpotong" tiap keystroke.
 type ProduksiFormState = {
-    type: "minyak" | "gas" | "migas";
+    type: "minyak" | "gas" | "migas" | "wpnb";
     realization: string;
     target: string;
     period: string;
@@ -47,6 +48,14 @@ type AbiItem = {
     realization: number;
     target: number;
     period: string;
+    urutan: number;
+};
+
+// "Others" — kategori tambahan Top Project di luar Pencapaian Naratif & ABI NBD.
+type OthersItem = {
+    id: string;
+    title: string;
+    detail: string;
     urutan: number;
 };
 
@@ -489,7 +498,7 @@ function labelToMonthValue(label: string): string {
 
 const AchievementTab = () => {
     const [activeTab, setActiveTab] = useState<"produksi" | "rencana-kerja" | "proper" | "inovasi" | "kehumasan" | "top-project">("produksi");
-    const [selectedJenis, setSelectedJenis] = useState<"minyak" | "gas" | "migas">("minyak");
+    const [selectedJenis, setSelectedJenis] = useState<"minyak" | "gas" | "migas" | "wpnb">("minyak");
     const [wilayahKerjaList, setWilayahKerjaList] = useState<string[]>([]);
     const [data, setData] = useState<Record<string, ProduksiData>>({});
     const [dataLoading, setDataLoading] = useState(true);
@@ -523,7 +532,7 @@ const AchievementTab = () => {
     const [inovasiLoading, setInovasiLoading] = useState(false);
 
     const [hsseSubTab, setHsseSubTab] = useState<"proper" | "security">("proper");
-    const [topProjectSubTab, setTopProjectSubTab] = useState<"naratif" | "abi">("naratif");
+    const [topProjectSubTab, setTopProjectSubTab] = useState<"naratif" | "abi" | "others">("naratif");
 
     // ---------- State PROPER ----------
     const [properItems, setProperItems] = useState<ProperItem[]>([]);
@@ -573,6 +582,15 @@ const AchievementTab = () => {
     const [naratifLoading, setNaratifLoading] = useState(false);
     const [naratifError, setNaratifError] = useState<string | null>(null);
 
+        // ---------- State Top Project: Others ----------
+    const [othersItems, setOthersItems] = useState<OthersItem[]>([]);
+    const [othersListLoading, setOthersListLoading] = useState(true);
+    const [othersFormOpen, setOthersFormOpen] = useState(false);
+    const [othersForm, setOthersForm] = useState({ title: "", detail: "" });
+    const [othersEditingId, setOthersEditingId] = useState<string | null>(null);
+    const [othersLoading, setOthersLoading] = useState(false);
+    const [othersError, setOthersError] = useState<string | null>(null);
+
     // ---------- State Top Project: ABI NBD ----------
     const [abiItems, setAbiItems] = useState<AbiItem[]>([]);
     const [abiListLoading, setAbiListLoading] = useState(true);
@@ -611,6 +629,7 @@ const AchievementTab = () => {
         fetchWilayahKerjaList();
         fetchNaratifItems();
         fetchAbiItems();
+        fetchOthersItems();
     }, []);
 
     // ---------- Fungsi Rencana Kerja ----------
@@ -1223,6 +1242,68 @@ const AchievementTab = () => {
         toastSuccess("Data berhasil dihapus.");
     }
 
+        // ---------- Fungsi Others ----------
+    async function fetchOthersItems() {
+        setOthersListLoading(true);
+        try {
+            const res = await fetch("/api/achievement/top-project/top-project-others");
+            const json = await res.json();
+            setOthersItems(json.data ?? []);
+        } finally {
+            setOthersListLoading(false);
+        }
+    }
+
+    function resetOthersForm() {
+        setOthersForm({ title: "", detail: "" });
+        setOthersEditingId(null);
+        setOthersFormOpen(false);
+        setOthersError(null);
+    }
+
+    function startEditOthers(item: OthersItem) {
+        setOthersForm({ title: item.title, detail: item.detail });
+        setOthersEditingId(item.id);
+        setOthersFormOpen(true);
+        setOthersError(null);
+    }
+
+    async function handleSubmitOthers(e: React.FormEvent) {
+        e.preventDefault();
+        setOthersLoading(true);
+
+        const payload = {
+            title: othersForm.title,
+            detail: othersForm.detail,
+            urutan: othersEditingId
+                ? othersItems.find((it) => it.id === othersEditingId)?.urutan ?? 0
+                : othersItems.length,
+        };
+        const url = othersEditingId ? `/api/achievement/top-project/top-project-others/${othersEditingId}` : "/api/achievement/top-project/top-project-others";
+        const method = othersEditingId ? "PATCH" : "POST";
+        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const json = await res.json();
+
+        if (!res.ok) {
+            toastError(json.error ?? "Gagal menyimpan data.");
+            setOthersLoading(false);
+            return;
+        }
+
+        await fetchOthersItems();
+        resetOthersForm();
+        setOthersLoading(false);
+        toastSuccess(othersEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
+    }
+
+    async function handleDeleteOthers(id: string) {
+        const confirmed = await confirmDelete();
+        if (!confirmed) return;
+        await fetch(`/api/achievement/top-project/top-project-others/${id}`, { method: "DELETE" });
+        await fetchOthersItems();
+        toastSuccess("Data berhasil dihapus.");
+    }
+
     // ---------- Fungsi ABI NBD ----------
     async function fetchAbiItems() {
         setAbiListLoading(true);
@@ -1300,7 +1381,7 @@ const AchievementTab = () => {
         toastSuccess("Data berhasil dihapus.");
     }
 
-    useEffect(() => {
+        useEffect(() => {
         const current = data[selectedJenis];
         if (current) {
             setForm({
@@ -1310,9 +1391,17 @@ const AchievementTab = () => {
                 period: current.period,
                 unit: current.unit,
             });
-            setSaveSuccess(false);
-            setSaveError(null);
+        } else {
+            setForm({
+                type: selectedJenis,
+                realization: "0",
+                target: "0",
+                period: "",
+                unit: selectedJenis === "wpnb" ? "%" : "",
+            });
         }
+        setSaveSuccess(false);
+        setSaveError(null);
     }, [selectedJenis, data]);
 
     function updateField(key: keyof ProduksiFormState, value: string) {
@@ -1471,8 +1560,8 @@ const AchievementTab = () => {
                         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                             <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Produksi</h2>
 
-                            <div className="mb-5 grid grid-cols-3 gap-3">
-                                {(["minyak", "gas", "migas"] as const).map((type) => (
+                                                        <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                {(["minyak", "gas", "migas", "wpnb"] as const).map((type) => (
                                     <button
                                         key={type}
                                         type="button"
@@ -1484,13 +1573,53 @@ const AchievementTab = () => {
                                                 : "border border-slate-200 text-slate-600 hover:bg-slate-50",
                                         ].join(" ")}
                                     >
-                                        Produksi {type}
+                                        {type === "wpnb" ? "Target WPNB" : `Produksi ${type}`}
                                     </button>
                                 ))}
                             </div>
 
                             {dataLoading ? (
                                 <ListSkeleton />
+                            ) : form && selectedJenis === "wpnb" ? (
+                                // Form ringkas khusus WPNB: cuma target (%) + periode.
+                                <>
+                                    <div className="mb-5 rounded-lg bg-slate-50 p-4">
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Target WPNB</p>
+                                        <p className="mt-1 text-3xl font-bold text-blue-900">{parseFormattedNumber(form.target)}%</p>
+                                        {form.period && <p className="mt-1 text-xs text-slate-400">{form.period}</p>}
+                                    </div>
+
+                                    <form onSubmit={handleSave} className="flex flex-col gap-4">
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Target WPNB (%)</label>
+                                            <input
+                                                type="text"
+                                                inputMode="decimal"
+                                                placeholder="mis. 80"
+                                                value={form.target}
+                                                onChange={(e) => updateNumberField("target", e.target.value)}
+                                                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Periode</label>
+                                            <input
+                                                type="month"
+                                                value={labelToMonthValue(form.period)}
+                                                onChange={(e) => updateField("period", monthValueToLabel(e.target.value))}
+                                                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            />
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={saveLoading}
+                                            className="mt-1 w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                            {saveLoading ? "Menyimpan..." : "Simpan Perubahan"}
+                                        </button>
+                                    </form>
+                                </>
                             ) : form ? (
                                 <>
                                     {(() => {
@@ -2142,7 +2271,7 @@ const AchievementTab = () => {
                         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                             <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Top Project</h2>
 
-                            <div className="mb-5 grid grid-cols-2 gap-3">
+                                                        <div className="mb-5 grid grid-cols-3 gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setTopProjectSubTab("naratif")}
@@ -2166,6 +2295,18 @@ const AchievementTab = () => {
                                     ].join(" ")}
                                 >
                                     ABI NBD
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setTopProjectSubTab("others")}
+                                    className={[
+                                        "cursor-pointer rounded-lg py-3 text-sm font-semibold transition-colors",
+                                        topProjectSubTab === "others"
+                                            ? "bg-blue-900 text-white shadow-sm"
+                                            : "border border-slate-200 text-slate-600 hover:bg-slate-50",
+                                    ].join(" ")}
+                                >
+                                    Others
                                 </button>
                             </div>
 
@@ -2328,7 +2469,68 @@ const AchievementTab = () => {
                                                         </div>
                                                     </li>
                                                 );
-                                            })}
+                                                                                        })}
+                                        </ul>
+                                    )}
+                                </>
+                            )}
+
+                            {topProjectSubTab === "others" && (
+                                <>
+                                    <form onSubmit={handleSubmitOthers} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Judul</label>
+                                            <input
+                                                placeholder="Contoh: Penghargaan Lainnya"
+                                                value={othersForm.title}
+                                                onChange={(e) => setOthersForm({ ...othersForm, title: e.target.value })}
+                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Detail</label>
+                                            <input
+                                                placeholder="Contoh: Deskripsi singkat pencapaian"
+                                                value={othersForm.detail}
+                                                onChange={(e) => setOthersForm({ ...othersForm, detail: e.target.value })}
+                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col gap-2">
+                                            <button type="submit" disabled={othersLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                                {othersLoading ? "Menyimpan..." : othersEditingId ? "Simpan Perubahan" : "Tambah"}
+                                            </button>
+                                            {othersEditingId && (
+                                                <button type="button" onClick={resetOthersForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+                                            )}
+                                        </div>
+                                    </form>
+
+                                    {othersListLoading ? (
+                                        <ListSkeleton />
+                                    ) : othersItems.length === 0 ? (
+                                        <EmptyState label="Belum ada data lainnya." />
+                                    ) : (
+                                        <ul className="flex flex-col gap-2">
+                                            {othersItems.map((item) => (
+                                                <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-blue-50/40 px-4 py-3 text-sm transition-colors hover:bg-blue-50">
+                                                    <div className="min-w-0">
+                                                        <span className="truncate font-bold text-blue-900">{item.title}</span>
+                                                        <p className="mt-0.5 truncate text-xs text-slate-500">{item.detail}</p>
+                                                    </div>
+                                                    <div className="flex shrink-0 gap-1">
+                                                        <button onClick={() => startEditOthers(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                            <PencilIcon />
+                                                        </button>
+                                                        <button onClick={() => handleDeleteOthers(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                            <TrashIcon />
+                                                        </button>
+                                                    </div>
+                                                </li>
+                                            ))}
                                         </ul>
                                     )}
                                 </>

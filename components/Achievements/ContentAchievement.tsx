@@ -269,14 +269,14 @@ function formatJumlahProduksi(jumlahMinyak: number | null, jumlahGas: number | n
 }
 
 function getResponsiveGridClass(count: number): string {
-    if (count === 1) return "grid-cols-1";
+    if (count <= 1) return "grid-cols-1";
     if (count === 2) return "grid-cols-1 sm:grid-cols-2";
-    if (count === 4) return "grid-cols-1 sm:grid-cols-2";
-    return "grid-cols-1 sm:grid-cols-3";
+    if (count === 3) return "grid-cols-1 sm:grid-cols-3";
+    return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
 }
 
 type ProduksiData = {
-    type: "minyak" | "gas" | "migas";
+    type: "minyak" | "gas" | "migas" | "wpnb";
     realization: number;
     target: number;
     period: string;
@@ -334,6 +334,13 @@ type NaratifItem = {
     urutan: number;
 };
 
+type OthersItem = {
+    id: string;
+    title: string;
+    detail: string;
+    urutan: number;
+};
+
 type AbiItem = {
     id: string;
     title: string;
@@ -357,6 +364,7 @@ const AchievementsContent = () => {
     const [security, setSecurity] = useState<SecurityItem[]>([]);
     const [naratifItems, setNaratifItems] = useState<NaratifItem[]>([]);
     const [abiItems, setAbiItems] = useState<AbiItem[]>([]);
+    const [othersItems, setOthersItems] = useState<OthersItem[]>([]);
 
     useEffect(() => {
         async function fetchProduksi() {
@@ -458,12 +466,24 @@ const AchievementsContent = () => {
             }
         }
 
+        async function fetchOthers() {
+            try {
+                const res = await fetch('/api/achievement/top-project/top-project-others');
+                const json = await res.json();
+                setOthersItems(json.data ?? []);
+            }
+            catch (err) {
+                console.error("Gagal mengambil data top project (others):", err);
+            }
+        }
+
         fetchProduksi()
         fetchRencanaKerja()
         fetchInovasi()
         fetchKehumasan()
         fetchNaratif()
         fetchAbi()
+        fetchOthers()
         fetchProper()
         fetchSecurity()
     }, []);
@@ -553,6 +573,18 @@ const AchievementsContent = () => {
                                 period={produksiData.migas.period ?? "-"}
                                 accentColor="emerald"
                             />
+                        )}
+
+                        {/* Kotak kecil target WPNB (%) */}
+                        {produksiData.wpnb && (
+                            <div className="col-span-full flex w-full items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-5 py-3 shadow-sm sm:mx-auto sm:w-fit sm:justify-center sm:gap-8">
+                                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Target WPNB
+                                </span>
+                                <span className="text-xl font-extrabold text-blue-900">
+                                    {produksiData.wpnb.target}%
+                                </span>
+                            </div>
                         )}
 
                     </div>
@@ -687,7 +719,7 @@ const AchievementsContent = () => {
 
                 {activeTab === "top-project" && (
                     <div className="flex flex-col items-center gap-4">
-                        <div className={`flex w-full flex-col gap-4 ${naratifItems.length <= 1 && abiItems.length <= 1 ? "max-w-2xl" : ""
+                        <div className={`flex w-full flex-col gap-4 ${naratifItems.length <= 1 && abiItems.length <= 1 && othersItems.length <= 1 ? "max-w-2xl" : ""
                             }`}>
                             {/* Pencapaian naratif */}
                             {naratifItems.length > 0 && (
@@ -728,7 +760,25 @@ const AchievementsContent = () => {
                                 </div>
                             )}
 
-                            {naratifItems.length === 0 && abiItems.length === 0 && (
+                            {/* Others — kategori tambahan, semua item ditampilkan tanpa batas */}
+                            {othersItems.length > 0 && (
+                                <div className={`grid gap-4 ${getResponsiveGridClass(othersItems.length)}`}>
+                                    {othersItems
+                                        .slice()
+                                        .sort((a, b) => a.urutan - b.urutan)
+                                        .map((item) => (
+                                            <div
+                                                key={item.id}
+                                                className="w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+                                            >
+                                                <p className="text-sm font-bold leading-snug text-blue-900">{item.title}</p>
+                                                <p className="mt-1.5 text-xs text-slate-500">{item.detail}</p>
+                                            </div>
+                                        ))}
+                                </div>
+                            )}
+
+                            {naratifItems.length === 0 && abiItems.length === 0 && othersItems.length === 0 && (
                                 <p className="text-center text-sm text-slate-400">Belum ada data top project.</p>
                             )}
                         </div>
