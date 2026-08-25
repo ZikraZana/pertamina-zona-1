@@ -502,7 +502,7 @@ const AchievementTab = () => {
     // ---------- State Rencana Kerja ----------
     const [rkItems, setRkItems] = useState<RKItem[]>([]);
     const [rkListLoading, setRkListLoading] = useState(true);
-    const [rkFormOpen, setRkFormOpen] = useState(false);
+    const [rkFormOpen, setRkFormOpen] = useState(true);
     const [rkForm, setRkForm] = useState({ jenis_rk: "Bor", nama_rk: "", jumlah_minyak: "", jumlah_gas: "", wilayah_kerja: "", urutan: "" });
     const [isAddingNewJenis, setIsAddingNewJenis] = useState(false);
     const [newJenisInput, setNewJenisInput] = useState("");
@@ -628,7 +628,6 @@ const AchievementTab = () => {
     function resetRkForm() {
         setRkForm({ jenis_rk: "Bor", nama_rk: "", jumlah_minyak: "", jumlah_gas: "", wilayah_kerja: "", urutan: "" });
         setRkEditingId(null);
-        setRkFormOpen(false);
         setRkError(null);
         setIsAddingNewJenis(false);
         setNewJenisInput("");
@@ -1583,19 +1582,11 @@ const AchievementTab = () => {
                     )}
 
                     {/* ---------- Card Rencana Kerja ---------- */}
-                    {activeTab === "rencana-kerja" && (
+                   {activeTab === "rencana-kerja" && (
                         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                            <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Rencana Kerja</h2>
+                        <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Rencana Kerja</h2>
 
-                            <button
-                                type="button"
-                                onClick={() => setManageJenisOpen((prev) => !prev)}
-                                className="mb-3 text-xs font-semibold text-blue-700 hover:underline"
-                            >
-                                {manageJenisOpen ? "Sembunyikan kelola jenis" : "Kelola Jenis RK"}
-                            </button>
-
-                            {manageJenisOpen && (
+                            {false && manageJenisOpen && (
                                 <div className="mb-4 flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
                                     {jenisRkSummary.length === 0 ? (
                                         <p className="text-xs text-slate-400">Belum ada jenis RK.</p>
@@ -1781,9 +1772,8 @@ const AchievementTab = () => {
                                         <button type="submit" disabled={rkLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
                                             {rkLoading ? "Menyimpan..." : rkEditingId ? "Simpan Perubahan" : "Tambah"}
                                         </button>
-                                        {rkEditingId && (
+                                        
                                             <button type="button" onClick={resetRkForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
-                                        )}
                                     </div>
                                 </form>
                             )}
