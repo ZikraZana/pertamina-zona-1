@@ -759,21 +759,28 @@ const AchievementsContent = () => {
                                 </div>
                             )}
 
-                            {/* Others — kategori tambahan, semua item ditampilkan tanpa batas */}
                             {othersItems.length > 0 && (
-                                <div className={`grid gap-4 ${getResponsiveGridClass(othersItems.length)}`}>
-                                    {othersItems
-                                        .slice()
-                                        .sort((a, b) => a.urutan - b.urutan)
-                                        .map((item) => (
-                                            <div
-                                                key={item.id}
-                                                className="w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
-                                            >
-                                                <p className="text-sm font-bold leading-snug text-blue-900">{item.title}</p>
-                                                <p className="mt-1.5 text-xs text-slate-500">{item.detail}</p>
-                                            </div>
-                                        ))}
+                                <div className="w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                                    <div className="mb-3.5 flex items-center gap-2">
+                                        <span className="text-sm">✨</span>
+                                        <span className="text-xs font-semibold text-slate-500">Pencapaian Lainnya</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-x-5 gap-y-3.5 sm:grid-cols-3 lg:grid-cols-4">
+                                        {othersItems
+                                            .slice()
+                                            .sort((a, b) => a.urutan - b.urutan)
+                                            .map((item) => (
+                                                <div key={item.id} className="flex items-center gap-2.5">
+                                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-50 text-sm">
+                                                        ⭐
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-bold leading-snug text-blue-900">{item.title}</p>
+                                                        <p className="mt-0.5 text-xs text-slate-500">{item.detail}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                    </div>
                                 </div>
                             )}
 
