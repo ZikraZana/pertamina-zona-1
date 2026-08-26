@@ -1807,7 +1807,7 @@ const AchievementTab = () => {
                                                 <div className="mb-3 flex items-end justify-between">
                                                     <div>
                                                         <p className="text-3xl font-bold text-blue-900">{realization.toLocaleString("en-US")} <span className="text-sm font-normal text-slate-400">{form.unit}</span></p>
-                                                        <p className="mt-1 text-xs text-slate-400">Dari target {target.toLocaleString("en-US")} {form.unit} | {form.period}</p>
+                                                        <p className="mt-1 text-xs text-slate-400">Dari target FY RKAP {target.toLocaleString("en-US")} {form.unit} | {form.period}</p>
                                                     </div>
                                                     <span className="shrink-0 text-lg font-bold text-blue-900">{persen}%</span>
                                                 </div>
@@ -1835,7 +1835,7 @@ const AchievementTab = () => {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Target ({form.unit || "-"})</label>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Target FY RKAP ({form.unit || "-"})</label>
                                                 <input
                                                     type="text"
                                                     inputMode="decimal"
@@ -1873,11 +1873,11 @@ const AchievementTab = () => {
                                         </div>
 
                                         <div>
-                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">WPNB (%)</label>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Target WP&B ({form.unit || "-"})</label>
                                             <input
                                                 type="text"
                                                 inputMode="decimal"
-                                                placeholder="mis. 80"
+                                                placeholder="mis. 1,234.5"
                                                 value={form.wpnb}
                                                 onChange={(e) => updateNumberField("wpnb", e.target.value)}
                                                 className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"

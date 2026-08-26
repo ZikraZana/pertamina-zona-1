@@ -27,7 +27,7 @@ function ProductionCard({
     percentValue: number;
     period: string;
     accentColor: "amber" | "sky" | "emerald";
-    wpnb?: number;
+    wpnb?: string;
 }) {
     const colors = {
         amber: { bar: "bg-amber-500", text: "text-amber-600", chip: "bg-amber-50 text-amber-700" },
@@ -43,7 +43,7 @@ function ProductionCard({
                     <p className="mt-0.5 text-xs text-slate-400">{period}</p>
                 </div>
                 <span className={`rounded-full px-2.5 text-center py-1 text-xs font-bold ${colors.chip}`}>
-                    {percentValue}% RKAP
+                    {percentValue}% YTD RKAP
                 </span>
             </div>
             <div className="mt-5">
@@ -61,17 +61,15 @@ function ProductionCard({
                         style={{ width: `${percentValue}%` }}
                     />
                 </div>
-                <div className="mt-2 flex items-center justify-end text-xs text-slate-400">
-                    <span>Target: <span className={`font-semibold ${colors.text}`}>{target} {unit}</span></span>
+                                <div className="mt-2 flex items-center justify-end text-xs text-slate-400">
+                    <span>Target FY RKAP: <span className={`font-semibold ${colors.text}`}>{target} {unit}</span></span>
                 </div>
+                {wpnb !== undefined && (
+                    <div className="mt-1 flex items-center justify-end text-xs text-slate-400">
+                        <span>Target WP&B: <span className={`font-semibold ${colors.text}`}>{wpnb} {unit}</span></span>
+                    </div>
+                )}
             </div>
-
-            {wpnb !== undefined && (
-                <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">WPNB</span>
-                    <span className={`text-sm font-bold ${colors.text}`}>{wpnb}%</span>
-                </div>
-            )}
         </div>
     );
 }
@@ -645,7 +643,7 @@ const AchievementsContent = () => {
                                     percentValue={Math.round((produksiData.minyak.realization / produksiData.minyak.target) * 100) || 0}
                                     period={produksiData.minyak.period ?? "-"}
                                     accentColor="amber"
-                                    wpnb={produksiData.minyak.wpnb ?? 0}
+                                    wpnb={formatAngkaID(produksiData.minyak.wpnb ?? 0)}
                                 />
                             </>
                         )}
@@ -658,7 +656,7 @@ const AchievementsContent = () => {
                                 percentValue={Math.round((produksiData.gas.realization / produksiData.gas.target) * 100) || 0}
                                 period={produksiData.gas.period ?? "-"}
                                 accentColor="sky"
-                                wpnb={produksiData.gas.wpnb ?? 0}
+                                wpnb={formatAngkaID(produksiData.gas.wpnb ?? 0)}
                             />
                         )}
                         {produksiData.migas && (
@@ -670,7 +668,7 @@ const AchievementsContent = () => {
                                 percentValue={Math.round((produksiData.migas.realization / produksiData.migas.target) * 100) || 0}
                                 period={produksiData.migas.period ?? "-"}
                                 accentColor="emerald"
-                                wpnb={produksiData.migas.wpnb ?? 0}
+                                wpnb={formatAngkaID(produksiData.migas.wpnb ?? 0)}
                             />
                         )}
                     </div>
