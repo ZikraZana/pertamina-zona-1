@@ -24,7 +24,7 @@ export async function GET() {
         supabase.from("achievement_inovasi").select("id, pencapaian, nama_inovasi, nama_acara, wilayah_kerja").order("urutan", { ascending: true }),
         supabase.from("achievement_top_project_naratif").select("id, title, detail").order("urutan", { ascending: true }),
         supabase.from("achievement_top_project_abi").select("id, title, unit, realization, target, period").order("urutan", { ascending: true }),
-        supabase.from("achievement_kehumasan").select("id, wilayah_kerja, kategori, sub_kategori, medali").order("urutan", { ascending: true }),
+        supabase.from("achievement_kehumasan").select("id, wilayah_kerja, judul, deskripsi, bulan, tahun, medali").order("urutan", { ascending: true }),
     ])
 
     // Kalau salah satu query error, hentikan dan laporkan -- daripada PDF

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 const VALID_MEDALI = ["gold", "silver", "bronze"] as const;
+const VALID_BULAN = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -14,8 +15,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const formData = await request.formData();
 
     const wilayah_kerja = formData.get("wilayah_kerja");
-    const kategori = formData.get("kategori");
-    const sub_kategori = formData.get("sub_kategori");
+    const judul = formData.get("judul");
+    const deskripsi = formData.get("deskripsi");
+    const bulan = formData.get("bulan");
+    const tahun = formData.get("tahun");
     const medali = formData.get("medali");
     const urutan = formData.get("urutan");
     const urutan_wilayah = formData.get("urutan_wilayah");
@@ -23,8 +26,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const stringFields: [string, FormDataEntryValue | null][] = [
         ["wilayah_kerja", wilayah_kerja],
-        ["kategori", kategori],
-        ["sub_kategori", sub_kategori],
+        ["judul", judul],
+        ["deskripsi", deskripsi],
     ];
     for (const [name, value] of stringFields) {
         if (typeof value !== "string" || !value.trim()) {
@@ -34,6 +37,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     if (typeof medali !== "string" || !VALID_MEDALI.includes(medali as any)) {
         return NextResponse.json({ error: 'Field "medali" harus salah satu dari: gold, silver, bronze.', code: "VALIDATION_ERROR" }, { status: 400 });
+    }
+
+    const bulanNumber = Number(bulan);
+    if (!VALID_BULAN.includes(bulanNumber)) {
+        return NextResponse.json({ error: 'Field "bulan" harus angka 1-12.', code: "VALIDATION_ERROR" }, { status: 400 });
+    }
+
+    const tahunNumber = Number(tahun);
+    if (!Number.isInteger(tahunNumber) || tahunNumber < 2000) {
+        return NextResponse.json({ error: 'Field "tahun" tidak valid.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
 
     let urutanNumber = 0;
@@ -87,8 +100,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         .from("achievement_kehumasan")
         .update({
             wilayah_kerja,
-            kategori,
-            sub_kategori,
+            judul,
+            deskripsi,
+            bulan: bulanNumber,
+            tahun: tahunNumber,
             medali,
             urutan: urutanNumber,
             urutan_wilayah: urutanWilayahNumber,

@@ -82,8 +82,10 @@ type InovasiItem = {
 type KehumasanItem = {
     id: string;
     wilayah_kerja: string;
-    kategori: string;
-    sub_kategori: string;
+    judul: string;
+    deskripsi: string;
+    bulan: number;
+    tahun: number;
     medali: "gold" | "silver" | "bronze";
     urutan: number;
     urutan_wilayah: number;
@@ -453,7 +455,7 @@ function SortableKehumasanItem({
                     <span className="truncate font-semibold text-blue-900">{item.wilayah_kerja}</span>
                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${medali.className}`}>{medali.label}</span>
                 </div>
-                <p className="mt-0.5 truncate text-xs text-slate-400">{item.kategori} · {item.sub_kategori}</p>
+                <p className="mt-0.5 truncate text-xs text-slate-400">{item.judul} · {["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][item.bulan - 1]} {item.tahun}</p>
             </div>
 
             <div className="flex shrink-0 gap-1">
@@ -553,7 +555,7 @@ const AchievementTab = () => {
     const [inovasiForm, setInovasiForm] = useState({ pencapaian: "", nama_inovasi: "", nama_acara: "", wilayah_kerja: "" });
     const [inovasiEditingId, setInovasiEditingId] = useState<string | null>(null);
     const [inovasiLoading, setInovasiLoading] = useState(false);
-    
+
     const [hsseSubTab, setHsseSubTab] = useState<"proper" | "security" | "others">("proper");
     const [securityKategori, setSecurityKategori] = useState<"" | "kejadian" | "penghargaan">("");
     const [topProjectSubTab, setTopProjectSubTab] = useState<"naratif" | "abi" | "others">("naratif");
@@ -572,7 +574,7 @@ const AchievementTab = () => {
     const [properLoading, setProperLoading] = useState(false);
     const [properError, setProperError] = useState<string | null>(null);
 
-        // ---------- State Security ----------
+    // ---------- State Security ----------
     const [securityItems, setSecurityItems] = useState<SecurityFormItem[]>([]);
     const [securityListLoading, setSecurityListLoading] = useState(true);
     const [securityFormOpen, setSecurityFormOpen] = useState(false);
@@ -595,12 +597,12 @@ const AchievementTab = () => {
     const [hsseOthersListLoading, setHsseOthersListLoading] = useState(true);
     const [hsseOthersFormOpen, setHsseOthersFormOpen] = useState(false);
     const [hsseOthersForm, setHsseOthersForm] = useState({
-    indikator: "",
-    realisasi: "",
-    satuan: "",
-    periode: "",
-    target_others: "",
-    tahun_target: String(new Date().getFullYear()),
+        indikator: "",
+        realisasi: "",
+        satuan: "",
+        periode: "",
+        target_others: "",
+        tahun_target: String(new Date().getFullYear()),
     });
     const [hsseOthersEditingId, setHsseOthersEditingId] = useState<string | null>(null);
     const [hsseOthersLoading, setHsseOthersLoading] = useState(false);
@@ -612,10 +614,12 @@ const AchievementTab = () => {
     const [kehumasanFormOpen, setKehumasanFormOpen] = useState(false);
     const [kehumasanForm, setKehumasanForm] = useState<{
         wilayah_kerja: string;
-        kategori: string;
-        sub_kategori: string;
+        judul: string;
+        deskripsi: string;
+        bulan: string;
+        tahun: string;
         medali: "gold" | "silver" | "bronze";
-    }>({ wilayah_kerja: "", kategori: "", sub_kategori: "", medali: "gold" });
+    }>({ wilayah_kerja: "", judul: "", deskripsi: "", bulan: "", tahun: "", medali: "gold" });
     const [kehumasanImageFile, setKehumasanImageFile] = useState<File | null>(null);
     const [kehumasanExistingImagePath, setKehumasanExistingImagePath] = useState<string | null>(null);
     const [kehumasanEditingId, setKehumasanEditingId] = useState<string | null>(null);
@@ -1151,73 +1155,73 @@ const AchievementTab = () => {
     }
 
     function resetHsseOthersForm() {
-    setHsseOthersForm({
-        indikator: "",
-        realisasi: "",
-        satuan: "",
-        periode: "",
-        target_others: "",
-        tahun_target: String(new Date().getFullYear()),
-    });
-    setHsseOthersEditingId(null);
-    setHsseOthersError(null);
-}
-    
+        setHsseOthersForm({
+            indikator: "",
+            realisasi: "",
+            satuan: "",
+            periode: "",
+            target_others: "",
+            tahun_target: String(new Date().getFullYear()),
+        });
+        setHsseOthersEditingId(null);
+        setHsseOthersError(null);
+    }
+
 
     function startEditHsseOthers(item: HsseOthersItem) {
-    setHsseOthersForm({
-        indikator: item.indikator,
-        realisasi: String(item.realisasi),
-        satuan: item.satuan,
-        periode: item.periode,
-        target_others: String(item.target_others),
-        tahun_target: String(item.tahun_target),
-    });
-    setHsseOthersEditingId(item.id);
-    setHsseOthersFormOpen(true);
-    setHsseOthersError(null);
-}
+        setHsseOthersForm({
+            indikator: item.indikator,
+            realisasi: String(item.realisasi),
+            satuan: item.satuan,
+            periode: item.periode,
+            target_others: String(item.target_others),
+            tahun_target: String(item.tahun_target),
+        });
+        setHsseOthersEditingId(item.id);
+        setHsseOthersFormOpen(true);
+        setHsseOthersError(null);
+    }
 
     async function handleSubmitHsseOthers(e: React.FormEvent) {
-    e.preventDefault();
-    setHsseOthersError(null);
+        e.preventDefault();
+        setHsseOthersError(null);
 
-    if (!hsseOthersForm.indikator.trim() || !hsseOthersForm.satuan.trim() || !hsseOthersForm.periode.trim()) {
-        toastError("Indikator, Satuan, dan Periode wajib diisi.");
-        return;
-    }
+        if (!hsseOthersForm.indikator.trim() || !hsseOthersForm.satuan.trim() || !hsseOthersForm.periode.trim()) {
+            toastError("Indikator, Satuan, dan Periode wajib diisi.");
+            return;
+        }
 
-    setHsseOthersLoading(true);
+        setHsseOthersLoading(true);
 
-    const existingItem = hsseOthersEditingId ? hsseOthersItems.find((item) => item.id === hsseOthersEditingId) : null;
-    const urutan = existingItem ? existingItem.urutan : hsseOthersItems.length;
+        const existingItem = hsseOthersEditingId ? hsseOthersItems.find((item) => item.id === hsseOthersEditingId) : null;
+        const urutan = existingItem ? existingItem.urutan : hsseOthersItems.length;
 
-    const payload = {
-        indikator: hsseOthersForm.indikator,
-        realisasi: parseFormattedNumber(hsseOthersForm.realisasi),
-        satuan: hsseOthersForm.satuan,
-        periode: hsseOthersForm.periode,
-        target_others: parseFormattedNumber(hsseOthersForm.target_others),
-        tahun_target: Number(hsseOthersForm.tahun_target),
-        urutan,
-    };
+        const payload = {
+            indikator: hsseOthersForm.indikator,
+            realisasi: parseFormattedNumber(hsseOthersForm.realisasi),
+            satuan: hsseOthersForm.satuan,
+            periode: hsseOthersForm.periode,
+            target_others: parseFormattedNumber(hsseOthersForm.target_others),
+            tahun_target: Number(hsseOthersForm.tahun_target),
+            urutan,
+        };
 
-    const url = hsseOthersEditingId ? `/api/achievement/hsse/others/${hsseOthersEditingId}` : "/api/achievement/hsse/others";
-    const method = hsseOthersEditingId ? "PUT" : "POST";
-    const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    const json = await res.json();
+        const url = hsseOthersEditingId ? `/api/achievement/hsse/others/${hsseOthersEditingId}` : "/api/achievement/hsse/others";
+        const method = hsseOthersEditingId ? "PUT" : "POST";
+        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const json = await res.json();
 
-    if (!res.ok) {
-        toastError(json.error ?? "Gagal menyimpan data.");
+        if (!res.ok) {
+            toastError(json.error ?? "Gagal menyimpan data.");
+            setHsseOthersLoading(false);
+            return;
+        }
+
+        await fetchHsseOthersItems();
+        resetHsseOthersForm();
         setHsseOthersLoading(false);
-        return;
+        toastSuccess(hsseOthersEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
     }
-
-    await fetchHsseOthersItems();
-    resetHsseOthersForm();
-    setHsseOthersLoading(false);
-    toastSuccess(hsseOthersEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
-}
 
     async function handleDeleteHsseOthers(id: string) {
         const confirmed = await confirmDelete();
@@ -1240,7 +1244,7 @@ const AchievementTab = () => {
     }
 
     function resetKehumasanForm() {
-        setKehumasanForm({ wilayah_kerja: "", kategori: "", sub_kategori: "", medali: "gold" });
+        setKehumasanForm({ wilayah_kerja: "", judul: "", deskripsi: "", bulan: "", tahun: "", medali: "gold" });
         setKehumasanImageFile(null);
         setKehumasanExistingImagePath(null);
         setKehumasanEditingId(null);
@@ -1249,7 +1253,14 @@ const AchievementTab = () => {
     }
 
     function startEditKehumasan(item: KehumasanItem) {
-        setKehumasanForm({ wilayah_kerja: item.wilayah_kerja, kategori: item.kategori, sub_kategori: item.sub_kategori, medali: item.medali });
+        setKehumasanForm({
+            wilayah_kerja: item.wilayah_kerja,
+            judul: item.judul,
+            deskripsi: item.deskripsi,
+            bulan: String(item.bulan),
+            tahun: String(item.tahun),
+            medali: item.medali,
+        });
         setKehumasanImageFile(null);
         setKehumasanExistingImagePath(item.image_path ?? null);
         setKehumasanEditingId(item.id);
@@ -1268,8 +1279,10 @@ const AchievementTab = () => {
         // FormData, bukan JSON -- karena sekarang bisa bawa file gambar sekaligus
         const formData = new FormData();
         formData.append("wilayah_kerja", kehumasanForm.wilayah_kerja);
-        formData.append("kategori", kehumasanForm.kategori);
-        formData.append("sub_kategori", kehumasanForm.sub_kategori);
+        formData.append("judul", kehumasanForm.judul);
+        formData.append("deskripsi", kehumasanForm.deskripsi);
+        formData.append("bulan", kehumasanForm.bulan);
+        formData.append("tahun", kehumasanForm.tahun);
         formData.append("medali", kehumasanForm.medali);
         formData.append("urutan", String(urutan));
         if (kehumasanImageFile) {
@@ -1318,11 +1331,11 @@ const AchievementTab = () => {
             itemsInGroup.map((item, i) => {
                 const formData = new FormData();
                 formData.append("wilayah_kerja", item.wilayah_kerja);
-                formData.append("kategori", item.kategori);
-                formData.append("sub_kategori", item.sub_kategori);
+                formData.append("judul", item.judul);
+                formData.append("deskripsi", item.deskripsi);
+                formData.append("bulan", String(item.bulan));
+                formData.append("tahun", String(item.tahun));
                 formData.append("medali", item.medali);
-                formData.append("urutan", String(i));
-                formData.append("skip_log", "true");
                 // tidak append "image" -- reorder tidak pernah mengubah foto,
                 // jadi backend akan pertahankan image_path yang sudah ada
 
@@ -1348,12 +1361,11 @@ const AchievementTab = () => {
                 return itemsInGroup.map((item) => {
                     const formData = new FormData();
                     formData.append("wilayah_kerja", item.wilayah_kerja);
-                    formData.append("kategori", item.kategori);
-                    formData.append("sub_kategori", item.sub_kategori);
+                    formData.append("judul", item.judul);
+                    formData.append("deskripsi", item.deskripsi);
+                    formData.append("bulan", String(item.bulan));
+                    formData.append("tahun", String(item.tahun));
                     formData.append("medali", item.medali);
-                    formData.append("urutan", String(item.urutan));
-                    formData.append("urutan_wilayah", String(groupIndex));
-                    formData.append("skip_log", "true");
                     // tidak append "image" -- reorder tidak pernah mengubah foto
 
                     return fetch(`/api/achievement/kehumasan/${item.id}`, {
@@ -2269,7 +2281,7 @@ const AchievementTab = () => {
                                 </>
                             )}
 
-                                                        {hsseSubTab === "security" && (
+                            {hsseSubTab === "security" && (
                                 <>
                                     <div className="mb-5">
                                         <label className="mb-1.5 block text-sm font-semibold text-blue-900">Pilih Kategori</label>
@@ -2286,126 +2298,239 @@ const AchievementTab = () => {
 
                                     {securityKategori === "kejadian" && (
                                         <>
-                                    <form onSubmit={handleSubmitSecurity} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Wilayah Kerja</label>
-                                                <select
-                                                    value={securityForm.wilayah_kerja}
-                                                    onChange={(e) => setSecurityForm({ ...securityForm, wilayah_kerja: e.target.value })}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                    required
-                                                >
-                                                    <option value="">Pilih Wilayah Kerja</option>
-                                                    {wilayahKerjaList.map((nama) => (
-                                                        <option key={nama} value={nama}>{nama}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tanggal</label>
-                                                <input
-                                                    type="date"
-                                                    value={securityForm.tanggal}
-                                                    onChange={(e) => setSecurityForm({ ...securityForm, tanggal: e.target.value })}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="col-span-2">
-                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Kejadian</label>
-                                                <input
-                                                    placeholder="Contoh: Penggagalan ITAP...)"
-                                                    value={securityForm.judul}
-                                                    onChange={(e) => setSecurityForm({ ...securityForm, judul: e.target.value })}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
+                                            <form onSubmit={handleSubmitSecurity} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Wilayah Kerja</label>
+                                                        <select
+                                                            value={securityForm.wilayah_kerja}
+                                                            onChange={(e) => setSecurityForm({ ...securityForm, wilayah_kerja: e.target.value })}
+                                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                            required
+                                                        >
+                                                            <option value="">Pilih Wilayah Kerja</option>
+                                                            {wilayahKerjaList.map((nama) => (
+                                                                <option key={nama} value={nama}>{nama}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tanggal</label>
+                                                        <input
+                                                            type="date"
+                                                            value={securityForm.tanggal}
+                                                            onChange={(e) => setSecurityForm({ ...securityForm, tanggal: e.target.value })}
+                                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="col-span-2">
+                                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Kejadian</label>
+                                                        <input
+                                                            placeholder="Contoh: Penggagalan ITAP...)"
+                                                            value={securityForm.judul}
+                                                            onChange={(e) => setSecurityForm({ ...securityForm, judul: e.target.value })}
+                                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                            required
+                                                        />
+                                                    </div>
+                                                </div>
 
-                                        <div className="flex flex-col gap-2">
-                                            <button type="submit" disabled={securityLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                                {securityLoading ? "Menyimpan..." : securityEditingId ? "Simpan Perubahan" : "Tambah"}
-                                            </button>
-                                            {securityEditingId && (
-                                                <button type="button" onClick={resetSecurityForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+                                                <div className="flex flex-col gap-2">
+                                                    <button type="submit" disabled={securityLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                                        {securityLoading ? "Menyimpan..." : securityEditingId ? "Simpan Perubahan" : "Tambah"}
+                                                    </button>
+                                                    {securityEditingId && (
+                                                        <button type="button" onClick={resetSecurityForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+                                                    )}
+                                                </div>
+                                            </form>
+
+                                            {securityListLoading ? (
+                                                <ListSkeleton />
+                                            ) : securityItems.length === 0 ? (
+                                                <EmptyState label="Belum ada data security." />
+                                            ) : (
+                                                <ul className="flex flex-col gap-2">
+                                                    {securityItems
+                                                        .slice()
+                                                        .sort((a, b) => a.urutan - b.urutan)
+                                                        .map((item) => (
+                                                            <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-blue-50/40 px-4 py-3 text-sm transition-colors hover:bg-blue-50">
+                                                                <div className="min-w-0 flex-1">
+                                                                    <span className="truncate font-bold text-blue-900">{item.judul}</span>
+                                                                    <p className="mt-0.5 truncate text-xs text-slate-500">
+                                                                        {item.wilayah_kerja}, {new Date(item.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                                                                    </p>
+                                                                </div>
+                                                                <div className="flex shrink-0 gap-1">
+                                                                    <button onClick={() => handleDeleteSecurity(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                                        <TrashIcon />
+                                                                    </button>
+                                                                </div>
+                                                            </li>
+                                                        ))}
+                                                </ul>
                                             )}
-                                        </div>
-                                    </form>
-
-                                    {securityListLoading ? (
-                                        <ListSkeleton />
-                                    ) : securityItems.length === 0 ? (
-                                        <EmptyState label="Belum ada data security." />
-                                    ) : (
-                                        <ul className="flex flex-col gap-2">
-                                            {securityItems
-                                                .slice()
-                                                .sort((a, b) => a.urutan - b.urutan)
-                                                .map((item) => (
-                                                    <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-blue-50/40 px-4 py-3 text-sm transition-colors hover:bg-blue-50">
-                                                        <div className="min-w-0 flex-1">
-                                                            <span className="truncate font-bold text-blue-900">{item.judul}</span>
-                                                            <p className="mt-0.5 truncate text-xs text-slate-500">
-                                                                {item.wilayah_kerja}, {new Date(item.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
-                                                            </p>
-                                                        </div>
-                                                        <div className="flex shrink-0 gap-1">
-                                                                                                                        <button onClick={() => handleDeleteSecurity(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
-                                                                <TrashIcon />
-                                                            </button>
-                                                        </div>
-                                                                                                        </li>
-                                                ))}
-                                        </ul>
-                                    )}
                                         </>
                                     )}
 
                                     {securityKategori === "penghargaan" && (
                                         <>
-                                    <form onSubmit={handleSubmitPenghargaan} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
+                                            <form onSubmit={handleSubmitPenghargaan} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Wilayah Kerja</label>
+                                                        <input
+                                                            placeholder="Contoh: 5 field (Rantau, Pangsu, Lirik, Jambi, Jambi Merang)"
+                                                            value={penghargaanForm.wilayah_kerja}
+                                                            onChange={(e) => setPenghargaanForm({ ...penghargaanForm, wilayah_kerja: e.target.value })}
+                                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Predikat</label>
+                                                        <select
+                                                            value={penghargaanForm.predikat}
+                                                            onChange={(e) => setPenghargaanForm({ ...penghargaanForm, predikat: e.target.value as "Gold" | "Silver" | "Bronze" })}
+                                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                        >
+                                                            <option value="Gold">Gold</option>
+                                                            <option value="Silver">Silver</option>
+                                                            <option value="Bronze">Bronze</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Kegiatan</label>
+                                                        <input
+                                                            placeholder="Contoh: Audit Sistem Manajemen Pengamanan"
+                                                            value={penghargaanForm.nama_kegiatan}
+                                                            onChange={(e) => setPenghargaanForm({ ...penghargaanForm, nama_kegiatan: e.target.value })}
+                                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tahun</label>
+                                                        <input
+                                                            type="number"
+                                                            placeholder="2025"
+                                                            value={penghargaanForm.tahun}
+                                                            onChange={(e) => setPenghargaanForm({ ...penghargaanForm, tahun: e.target.value })}
+                                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                            required
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-col gap-2">
+                                                    <button type="submit" disabled={penghargaanLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                                        {penghargaanLoading ? "Menyimpan..." : penghargaanEditingId ? "Simpan Perubahan" : "Tambah"}
+                                                    </button>
+                                                    {penghargaanEditingId && (
+                                                        <button type="button" onClick={resetPenghargaanForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
+                                                    )}
+                                                </div>
+                                            </form>
+
+                                            {penghargaanListLoading ? (
+                                                <ListSkeleton />
+                                            ) : penghargaanItems.length === 0 ? (
+                                                <EmptyState label="Belum ada data penghargaan." />
+                                            ) : (
+                                                <ul className="flex flex-col gap-2">
+                                                    {penghargaanItems
+                                                        .slice()
+                                                        .sort((a, b) => a.urutan - b.urutan)
+                                                        .map((item) => (
+                                                            <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-blue-50/40 px-4 py-3 text-sm transition-colors hover:bg-blue-50">
+                                                                <div className="min-w-0 flex-1">
+                                                                    <span className="truncate font-bold text-blue-900">{item.predikat} - {item.nama_kegiatan}</span>
+                                                                    <p className="mt-0.5 truncate text-xs text-slate-500">{item.wilayah_kerja} | {item.tahun}</p>
+                                                                </div>
+                                                                <div className="flex shrink-0 gap-1">
+                                                                    <button onClick={() => startEditPenghargaan(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                                        <PencilIcon />
+                                                                    </button>
+                                                                    <button onClick={() => handleDeletePenghargaan(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                                        <TrashIcon />
+                                                                    </button>
+                                                                </div>
+                                                            </li>
+                                                        ))}
+                                                </ul>
+                                            )}
+                                        </>
+                                    )}
+                                </>
+                            )}
+
+                            {hsseSubTab === "others" && (
+                                <>
+                                    <form onSubmit={handleSubmitHsseOthers} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Wilayah Kerja</label>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Indikator</label>
                                                 <input
-                                                    placeholder="Contoh: 5 field (Rantau, Pangsu, Lirik, Jambi, Jambi Merang)"
-                                                    value={penghargaanForm.wilayah_kerja}
-                                                    onChange={(e) => setPenghargaanForm({ ...penghargaanForm, wilayah_kerja: e.target.value })}
+                                                    placeholder="Contoh: Reduksi Emisi"
+                                                    value={hsseOthersForm.indikator}
+                                                    onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, indikator: e.target.value })}
                                                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
                                                     required
                                                 />
                                             </div>
                                             <div>
-                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Predikat</label>
-                                                <select
-                                                    value={penghargaanForm.predikat}
-                                                    onChange={(e) => setPenghargaanForm({ ...penghargaanForm, predikat: e.target.value as "Gold" | "Silver" | "Bronze" })}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                >
-                                                    <option value="Gold">Gold</option>
-                                                    <option value="Silver">Silver</option>
-                                                    <option value="Bronze">Bronze</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Kegiatan</label>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Realisasi</label>
                                                 <input
-                                                    placeholder="Contoh: Audit Sistem Manajemen Pengamanan"
-                                                    value={penghargaanForm.nama_kegiatan}
-                                                    onChange={(e) => setPenghargaanForm({ ...penghargaanForm, nama_kegiatan: e.target.value })}
+                                                    type="text"
+                                                    inputMode="decimal"
+                                                    placeholder="Masukkan Angka Realisasi"
+                                                    value={hsseOthersForm.realisasi}
+                                                    onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, realisasi: sanitizeNumberInput(e.target.value) })}
                                                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
                                                     required
                                                 />
                                             </div>
                                             <div>
-                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tahun</label>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Satuan</label>
+                                                <input
+                                                    placeholder="Masukkan Satuan Realisasi"
+                                                    value={hsseOthersForm.satuan}
+                                                    onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, satuan: e.target.value })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Periode</label>
+                                                <input
+                                                    type="month"
+                                                    value={labelToMonthValue(hsseOthersForm.periode)}
+                                                    onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, periode: monthValueToLabel(e.target.value) })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Target</label>
+                                                <input
+                                                    type="text"
+                                                    inputMode="decimal"
+                                                    placeholder="Masukkan Angka Target"
+                                                    value={hsseOthersForm.target_others}
+                                                    onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, target_others: sanitizeNumberInput(e.target.value) })}
+                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tahun Target</label>
                                                 <input
                                                     type="number"
-                                                    placeholder="2025"
-                                                    value={penghargaanForm.tahun}
-                                                    onChange={(e) => setPenghargaanForm({ ...penghargaanForm, tahun: e.target.value })}
+                                                    placeholder="Masukkan Tahun Target"
+                                                    value={hsseOthersForm.tahun_target}
+                                                    onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, tahun_target: e.target.value })}
                                                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
                                                     required
                                                 />
@@ -2413,164 +2538,51 @@ const AchievementTab = () => {
                                         </div>
 
                                         <div className="flex flex-col gap-2">
-                                            <button type="submit" disabled={penghargaanLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                                {penghargaanLoading ? "Menyimpan..." : penghargaanEditingId ? "Simpan Perubahan" : "Tambah"}
+                                            <button type="submit" disabled={hsseOthersLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                                {hsseOthersLoading ? "Menyimpan..." : hsseOthersEditingId ? "Simpan Perubahan" : "Tambah"}
                                             </button>
-                                            {penghargaanEditingId && (
-                                                <button type="button" onClick={resetPenghargaanForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
-                                            )}
+                                            <button type="button" onClick={resetHsseOthersForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
                                         </div>
                                     </form>
 
-                                    {penghargaanListLoading ? (
+                                    {hsseOthersListLoading ? (
                                         <ListSkeleton />
-                                    ) : penghargaanItems.length === 0 ? (
-                                        <EmptyState label="Belum ada data penghargaan." />
+                                    ) : hsseOthersItems.length === 0 ? (
+                                        <EmptyState label="Belum ada data indikator lainnya." />
                                     ) : (
-                                        <ul className="flex flex-col gap-2">
-                                            {penghargaanItems
+                                        <div className="flex flex-col gap-3">
+                                            {hsseOthersItems
                                                 .slice()
                                                 .sort((a, b) => a.urutan - b.urutan)
-                                                .map((item) => (
-                                                    <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-blue-50/40 px-4 py-3 text-sm transition-colors hover:bg-blue-50">
-                                                        <div className="min-w-0 flex-1">
-                                                            <span className="truncate font-bold text-blue-900">{item.predikat} - {item.nama_kegiatan}</span>
-                                                            <p className="mt-0.5 truncate text-xs text-slate-500">{item.wilayah_kerja} | {item.tahun}</p>
+                                                .map((item) => {
+                                                    const persen = item.target_others > 0 ? Math.round((item.realisasi / item.target_others) * 100) : 0;
+                                                    return (
+                                                        <div
+                                                            key={item.id}
+                                                            className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-blue-50/40 px-4 py-3.5 transition-colors hover:bg-blue-50"
+                                                        >
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="truncate text-sm font-bold text-blue-900">
+                                                                    Realisasi {item.indikator} - {item.realisasi.toLocaleString("en-US")} {item.satuan}
+                                                                </p>
+                                                                <p className="mt-1 text-xs text-slate-400">{item.periode}</p>
+                                                                <p className="mt-0.5 text-xs text-slate-400">{persen}% dari Target {item.tahun_target}</p>
+                                                            </div>
+                                                            <div className="flex shrink-0 gap-1">
+                                                                <button onClick={() => startEditHsseOthers(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                                    <PencilIcon />
+                                                                </button>
+                                                                <button onClick={() => handleDeleteHsseOthers(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
+                                                                    <TrashIcon />
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex shrink-0 gap-1">
-                                                            <button onClick={() => startEditPenghargaan(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
-                                                                <PencilIcon />
-                                                            </button>
-                                                            <button onClick={() => handleDeletePenghargaan(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
-                                                                <TrashIcon />
-                                                            </button>
-                                                        </div>
-                                                                                                        </li>
-                                                ))}
-                                        </ul>
-                                    )}
-                                        </>
+                                                    );
+                                                })}
+                                        </div>
                                     )}
                                 </>
                             )}
-
-                           {hsseSubTab === "others" && (
-                                    <>
-                                        <form onSubmit={handleSubmitHsseOthers} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className="mb-1.5 block text-sm font-semibold text-blue-900">Indikator</label>
-                                                    <input
-                                                        placeholder="Contoh: Reduksi Emisi"
-                                                        value={hsseOthersForm.indikator}
-                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, indikator: e.target.value })}
-                                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="mb-1.5 block text-sm font-semibold text-blue-900">Realisasi</label>
-                                                    <input
-                                                        type="text"
-                                                        inputMode="decimal"
-                                                        placeholder="Masukkan Angka Realisasi"
-                                                        value={hsseOthersForm.realisasi}
-                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, realisasi: sanitizeNumberInput(e.target.value) })}
-                                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="mb-1.5 block text-sm font-semibold text-blue-900">Satuan</label>
-                                                    <input
-                                                        placeholder="Masukkan Satuan Realisasi"
-                                                        value={hsseOthersForm.satuan}
-                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, satuan: e.target.value })}
-                                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="mb-1.5 block text-sm font-semibold text-blue-900">Periode</label>
-                                                    <input
-                                                        type="month"
-                                                        value={labelToMonthValue(hsseOthersForm.periode)}
-                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, periode: monthValueToLabel(e.target.value) })}
-                                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="mb-1.5 block text-sm font-semibold text-blue-900">Target</label>
-                                                    <input
-                                                        type="text"
-                                                        inputMode="decimal"
-                                                        placeholder="Masukkan Angka Target"
-                                                        value={hsseOthersForm.target_others}
-                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, target_others: sanitizeNumberInput(e.target.value) })}
-                                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tahun Target</label>
-                                                    <input
-                                                        type="number"
-                                                        placeholder="Masukkan Tahun Target"
-                                                        value={hsseOthersForm.tahun_target}
-                                                        onChange={(e) => setHsseOthersForm({ ...hsseOthersForm, tahun_target: e.target.value })}
-                                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="flex flex-col gap-2">
-                                                <button type="submit" disabled={hsseOthersLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                                    {hsseOthersLoading ? "Menyimpan..." : hsseOthersEditingId ? "Simpan Perubahan" : "Tambah"}
-                                                </button>
-                                                <button type="button" onClick={resetHsseOthersForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
-                                            </div>
-                                        </form>
-
-                                        {hsseOthersListLoading ? (
-                                            <ListSkeleton />
-                                        ) : hsseOthersItems.length === 0 ? (
-                                            <EmptyState label="Belum ada data indikator lainnya." />
-                                        ) : (
-                                            <div className="flex flex-col gap-3">
-                                                {hsseOthersItems
-                                                    .slice()
-                                                    .sort((a, b) => a.urutan - b.urutan)
-                                                    .map((item) => {
-                                                        const persen = item.target_others > 0 ? Math.round((item.realisasi / item.target_others) * 100) : 0;
-                                                        return (
-                                                            <div
-                                                                key={item.id}
-                                                                className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-blue-50/40 px-4 py-3.5 transition-colors hover:bg-blue-50"
-                                                            >
-                                                                <div className="min-w-0 flex-1">
-                                                                    <p className="truncate text-sm font-bold text-blue-900">
-                                                                        Realisasi {item.indikator} - {item.realisasi.toLocaleString("en-US")} {item.satuan}
-                                                                    </p>
-                                                                    <p className="mt-1 text-xs text-slate-400">{item.periode}</p>
-                                                                    <p className="mt-0.5 text-xs text-slate-400">{persen}% dari Target {item.tahun_target}</p>
-                                                                </div>
-                                                                <div className="flex shrink-0 gap-1">
-                                                                    <button onClick={() => startEditHsseOthers(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
-                                                                        <PencilIcon />
-                                                                    </button>
-                                                                    <button onClick={() => handleDeleteHsseOthers(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
-                                                                        <TrashIcon />
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
-                                            </div>
-                                        )}
-                                    </>
-                                )}
                         </div>
                     )}
 
@@ -2980,22 +2992,50 @@ const AchievementTab = () => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Kategori</label>
+                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Judul</label>
                                         <input
-                                            placeholder="Contoh: Manajemen Krisis"
-                                            value={kehumasanForm.kategori}
-                                            onChange={(e) => setKehumasanForm({ ...kehumasanForm, kategori: e.target.value })}
+                                            placeholder="Contoh: Kunjungan Media ke Fasilitas Produksi"
+                                            value={kehumasanForm.judul}
+                                            onChange={(e) => setKehumasanForm({ ...kehumasanForm, judul: e.target.value })}
                                             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
                                             required
                                         />
                                     </div>
-                                    <div>
-                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Sub Kategori</label>
-                                        <input
-                                            placeholder="Contoh: Krisis & Pasca Krisis"
-                                            value={kehumasanForm.sub_kategori}
-                                            onChange={(e) => setKehumasanForm({ ...kehumasanForm, sub_kategori: e.target.value })}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Bulan</label>
+                                            <select
+                                                value={kehumasanForm.bulan}
+                                                onChange={(e) => setKehumasanForm({ ...kehumasanForm, bulan: e.target.value })}
+                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                required
+                                            >
+                                                <option value="">Pilih Bulan</option>
+                                                {["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"].map((nama, i) => (
+                                                    <option key={i + 1} value={i + 1}>{nama}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tahun</label>
+                                            <input
+                                                type="number"
+                                                placeholder="Contoh: 2026"
+                                                value={kehumasanForm.tahun}
+                                                onChange={(e) => setKehumasanForm({ ...kehumasanForm, tahun: e.target.value })}
+                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-span-2">
+                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Deskripsi</label>
+                                        <textarea
+                                            placeholder="Ceritakan kegiatan kehumasan ini secara singkat..."
+                                            value={kehumasanForm.deskripsi}
+                                            onChange={(e) => setKehumasanForm({ ...kehumasanForm, deskripsi: e.target.value })}
                                             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            rows={3}
                                             required
                                         />
                                     </div>
