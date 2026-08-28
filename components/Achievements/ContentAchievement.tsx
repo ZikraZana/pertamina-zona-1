@@ -61,7 +61,7 @@ function ProductionCard({
                         style={{ width: `${percentValue}%` }}
                     />
                 </div>
-                                <div className="mt-2 flex items-center justify-end text-xs text-slate-400">
+                <div className="mt-2 flex items-center justify-end text-xs text-slate-400">
                     <span>Target FY RKAP: <span className={`font-semibold ${colors.text}`}>{target} {unit}</span></span>
                 </div>
                 {wpnb !== undefined && (
@@ -206,7 +206,11 @@ function AccordionCard({ title, items, defaultOpen = false }: { title: string; i
     );
 }
 type AwardItem = {
-    text: string;
+    judul: string;
+    deskripsi: string;
+    bulan: number;
+    tahun: number;
+    bulanTahun: string;
     medal: "gold" | "silver" | "bronze";
     imageUrl?: string;
 };
@@ -277,19 +281,46 @@ function HSSEOthersCard({
     );
 }
 
+function KehumasanAwardRow({ award }: { award: AwardItem }) {
+    const [expanded, setExpanded] = useState(false);
+
+    return (
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <button
+                type="button"
+                onClick={() => setExpanded((prev) => !prev)}
+                className="flex w-full items-start justify-between gap-2.5 text-left"
+            >
+                <div className="flex min-w-0 items-start gap-2">
+                    <div className="min-w-0">
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">{award.bulanTahun}</p>
+                        <p className="text-sm font-bold leading-snug text-blue-900">{award.judul}</p>
+                    </div>
+                </div>
+                <svg
+                    className={`mt-0.5 h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            {expanded && (
+                <div className="mt-3 border-t border-slate-100 pt-3">
+                    <p className="text-xs leading-relaxed text-slate-500">{award.deskripsi}</p>
+                    <AwardPhoto imageUrl={award.imageUrl} alt={award.judul} />
+                </div>
+            )}
+        </div>
+    );
+}
+
 function FieldAwardCard({ field, awards }: { field: string; awards: AwardItem[] }) {
     return (
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-base font-bold text-blue-900">{field}</p>
-            <div className="mt-4 flex flex-col divide-y divide-slate-100">
+            <div className="mt-4 flex flex-col gap-2.5">
                 {awards.map((award, i) => (
-                    <div key={i} className={i > 0 ? "pt-5" : ""}>
-                        <p className="flex items-start gap-2 text-sm font-medium text-blue-900">
-                            <span className="shrink-0">{MEDAL_ICON[award.medal]}</span>
-                            {award.text}
-                        </p>
-                        <AwardPhoto imageUrl={award.imageUrl} alt={award.text} />
-                    </div>
+                    <KehumasanAwardRow key={i} award={award} />
                 ))}
             </div>
         </div>
@@ -305,6 +336,11 @@ function formatAngkaID(n: number) {
 function formatTanggalID(dateStr: string) {
     const date = new Date(dateStr);
     return date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+}
+
+const NAMA_BULAN_ID = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+function formatBulanTahunID(bulan: number, tahun: number) {
+    return `${NAMA_BULAN_ID[bulan - 1] ?? ""} ${tahun}`;
 }
 
 function formatJumlahProduksi(jumlahMinyak: number | null, jumlahGas: number | null) {
@@ -349,8 +385,10 @@ type Inovasi = {
 
 type Kehumasan = {
     wilayah_kerja: string;
-    kategori: string;
-    sub_kategori: string;
+    judul: string;
+    deskripsi: string;
+    bulan: number;
+    tahun: number;
     medali: "gold" | "silver" | "bronze";
     urutan: number;
     urutan_wilayah: number;
@@ -425,9 +463,6 @@ const AchievementsContent = () => {
     const [rencanaKerja, setRencanaKerja] = useState<Record<string, RencanaKerja[]>>({});
     const [inovasi, setInovasi] = useState<Inovasi[]>([]);
     const [kehumasan, setKehumasan] = useState<Kehumasan[]>([]);
-    const goldCount = kehumasan.filter((item) => item.medali === 'gold').length;
-    const silverCount = kehumasan.filter((item) => item.medali === 'silver').length;
-    const bronzeCount = kehumasan.filter((item) => item.medali === 'bronze').length;
     const [proper, setProper] = useState<Proper[]>([]);
     const [security, setSecurity] = useState<SecurityItem[]>([]);
     const [penghargaan, setPenghargaan] = useState<PenghargaanItem[]>([]);
@@ -504,7 +539,7 @@ const AchievementsContent = () => {
                 console.error("Gagal mengambil data proper:", err);
             }
         }
-                        async function fetchSecurity() {
+        async function fetchSecurity() {
             try {
                 const res = await fetch('/api/achievement/hsse/security');
                 const json = await res.json();
@@ -591,7 +626,11 @@ const AchievementsContent = () => {
         }
 
         groupedKehumasanUnordered[row.wilayah_kerja].push({
-            text: `Kategori ${row.kategori} Sub Kategori ${row.sub_kategori}`,
+            judul: row.judul,
+            deskripsi: row.deskripsi,
+            bulan: row.bulan,
+            tahun: row.tahun,
+            bulanTahun: formatBulanTahunID(row.bulan, row.tahun),
             medal: row.medali,
             imageUrl: row.image_url ?? undefined,
         });
@@ -599,9 +638,15 @@ const AchievementsContent = () => {
 
     // Urutan GRUP mengikuti urutan_wilayah yang diatur admin lewat tombol
     // panah naik/turun, supaya konsisten dengan tampilan di halaman admin.
+    // Urutan ITEM di dalam tiap wilayah diurutkan berdasarkan bulan+tahun (terbaru dulu).
     const groupedKehumasan: [string, AwardItem[]][] = Object.keys(groupedKehumasanUnordered)
         .sort((a, b) => (urutanWilayahMap[a] ?? 0) - (urutanWilayahMap[b] ?? 0))
-        .map((field) => [field, groupedKehumasanUnordered[field]]);
+        .map((field) => [
+            field,
+            groupedKehumasanUnordered[field]
+                .slice()
+                .sort((a, b) => (b.tahun - a.tahun) || (b.bulan - a.bulan)),
+        ]);
 
     return (
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-4 sm:p-6">
@@ -799,23 +844,23 @@ const AchievementsContent = () => {
                             <p className="text-sm font-bold uppercase tracking-wide text-blue-900">Others</p>
 
                             <div className="mt-4 flex flex-col gap-4">
-                                    {hsseOthers
-                                        .slice()
-                                        .sort((a, b) => a.urutan - b.urutan)
-                                        .map((item) => (
-                                            <HSSEOthersCard
-                                                key={item.id}
-                                                indikator={item.indikator}
-                                                satuan={item.satuan}
-                                                realisasi={item.realisasi}
-                                                target_others={item.target_others}
-                                                tahun_target={item.tahun_target}
-                                                periode={item.periode}
-                                            />
-                                        ))}
-                                </div>
+                                {hsseOthers
+                                    .slice()
+                                    .sort((a, b) => a.urutan - b.urutan)
+                                    .map((item) => (
+                                        <HSSEOthersCard
+                                            key={item.id}
+                                            indikator={item.indikator}
+                                            satuan={item.satuan}
+                                            realisasi={item.realisasi}
+                                            target_others={item.target_others}
+                                            tahun_target={item.tahun_target}
+                                            periode={item.periode}
+                                        />
+                                    ))}
+                            </div>
 
-                            
+
                         </div>
                     </div>
                 )}
@@ -926,42 +971,8 @@ const AchievementsContent = () => {
 
                 {activeTab === "kehumasan" && (
                     <div className="flex flex-col gap-4">
-                        {/* Ringkasan medali (podium) */}
-                        <div className="grid grid-cols-3 items-end gap-3">
-                            {/* Gold */}
-                            <div className="group relative -mt-8 overflow-hidden rounded-2xl border border-amber-300 bg-linear-to-b from-amber-50 to-white p-5 text-center shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
-                                <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-amber-300/30 blur-xl" />
-                                <div className="flex items-center justify-center gap-2">
-                                    {/* <span className="text-3xl drop-shadow-sm">🥇</span> */}
-                                    <span className="text-4xl font-extrabold text-amber-600">{goldCount}</span>
-                                </div>
-                                <p className="mt-1.5 text-xs font-bold uppercase tracking-wide text-amber-700">🥇 Gold Winner</p>
-                            </div>
-
-                            {/* Silver */}
-                            <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-linear-to-b from-slate-50 to-white p-5 text-center shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
-                                <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-slate-200/40 blur-xl" />
-                                <div className="flex items-center justify-center gap-2">
-                                    {/* <span className="text-2xl">🥈</span> */}
-                                    <span className="text-4xl font-extrabold text-slate-500">{silverCount}</span>
-                                </div>
-                                <p className="mt-1.5 text-xs font-bold uppercase tracking-wide text-slate-500">🥈 Silver Winner</p>
-                            </div>
-
-
-                            {/* Bronze */}
-                            <div className="group relative overflow-hidden rounded-2xl border border-orange-200 bg-linear-to-b from-orange-50 to-white p-5 text-center shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
-                                <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-orange-200/40 blur-xl" />
-                                <div className="flex items-center justify-center gap-2">
-                                    {/* <span className="text-2xl">🥉</span> */}
-                                    <span className="text-4xl font-extrabold text-orange-700">{bronzeCount}</span>
-                                </div>
-                                <p className="mt-1.5 text-xs font-bold uppercase tracking-wide text-orange-700">🥉 Bronze Winner</p>
-                            </div>
-                        </div>
-
                         {/* Detail per field */}
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
                             {groupedKehumasan.map(([field, awards]) => (
                                 <FieldAwardCard
                                     key={field}

@@ -29,7 +29,7 @@ type SecurityItem = { id: string; judul: string; wilayah_kerja: string; tanggal:
 type InovasiItem = { id: string; pencapaian: string; nama_inovasi: string; nama_acara: string | null; wilayah_kerja: string };
 type NaratifItem = { id: string; title: string; detail: string };
 type AbiItem = { id: string; title: string; unit: string; realization: number; target: number; period: string };
-type KehumasanItem = { id: string; wilayah_kerja: string; kategori: string; sub_kategori: string; medali: string };
+type KehumasanItem = { id: string; wilayah_kerja: string; judul: string; deskripsi: string; bulan: number; tahun: number; medali: string };
 
 export type PdfData = {
     produksi: ProduksiItem[];
@@ -463,6 +463,11 @@ function TableHead({ columns }: { columns: { label: string; style: Style }[] }) 
     );
 }
 
+const NAMA_BULAN_PDF = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+function formatBulanTahunPdf(bulan: number, tahun: number) {
+    return `${NAMA_BULAN_PDF[bulan - 1] ?? ''} ${tahun}`;
+}
+
 function MedalPill({ medali }: { medali: string }) {
     const label = medali === 'gold' ? 'Gold' : medali === 'silver' ? 'Silver' : 'Bronze';
     const style = medali === 'gold' ? styles.pillGold : medali === 'silver' ? styles.pillGray : styles.pillBlue;
@@ -784,20 +789,21 @@ function SectionKehumasan({ items }: { items: KehumasanItem[] }) {
             ) : (
                 <View style={styles.table}>
                     <TableHead columns={[
-                        { label: 'Wilayah Kerja', style: styles.colM },
-                        { label: 'Kategori', style: styles.colL },
-                        { label: 'Sub Kategori', style: styles.colL },
+                        { label: 'Wilayah Kerja', style: styles.colS },
+                        { label: 'Judul', style: styles.colM },
+                        { label: 'Deskripsi', style: styles.colXL },
+                        { label: 'Tanggal', style: styles.colS },
                         { label: 'Penghargaan', style: styles.colS },
                     ]} />
                     {items.map((item, i) => {
                         const isLast = i === items.length - 1;
                         return (
                             <View key={item.id} style={isLast ? styles.tableRowLast : styles.tableRow}>
-                                <Text style={[styles.tableCellBold, styles.colM]}>{item.wilayah_kerja}</Text>
-                                <Text style={[styles.tableCellMuted, styles.colL]}>{item.kategori}</Text>
-                                <Text style={[styles.tableCellMuted, styles.colL]}>{item.sub_kategori}</Text>
+                                <Text style={[styles.tableCellBold, styles.colS]}>{item.wilayah_kerja}</Text>
+                                <Text style={[styles.tableCellBold, styles.colM]}>{item.judul}</Text>
+                                <Text style={[styles.tableCellMuted, styles.colXL]}>{item.deskripsi}</Text>
+                                <Text style={[styles.tableCellMuted, styles.colS]}>{formatBulanTahunPdf(item.bulan, item.tahun)}</Text>
                                 <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }, styles.colS]}>
-
                                     <MedalPill medali={item.medali} />
                                 </View>
                             </View>
