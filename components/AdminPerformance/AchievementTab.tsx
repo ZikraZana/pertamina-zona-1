@@ -36,12 +36,6 @@ type RKItem = {
     urutan: number;
 };
 
-type NaratifItem = {
-    id: string;
-    title: string;
-    detail: string;
-    urutan: number;
-};
 
 type AbiItem = {
     id: string;
@@ -558,7 +552,7 @@ const AchievementTab = () => {
 
     const [hsseSubTab, setHsseSubTab] = useState<"proper" | "security" | "others">("proper");
     const [securityKategori, setSecurityKategori] = useState<"" | "kejadian" | "penghargaan">("");
-    const [topProjectSubTab, setTopProjectSubTab] = useState<"naratif" | "abi" | "others">("naratif");
+    const [topProjectSubTab, setTopProjectSubTab] = useState<"abi" | "others">("abi");
 
     // ---------- State PROPER ----------
     const [properItems, setProperItems] = useState<ProperItem[]>([]);
@@ -626,15 +620,6 @@ const AchievementTab = () => {
     const [kehumasanLoading, setKehumasanLoading] = useState(false);
     const [kehumasanError, setKehumasanError] = useState<string | null>(null);
 
-    // ---------- State Top Project: Naratif ----------
-    const [naratifItems, setNaratifItems] = useState<NaratifItem[]>([]);
-    const [naratifListLoading, setNaratifListLoading] = useState(true);
-    const [naratifFormOpen, setNaratifFormOpen] = useState(false);
-    const [naratifForm, setNaratifForm] = useState({ title: "", detail: "" });
-    const [naratifEditingId, setNaratifEditingId] = useState<string | null>(null);
-    const [naratifLoading, setNaratifLoading] = useState(false);
-    const [naratifError, setNaratifError] = useState<string | null>(null);
-
     // ---------- State Top Project: Others ----------
     const [othersItems, setOthersItems] = useState<OthersItem[]>([]);
     const [othersListLoading, setOthersListLoading] = useState(true);
@@ -682,7 +667,6 @@ const AchievementTab = () => {
         fetchInovasiItems();
         fetchKehumasanItems();
         fetchWilayahKerjaList();
-        fetchNaratifItems();
         fetchAbiItems();
         fetchOthersItems();
     }, []);
@@ -1397,68 +1381,6 @@ const AchievementTab = () => {
         } catch (err) {
             console.error("Gagal mengambil daftar wilayah kerja:", err);
         }
-    }
-
-    // ---------- Fungsi Naratif ----------
-    async function fetchNaratifItems() {
-        setNaratifListLoading(true);
-        try {
-            const res = await fetch("/api/achievement/top-project/top-project-naratif");
-            const json = await res.json();
-            setNaratifItems(json.data ?? []);
-        } finally {
-            setNaratifListLoading(false);
-        }
-    }
-
-    function resetNaratifForm() {
-        setNaratifForm({ title: "", detail: "" });
-        setNaratifEditingId(null);
-        setNaratifFormOpen(false);
-        setNaratifError(null);
-    }
-
-    function startEditNaratif(item: NaratifItem) {
-        setNaratifForm({ title: item.title, detail: item.detail });
-        setNaratifEditingId(item.id);
-        setNaratifFormOpen(true);
-        setNaratifError(null);
-    }
-
-    async function handleSubmitNaratif(e: React.FormEvent) {
-        e.preventDefault();
-        setNaratifLoading(true);
-
-        const payload = {
-            title: naratifForm.title,
-            detail: naratifForm.detail,
-            urutan: naratifEditingId
-                ? naratifItems.find((it) => it.id === naratifEditingId)?.urutan ?? 0
-                : naratifItems.length,
-        };
-        const url = naratifEditingId ? `/api/achievement/top-project/top-project-naratif/${naratifEditingId}` : "/api/achievement/top-project/top-project-naratif";
-        const method = naratifEditingId ? "PATCH" : "POST";
-        const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-        const json = await res.json();
-
-        if (!res.ok) {
-            toastError(json.error ?? "Gagal menyimpan data.");
-            setNaratifLoading(false);
-            return;
-        }
-
-        await fetchNaratifItems();
-        resetNaratifForm();
-        setNaratifLoading(false);
-        toastSuccess(naratifEditingId ? "Perubahan berhasil disimpan." : "Data berhasil ditambahkan.");
-    }
-
-    async function handleDeleteNaratif(id: string) {
-        const confirmed = await confirmDelete();
-        if (!confirmed) return;
-        await fetch(`/api/achievement/top-project/top-project-naratif/${id}`, { method: "DELETE" });
-        await fetchNaratifItems();
-        toastSuccess("Data berhasil dihapus.");
     }
 
     // ---------- Fungsi Others ----------
@@ -2686,19 +2608,7 @@ const AchievementTab = () => {
                         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                             <h2 className="mb-4 border-b border-slate-100 pb-3 text-center text-base font-bold uppercase tracking-wide text-blue-900">Top Project</h2>
 
-                            <div className="mb-5 grid grid-cols-3 gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setTopProjectSubTab("naratif")}
-                                    className={[
-                                        "cursor-pointer rounded-lg py-3 text-sm font-semibold transition-colors",
-                                        topProjectSubTab === "naratif"
-                                            ? "bg-blue-900 text-white shadow-sm"
-                                            : "border border-slate-200 text-slate-600 hover:bg-slate-50",
-                                    ].join(" ")}
-                                >
-                                    Pencapaian
-                                </button>
+                            <div className="mb-5 grid grid-cols-2 gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setTopProjectSubTab("abi")}
@@ -2709,7 +2619,7 @@ const AchievementTab = () => {
                                             : "border border-slate-200 text-slate-600 hover:bg-slate-50",
                                     ].join(" ")}
                                 >
-                                    ABI NBD
+                                    Nama Proyek
                                 </button>
                                 <button
                                     type="button"
@@ -2724,67 +2634,6 @@ const AchievementTab = () => {
                                     Others
                                 </button>
                             </div>
-
-                            {topProjectSubTab === "naratif" && (
-                                <>
-                                    <form onSubmit={handleSubmitNaratif} className="mb-5 flex flex-col gap-4 rounded-lg bg-blue-50/40 p-4">
-                                        <div>
-                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Judul</label>
-                                            <input
-                                                placeholder="Contoh: New Technology Velocity String"
-                                                value={naratifForm.title}
-                                                onChange={(e) => setNaratifForm({ ...naratifForm, title: e.target.value })}
-                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Detail</label>
-                                            <input
-                                                placeholder="Contoh: PPS-12 dan PPS-15"
-                                                value={naratifForm.detail}
-                                                onChange={(e) => setNaratifForm({ ...naratifForm, detail: e.target.value })}
-                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col gap-2">
-                                            <button type="submit" disabled={naratifLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
-                                                {naratifLoading ? "Menyimpan..." : naratifEditingId ? "Simpan Perubahan" : "Tambah"}
-                                            </button>
-                                            {naratifEditingId && (
-                                                <button type="button" onClick={resetNaratifForm} className="w-full cursor-pointer rounded-lg border border-slate-300 py-3 text-sm font-semibold text-blue-900 hover:bg-slate-50">Batal</button>
-                                            )}
-                                        </div>
-                                    </form>
-
-                                    {naratifListLoading ? (
-                                        <ListSkeleton />
-                                    ) : naratifItems.length === 0 ? (
-                                        <EmptyState label="Belum ada data pencapaian." />
-                                    ) : (
-                                        <ul className="flex flex-col gap-2">
-                                            {naratifItems.map((item) => (
-                                                <li key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-blue-50/40 px-4 py-3 text-sm transition-colors hover:bg-blue-50">
-                                                    <div className="min-w-0">
-                                                        <span className="truncate font-bold text-blue-900">{item.title}</span>
-                                                        <p className="mt-0.5 truncate text-xs text-slate-500">{item.detail}</p>
-                                                    </div>
-                                                    <div className="flex shrink-0 gap-1">
-                                                        <button onClick={() => startEditNaratif(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
-                                                            <PencilIcon />
-                                                        </button>
-                                                        <button onClick={() => handleDeleteNaratif(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
-                                                            <TrashIcon />
-                                                        </button>
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </>
-                            )}
 
                             {topProjectSubTab === "abi" && (
                                 <>

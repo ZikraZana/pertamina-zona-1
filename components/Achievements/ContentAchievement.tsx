@@ -571,16 +571,7 @@ const AchievementsContent = () => {
                 console.error("Gagal mengambil data HSSE others:", err);
             }
         }
-        async function fetchNaratif() {
-            try {
-                const res = await fetch('/api/achievement/top-project/top-project-naratif');
-                const json = await res.json();
-                setNaratifItems(json.data ?? []);
-            }
-            catch (err) {
-                console.error("Gagal mengambil data top project (naratif):", err);
-            }
-        }
+
 
         async function fetchAbi() {
             try {
@@ -608,7 +599,6 @@ const AchievementsContent = () => {
         fetchRencanaKerja()
         fetchInovasi()
         fetchKehumasan()
-        fetchNaratif()
         fetchAbi()
         fetchOthers()
         fetchProper()
