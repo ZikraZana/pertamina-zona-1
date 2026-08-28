@@ -724,11 +724,6 @@ const AchievementTab = () => {
     async function handleSubmitRk(e: React.FormEvent) {
         e.preventDefault();
 
-        if (!rkForm.jumlah_minyak.trim() && !rkForm.jumlah_gas.trim()) {
-            toastError("Isi minimal salah satu: Jumlah Minyak atau Jumlah Gas.");
-            return;
-        }
-
         setRkLoading(true);
         const payload = {
             jenis_rk: rkForm.jenis_rk,

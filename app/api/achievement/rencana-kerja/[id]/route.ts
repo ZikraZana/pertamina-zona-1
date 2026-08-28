@@ -29,9 +29,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (!isValidAmount(jumlah_gas)) {
         return NextResponse.json({ error: 'Field "jumlah_gas" harus berupa angka dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
-    if ((jumlah_minyak === null || jumlah_minyak === undefined) && (jumlah_gas === null || jumlah_gas === undefined)) {
-        return NextResponse.json({ error: 'Isi minimal salah satu dari "jumlah_minyak" atau "jumlah_gas".', code: "VALIDATION_ERROR" }, { status: 400 });
-    }
     if (urutan !== undefined && (typeof urutan !== "number" || !Number.isInteger(urutan) || urutan < 0)) {
         return NextResponse.json({ error: 'Field "urutan" harus berupa bilangan bulat dan tidak boleh negatif.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
