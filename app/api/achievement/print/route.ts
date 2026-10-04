@@ -13,7 +13,7 @@ export async function GET() {
         properRes,
         securityRes,
         inovasiRes,
-        naratifRes,
+        othersRes,
         abiRes,
         kehumasanRes
     ] = await Promise.all([
@@ -22,14 +22,14 @@ export async function GET() {
         supabase.from("achievement_hsse_proper").select("id, wilayah_kerja, peringkat, tahun, keterangan"),
         supabase.from("achievement_hsse_security").select("id, judul, wilayah_kerja, tanggal").order("urutan", { ascending: true }),
         supabase.from("achievement_inovasi").select("id, pencapaian, nama_inovasi, nama_acara, wilayah_kerja").order("urutan", { ascending: true }),
-        supabase.from("achievement_top_project_naratif").select("id, title, detail").order("urutan", { ascending: true }),
+        supabase.from("achievement_top_project_others").select("id, title, detail").order("urutan", { ascending: true }),
         supabase.from("achievement_top_project_abi").select("id, title, unit, realization, target, period").order("urutan", { ascending: true }),
         supabase.from("achievement_kehumasan").select("id, wilayah_kerja, judul, deskripsi, bulan, tahun, medali").order("urutan", { ascending: true }),
     ])
 
     // Kalau salah satu query error, hentikan dan laporkan -- daripada PDF
     // ke-generate dengan data yang cuma sebagian.
-    const firstError = [produksiRes, rkRes, properRes, securityRes, inovasiRes, naratifRes, abiRes, kehumasanRes]
+    const firstError = [produksiRes, rkRes, properRes, securityRes, inovasiRes, othersRes, abiRes, kehumasanRes]
         .find((res) => res.error)?.error;
 
     if (firstError) {
@@ -42,7 +42,7 @@ export async function GET() {
         hsseProper: properRes.data ?? [],
         hsseSecurity: securityRes.data ?? [],
         inovasi: inovasiRes.data ?? [],
-        topProjectNaratif: naratifRes.data ?? [],
+        topProjectOthers: othersRes.data ?? [],
         topProjectAbi: abiRes.data ?? [],
         kehumasan: kehumasanRes.data ?? [],
     };

@@ -27,7 +27,7 @@ type RkItem = { id: string; jenis_rk: string; nama_rk: string; jumlah_minyak: nu
 type ProperItem = { id: string; wilayah_kerja: string; peringkat: string; tahun: number; keterangan: string | null };
 type SecurityItem = { id: string; judul: string; wilayah_kerja: string; tanggal: string };
 type InovasiItem = { id: string; pencapaian: string; nama_inovasi: string; nama_acara: string | null; wilayah_kerja: string };
-type NaratifItem = { id: string; title: string; detail: string };
+type OthersItem = { id: string; title: string; detail: string };
 type AbiItem = { id: string; title: string; unit: string; realization: number; target: number; period: string };
 type KehumasanItem = { id: string; wilayah_kerja: string; judul: string; deskripsi: string; bulan: number; tahun: number; medali: string };
 
@@ -37,7 +37,7 @@ export type PdfData = {
     hsseProper: ProperItem[];
     hsseSecurity: SecurityItem[];
     inovasi: InovasiItem[];
-    topProjectNaratif: NaratifItem[];
+    topProjectOthers: OthersItem[];
     topProjectAbi: AbiItem[];
     kehumasan: KehumasanItem[];
 };
@@ -706,37 +706,16 @@ function SectionInovasi({ items }: { items: InovasiItem[] }) {
 // ============================================================
 // TOP PROJECT
 // ============================================================
-function SectionTopProject({ naratif, abi }: { naratif: NaratifItem[]; abi: AbiItem[] }) {
+function SectionTopProject({ abi, others }: {  abi: AbiItem[]; others: OthersItem[] }) {
     return (
         <View style={styles.sectionBlock}>
             <SectionHead number="05" title="Top Project" />
 
-            {naratif.length === 0 && abi.length === 0 ? (
+            {others.length === 0 && abi.length === 0 ? (
                 <Text style={styles.emptyText}>Belum ada data top project.</Text>
             ) : (
                 <View style={styles.rkGridWrap}>
-                    {/* Kolom kiri: Pencapaian Naratif */}
-                    <View style={styles.rkGridCol}>
-                        <View style={styles.rkGroupBox}>
-                            <View style={styles.rkGroupHeadRow}>
-                                <Text style={styles.rkGroupHeadText}>Pencapaian Naratif</Text>
-                            </View>
-                            {naratif.length === 0 ? (
-                                <Text style={styles.emptyText}>Belum ada data.</Text>
-                            ) : (
-                                naratif.map((item, i) => (
-                                    <View key={item.id} style={i === naratif.length - 1 ? styles.hsseItemRowLast : styles.hsseItemRow}>
-                                        <View style={styles.hsseItemTextCol}>
-                                            <Text style={styles.hsseItemTitle}>{item.title}</Text>
-                                            <Text style={styles.hsseItemSub}>{item.detail}</Text>
-                                        </View>
-                                    </View>
-                                ))
-                            )}
-                        </View>
-                    </View>
-
-                    {/* Kolom kanan: Realisasi ABI NBD */}
+                    {/* Kolom kiri: Realisasi ABI NBD */}
                     <View style={styles.rkGridCol}>
                         <View style={styles.rkGroupBox}>
                             <View style={styles.rkGroupHeadRow}>
@@ -768,6 +747,27 @@ function SectionTopProject({ naratif, abi }: { naratif: NaratifItem[]; abi: AbiI
                                         </View>
                                     );
                                 })
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Kolom kanan: Pencapaian Others */}
+                    <View style={styles.rkGridCol}>
+                        <View style={styles.rkGroupBox}>
+                            <View style={styles.rkGroupHeadRow}>
+                                <Text style={styles.rkGroupHeadText}>Pencapaian Lainnya</Text>
+                            </View>
+                            {others.length === 0 ? (
+                                <Text style={styles.emptyText}>Belum ada data.</Text>
+                            ) : (
+                                others.map((item, i) => (
+                                    <View key={item.id} style={i === others.length - 1 ? styles.hsseItemRowLast : styles.hsseItemRow}>
+                                        <View style={styles.hsseItemTextCol}>
+                                            <Text style={styles.hsseItemTitle}>{item.title}</Text>
+                                            <Text style={styles.hsseItemSub}>{item.detail}</Text>
+                                        </View>
+                                    </View>
+                                ))
                             )}
                         </View>
                     </View>
@@ -841,7 +841,7 @@ export function AchievementPdfDocument({ data }: { data: PdfData }) {
                 <SectionRencanaKerja items={data.rencanaKerja} />
                 <SectionHsse proper={data.hsseProper} security={data.hsseSecurity} />
                 <SectionInovasi items={data.inovasi} />
-                <SectionTopProject naratif={data.topProjectNaratif} abi={data.topProjectAbi} />
+                <SectionTopProject others={data.topProjectOthers} abi={data.topProjectAbi} />
                 <SectionKehumasan items={data.kehumasan} />
 
                 <Footer />

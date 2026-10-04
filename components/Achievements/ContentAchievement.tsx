@@ -433,13 +433,6 @@ type HsseOthersItem = {
     urutan: number;
 };
 
-type NaratifItem = {
-    id: string;
-    title: string;
-    detail: string;
-    urutan: number;
-};
-
 type OthersItem = {
     id: string;
     title: string;
@@ -467,7 +460,6 @@ const AchievementsContent = () => {
     const [security, setSecurity] = useState<SecurityItem[]>([]);
     const [penghargaan, setPenghargaan] = useState<PenghargaanItem[]>([]);
     const [hsseOthers, setHsseOthers] = useState<HsseOthersItem[]>([]);
-    const [naratifItems, setNaratifItems] = useState<NaratifItem[]>([]);
     const [abiItems, setAbiItems] = useState<AbiItem[]>([]);
     const [othersItems, setOthersItems] = useState<OthersItem[]>([]);
 
@@ -886,25 +878,8 @@ const AchievementsContent = () => {
 
                 {activeTab === "top-project" && (
                     <div className="flex flex-col items-center gap-4">
-                        <div className={`flex w-full flex-col gap-4 ${naratifItems.length <= 1 && abiItems.length <= 1 && othersItems.length <= 1 ? "max-w-2xl" : ""
+                        <div className={`flex w-full flex-col gap-4 ${abiItems.length <= 1 && othersItems.length <= 1 ? "max-w-2xl" : ""
                             }`}>
-                            {/* Pencapaian naratif */}
-                            {naratifItems.length > 0 && (
-                                <div className={`grid gap-4 ${getResponsiveGridClass(naratifItems.length)}`}>
-                                    {naratifItems
-                                        .slice()
-                                        .sort((a, b) => a.urutan - b.urutan)
-                                        .map((item) => (
-                                            <div
-                                                key={item.id}
-                                                className="w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
-                                            >
-                                                <p className="text-sm font-bold leading-snug text-blue-900">{item.title}</p>
-                                                <p className="mt-1.5 text-xs text-slate-500">{item.detail}</p>
-                                            </div>
-                                        ))}
-                                </div>
-                            )}
 
                             {/* Pencapaian ABI NBD (investasi vs realisasi) */}
                             {abiItems.length > 0 && (
@@ -952,7 +927,7 @@ const AchievementsContent = () => {
                                 </div>
                             )}
 
-                            {naratifItems.length === 0 && abiItems.length === 0 && othersItems.length === 0 && (
+                            {abiItems.length === 0 && othersItems.length === 0 && (
                                 <p className="text-center text-sm text-slate-400">Belum ada data top project.</p>
                             )}
                         </div>
