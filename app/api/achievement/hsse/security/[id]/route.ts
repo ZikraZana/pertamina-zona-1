@@ -45,6 +45,7 @@ export async function PUT(
                 wilayah_kerja,
                 tanggal,
                 urutan: urutanNumber,
+                updated_at: new Date().toISOString(),
                 updated_by: user.id,
             })
             .eq("id", id)

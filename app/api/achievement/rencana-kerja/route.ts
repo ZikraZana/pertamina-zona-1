@@ -57,6 +57,7 @@ export async function POST(request: Request) {
             jumlah_gas: jumlah_gas ?? null,
             wilayah_kerja: body.wilayah_kerja,
             urutan: urutan ?? 0,
+            created_by: user.id,
         })
         .select()
         .single();

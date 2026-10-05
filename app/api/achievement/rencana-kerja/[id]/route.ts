@@ -45,6 +45,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
             jumlah_gas: jumlah_gas ?? null,
             wilayah_kerja: body.wilayah_kerja,
             urutan: urutan ?? 0,
+            updated_at: new Date().toISOString(),
+            updated_by: user.id,
         })
         .eq("id", id)
         .select()

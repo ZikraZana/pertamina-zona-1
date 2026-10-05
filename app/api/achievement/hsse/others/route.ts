@@ -19,6 +19,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
     const supabase = await createClient();
+    const { user, err } = await requireAdmin(supabase);
+    if (err) return err;
     const body = await request.json();
 
     const { indikator, realisasi, satuan, periode, tahun_target, target_others, urutan } = body;
@@ -29,7 +31,7 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase
         .from("achievement_hsse_others")
-        .insert({ indikator, realisasi, satuan, periode, tahun_target, target_others, urutan: urutan ?? 0 })
+        .insert({ indikator, realisasi, satuan, periode, tahun_target, target_others, urutan: urutan ?? 0, created_at: new Date().toISOString(), created_by: user.id })
         .select()
         .single();
 

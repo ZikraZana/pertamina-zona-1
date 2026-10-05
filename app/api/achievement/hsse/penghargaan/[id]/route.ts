@@ -50,6 +50,7 @@ export async function PUT(
                 nama_kegiatan,
                 tahun: tahunNumber,
                 urutan: urutanNumber,
+                updated_at: new Date().toISOString(),
                 updated_by: user.id,
             })
             .eq("id", id)
