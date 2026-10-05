@@ -396,6 +396,11 @@ const styles = StyleSheet.create({
         paddingVertical: 3.5,
         paddingHorizontal: 6,
     },
+    hsseRatingYearRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
     hsseItemTextCol: {
         flexDirection: 'column',
         flex: 1,
@@ -602,6 +607,10 @@ function SectionHsse({ proper, security }: { proper: ProperItem[]; security: Sec
                                         <Text style={styles.hsseItemTitle}>{item.wilayah_kerja}</Text>
                                         <Text style={styles.hsseItemSub}>{item.keterangan || '-'}</Text>
                                     </View>
+                                    <View style={styles.hsseRatingYearRow}>
+                                        <ProperPill peringkat={item.peringkat} />
+                                        <Text style={styles.hsseItemMeta}>{item.tahun}</Text>
+                                    </View>
                                 </View>
                             ))
                         )}
@@ -691,7 +700,7 @@ function SectionInovasi({ items }: { items: InovasiItem[] }) {
 // ============================================================
 // TOP PROJECT
 // ============================================================
-function SectionTopProject({ abi, others }: {  abi: AbiItem[]; others: OthersItem[] }) {
+function SectionTopProject({ abi, others }: { abi: AbiItem[]; others: OthersItem[] }) {
     return (
         <View style={styles.sectionBlock}>
             <SectionHead number="05" title="Top Project" />

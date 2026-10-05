@@ -797,6 +797,9 @@ const AchievementsContent = () => {
                                                         className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm"
                                                     >
                                                         <div className="min-w-0">
+                                                            <p className="truncate text-sm font-bold text-blue-900">
+                                                                {item.predikat.toUpperCase()} - {item.nama_kegiatan}
+                                                            </p>
                                                             <p className="mt-0.5 text-xs text-slate-400">{item.wilayah_kerja}</p>
                                                         </div>
                                                         <span className="shrink-0 text-sm font-bold text-slate-500">{item.tahun}</span>
