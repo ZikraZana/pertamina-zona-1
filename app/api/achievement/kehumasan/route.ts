@@ -2,7 +2,6 @@ import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-const VALID_MEDALI = ["gold", "silver", "bronze"] as const;
 const VALID_BULAN = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
@@ -11,7 +10,7 @@ export async function GET() {
 
     const { data, error } = await supabase
         .from("achievement_kehumasan")
-        .select('id, wilayah_kerja, judul, bulan, tahun, deskripsi, medali, urutan, urutan_wilayah, image_path')
+        .select('id, wilayah_kerja, judul, bulan, tahun, deskripsi, urutan, urutan_wilayah, image_path')
         .order('urutan', { ascending: true });
 
     if (error) {
@@ -47,7 +46,6 @@ export async function POST(request: Request) {
     const deskripsi = formData.get("deskripsi");
     const bulan = formData.get("bulan");
     const tahun = formData.get("tahun");
-    const medali = formData.get("medali");
     const urutan = formData.get("urutan");
     const urutan_wilayah = formData.get("urutan_wilayah");
     const file = formData.get("image");
@@ -61,10 +59,6 @@ export async function POST(request: Request) {
         if (typeof value !== "string" || !value.trim()) {
             return NextResponse.json({ error: `Field "${name}" wajib diisi.`, code: "VALIDATION_ERROR" }, { status: 400 });
         }
-    }
-
-    if (typeof medali !== "string" || !VALID_MEDALI.includes(medali as any)) {
-        return NextResponse.json({ error: 'Field "medali" harus salah satu dari: gold, silver, bronze.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
 
     const bulanNumber = Number(bulan);
@@ -123,7 +117,6 @@ export async function POST(request: Request) {
             deskripsi,
             bulan: bulanNumber,
             tahun: tahunNumber,
-            medali,
             urutan: urutanNumber,
             urutan_wilayah: urutanWilayahNumber,
             image_path: imagePath,

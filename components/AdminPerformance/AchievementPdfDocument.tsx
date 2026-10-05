@@ -396,11 +396,6 @@ const styles = StyleSheet.create({
         paddingVertical: 3.5,
         paddingHorizontal: 6,
     },
-    hsseMedalYearItemRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
     hsseItemTextCol: {
         flexDirection: 'column',
         flex: 1,
@@ -466,12 +461,6 @@ function TableHead({ columns }: { columns: { label: string; style: Style }[] }) 
 const NAMA_BULAN_PDF = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 function formatBulanTahunPdf(bulan: number, tahun: number) {
     return `${NAMA_BULAN_PDF[bulan - 1] ?? ''} ${tahun}`;
-}
-
-function MedalPill({ medali }: { medali: string }) {
-    const label = medali === 'gold' ? 'Gold' : medali === 'silver' ? 'Silver' : 'Bronze';
-    const style = medali === 'gold' ? styles.pillGold : medali === 'silver' ? styles.pillGray : styles.pillBlue;
-    return <Text style={[styles.pill, style]}>{label}</Text>;
 }
 
 function ProperPill({ peringkat }: { peringkat: string }) {
@@ -612,10 +601,6 @@ function SectionHsse({ proper, security }: { proper: ProperItem[]; security: Sec
                                     <View style={styles.hsseItemTextCol}>
                                         <Text style={styles.hsseItemTitle}>{item.wilayah_kerja}</Text>
                                         <Text style={styles.hsseItemSub}>{item.keterangan || '-'}</Text>
-                                    </View>
-                                    <View style={styles.hsseMedalYearItemRow}>
-                                        <ProperPill peringkat={item.peringkat} />
-                                        <Text style={styles.hsseItemMeta}>{item.tahun}</Text>
                                     </View>
                                 </View>
                             ))

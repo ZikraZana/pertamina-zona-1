@@ -80,7 +80,6 @@ type KehumasanItem = {
     deskripsi: string;
     bulan: number;
     tahun: number;
-    medali: "gold" | "silver" | "bronze";
     urutan: number;
     urutan_wilayah: number;
     image_path: string | null;
@@ -339,12 +338,6 @@ function SortableInovasiItem({
     );
 }
 
-const MEDALI_STYLE: Record<KehumasanItem["medali"], { label: string; className: string }> = {
-    gold: { label: "🥇 Gold", className: "bg-amber-100 text-amber-800" },
-    silver: { label: "🥈 Silver", className: "bg-slate-200 text-slate-700" },
-    bronze: { label: "🥉 Bronze", className: "bg-orange-100 text-orange-800" },
-};
-
 const PERINGKAT_STYLE: Record<ProperItem["peringkat"], string> = {
     Biru: "bg-sky-100 text-sky-700",
     Hijau: "bg-emerald-100 text-emerald-700",
@@ -427,7 +420,6 @@ function SortableKehumasanItem({
     onDelete: (id: string) => void;
 }) {
     const { ref, handleRef, isDragging } = useSortable({ id: item.id, index, group });
-    const medali = MEDALI_STYLE[item.medali];
 
     return (
         <li
@@ -447,7 +439,6 @@ function SortableKehumasanItem({
             <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5">
                     <span className="truncate font-semibold text-blue-900">{item.wilayah_kerja}</span>
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${medali.className}`}>{medali.label}</span>
                 </div>
                 <p className="mt-0.5 truncate text-xs text-slate-400">{item.judul} · {["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][item.bulan - 1]} {item.tahun}</p>
             </div>
@@ -612,8 +603,7 @@ const AchievementTab = () => {
         deskripsi: string;
         bulan: string;
         tahun: string;
-        medali: "gold" | "silver" | "bronze";
-    }>({ wilayah_kerja: "", judul: "", deskripsi: "", bulan: "", tahun: "", medali: "gold" });
+    }>({ wilayah_kerja: "", judul: "", deskripsi: "", bulan: "", tahun: "" });
     const [kehumasanImageFile, setKehumasanImageFile] = useState<File | null>(null);
     const [kehumasanExistingImagePath, setKehumasanExistingImagePath] = useState<string | null>(null);
     const [kehumasanEditingId, setKehumasanEditingId] = useState<string | null>(null);
@@ -1223,7 +1213,7 @@ const AchievementTab = () => {
     }
 
     function resetKehumasanForm() {
-        setKehumasanForm({ wilayah_kerja: "", judul: "", deskripsi: "", bulan: "", tahun: "", medali: "gold" });
+        setKehumasanForm({ wilayah_kerja: "", judul: "", deskripsi: "", bulan: "", tahun: "" });
         setKehumasanImageFile(null);
         setKehumasanExistingImagePath(null);
         setKehumasanEditingId(null);
@@ -1238,7 +1228,6 @@ const AchievementTab = () => {
             deskripsi: item.deskripsi,
             bulan: String(item.bulan),
             tahun: String(item.tahun),
-            medali: item.medali,
         });
         setKehumasanImageFile(null);
         setKehumasanExistingImagePath(item.image_path ?? null);
@@ -1262,7 +1251,6 @@ const AchievementTab = () => {
         formData.append("deskripsi", kehumasanForm.deskripsi);
         formData.append("bulan", kehumasanForm.bulan);
         formData.append("tahun", kehumasanForm.tahun);
-        formData.append("medali", kehumasanForm.medali);
         formData.append("urutan", String(urutan));
         if (kehumasanImageFile) {
             formData.append("image", kehumasanImageFile);
@@ -1314,7 +1302,6 @@ const AchievementTab = () => {
                 formData.append("deskripsi", item.deskripsi);
                 formData.append("bulan", String(item.bulan));
                 formData.append("tahun", String(item.tahun));
-                formData.append("medali", item.medali);
                 // tidak append "image" -- reorder tidak pernah mengubah foto,
                 // jadi backend akan pertahankan image_path yang sudah ada
 
@@ -1344,7 +1331,6 @@ const AchievementTab = () => {
                     formData.append("deskripsi", item.deskripsi);
                     formData.append("bulan", String(item.bulan));
                     formData.append("tahun", String(item.tahun));
-                    formData.append("medali", item.medali);
                     // tidak append "image" -- reorder tidak pernah mengubah foto
 
                     return fetch(`/api/achievement/kehumasan/${item.id}`, {
@@ -2821,18 +2807,6 @@ const AchievementTab = () => {
                                             {wilayahKerjaList.map((nama) => (
                                                 <option key={nama} value={nama}>{nama}</option>
                                             ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Peringkat</label>
-                                        <select
-                                            value={kehumasanForm.medali}
-                                            onChange={(e) => setKehumasanForm({ ...kehumasanForm, medali: e.target.value as "gold" | "silver" | "bronze" })}
-                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                        >
-                                            <option value="gold">🥇 Gold Winner</option>
-                                            <option value="silver">🥈 Silver Winner</option>
-                                            <option value="bronze">🥉 Bronze Winner</option>
                                         </select>
                                     </div>
                                     <div>
