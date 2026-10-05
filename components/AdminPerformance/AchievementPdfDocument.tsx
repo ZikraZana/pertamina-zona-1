@@ -29,7 +29,7 @@ type SecurityItem = { id: string; judul: string; wilayah_kerja: string; tanggal:
 type InovasiItem = { id: string; pencapaian: string; nama_inovasi: string; nama_acara: string | null; wilayah_kerja: string };
 type OthersItem = { id: string; title: string; detail: string };
 type AbiItem = { id: string; title: string; unit: string; realization: number; target: number; period: string };
-type KehumasanItem = { id: string; wilayah_kerja: string; judul: string; deskripsi: string; bulan: number; tahun: number; medali: string };
+type KehumasanItem = { id: string; wilayah_kerja: string; judul: string; deskripsi: string; bulan: number; tahun: number; };
 
 export type PdfData = {
     produksi: ProduksiItem[];
@@ -793,7 +793,6 @@ function SectionKehumasan({ items }: { items: KehumasanItem[] }) {
                         { label: 'Judul', style: styles.colM },
                         { label: 'Deskripsi', style: styles.colXL },
                         { label: 'Tanggal', style: styles.colS },
-                        { label: 'Penghargaan', style: styles.colS },
                     ]} />
                     {items.map((item, i) => {
                         const isLast = i === items.length - 1;
@@ -803,9 +802,6 @@ function SectionKehumasan({ items }: { items: KehumasanItem[] }) {
                                 <Text style={[styles.tableCellBold, styles.colM]}>{item.judul}</Text>
                                 <Text style={[styles.tableCellMuted, styles.colXL]}>{item.deskripsi}</Text>
                                 <Text style={[styles.tableCellMuted, styles.colS]}>{formatBulanTahunPdf(item.bulan, item.tahun)}</Text>
-                                <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }, styles.colS]}>
-                                    <MedalPill medali={item.medali} />
-                                </View>
                             </View>
                         );
                     })}
