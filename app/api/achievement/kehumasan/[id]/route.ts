@@ -2,7 +2,6 @@ import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-const VALID_MEDALI = ["gold", "silver", "bronze"] as const;
 const VALID_BULAN = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
@@ -19,7 +18,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const deskripsi = formData.get("deskripsi");
     const bulan = formData.get("bulan");
     const tahun = formData.get("tahun");
-    const medali = formData.get("medali");
     const urutan = formData.get("urutan");
     const urutan_wilayah = formData.get("urutan_wilayah");
     const file = formData.get("image");
@@ -33,10 +31,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         if (typeof value !== "string" || !value.trim()) {
             return NextResponse.json({ error: `Field "${name}" wajib diisi.`, code: "VALIDATION_ERROR" }, { status: 400 });
         }
-    }
-
-    if (typeof medali !== "string" || !VALID_MEDALI.includes(medali as any)) {
-        return NextResponse.json({ error: 'Field "medali" harus salah satu dari: gold, silver, bronze.', code: "VALIDATION_ERROR" }, { status: 400 });
     }
 
     const bulanNumber = Number(bulan);
@@ -104,7 +98,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
             deskripsi,
             bulan: bulanNumber,
             tahun: tahunNumber,
-            medali,
             urutan: urutanNumber,
             urutan_wilayah: urutanWilayahNumber,
             image_path: imagePath,

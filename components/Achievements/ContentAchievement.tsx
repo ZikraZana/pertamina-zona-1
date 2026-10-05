@@ -211,14 +211,7 @@ type AwardItem = {
     bulan: number;
     tahun: number;
     bulanTahun: string;
-    medal: "gold" | "silver" | "bronze";
     imageUrl?: string;
-};
-
-const MEDAL_ICON: Record<AwardItem["medal"], string> = {
-    gold: "🥇",
-    silver: "🥈",
-    bronze: "🥉",
 };
 
 function AwardPhoto({ imageUrl, alt }: { imageUrl?: string; alt: string }) {
@@ -389,7 +382,6 @@ type Kehumasan = {
     deskripsi: string;
     bulan: number;
     tahun: number;
-    medali: "gold" | "silver" | "bronze";
     urutan: number;
     urutan_wilayah: number;
     image_url: string | null;
@@ -613,7 +605,6 @@ const AchievementsContent = () => {
             bulan: row.bulan,
             tahun: row.tahun,
             bulanTahun: formatBulanTahunID(row.bulan, row.tahun),
-            medal: row.medali,
             imageUrl: row.image_url ?? undefined,
         });
     }
@@ -800,7 +791,6 @@ const AchievementsContent = () => {
                                             .slice()
                                             .sort((a, b) => a.urutan - b.urutan)
                                             .map((item) => {
-                                                const medalIcon = { Gold: "🥇", Silver: "🥈", Bronze: "🥉" }[item.predikat];
                                                 return (
                                                     <div
                                                         key={item.id}
@@ -808,7 +798,7 @@ const AchievementsContent = () => {
                                                     >
                                                         <div className="min-w-0">
                                                             <p className="truncate text-sm font-bold text-blue-900">
-                                                                {medalIcon} {item.predikat.toUpperCase()} - {item.nama_kegiatan}
+                                                                {item.predikat.toUpperCase()} - {item.nama_kegiatan}
                                                             </p>
                                                             <p className="mt-0.5 text-xs text-slate-400">{item.wilayah_kerja}</p>
                                                         </div>

@@ -29,7 +29,7 @@ type SecurityItem = { id: string; judul: string; wilayah_kerja: string; tanggal:
 type InovasiItem = { id: string; pencapaian: string; nama_inovasi: string; nama_acara: string | null; wilayah_kerja: string };
 type OthersItem = { id: string; title: string; detail: string };
 type AbiItem = { id: string; title: string; unit: string; realization: number; target: number; period: string };
-type KehumasanItem = { id: string; wilayah_kerja: string; judul: string; deskripsi: string; bulan: number; tahun: number; medali: string };
+type KehumasanItem = { id: string; wilayah_kerja: string; judul: string; deskripsi: string; bulan: number; tahun: number; };
 
 export type PdfData = {
     produksi: ProduksiItem[];
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
         paddingVertical: 3.5,
         paddingHorizontal: 6,
     },
-    hsseMedalYearItemRow: {
+    hsseRatingYearRow: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
@@ -466,12 +466,6 @@ function TableHead({ columns }: { columns: { label: string; style: Style }[] }) 
 const NAMA_BULAN_PDF = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 function formatBulanTahunPdf(bulan: number, tahun: number) {
     return `${NAMA_BULAN_PDF[bulan - 1] ?? ''} ${tahun}`;
-}
-
-function MedalPill({ medali }: { medali: string }) {
-    const label = medali === 'gold' ? 'Gold' : medali === 'silver' ? 'Silver' : 'Bronze';
-    const style = medali === 'gold' ? styles.pillGold : medali === 'silver' ? styles.pillGray : styles.pillBlue;
-    return <Text style={[styles.pill, style]}>{label}</Text>;
 }
 
 function ProperPill({ peringkat }: { peringkat: string }) {
@@ -613,7 +607,7 @@ function SectionHsse({ proper, security }: { proper: ProperItem[]; security: Sec
                                         <Text style={styles.hsseItemTitle}>{item.wilayah_kerja}</Text>
                                         <Text style={styles.hsseItemSub}>{item.keterangan || '-'}</Text>
                                     </View>
-                                    <View style={styles.hsseMedalYearItemRow}>
+                                    <View style={styles.hsseRatingYearRow}>
                                         <ProperPill peringkat={item.peringkat} />
                                         <Text style={styles.hsseItemMeta}>{item.tahun}</Text>
                                     </View>
@@ -706,7 +700,7 @@ function SectionInovasi({ items }: { items: InovasiItem[] }) {
 // ============================================================
 // TOP PROJECT
 // ============================================================
-function SectionTopProject({ abi, others }: {  abi: AbiItem[]; others: OthersItem[] }) {
+function SectionTopProject({ abi, others }: { abi: AbiItem[]; others: OthersItem[] }) {
     return (
         <View style={styles.sectionBlock}>
             <SectionHead number="05" title="Top Project" />
@@ -793,7 +787,6 @@ function SectionKehumasan({ items }: { items: KehumasanItem[] }) {
                         { label: 'Judul', style: styles.colM },
                         { label: 'Deskripsi', style: styles.colXL },
                         { label: 'Tanggal', style: styles.colS },
-                        { label: 'Penghargaan', style: styles.colS },
                     ]} />
                     {items.map((item, i) => {
                         const isLast = i === items.length - 1;
@@ -803,9 +796,6 @@ function SectionKehumasan({ items }: { items: KehumasanItem[] }) {
                                 <Text style={[styles.tableCellBold, styles.colM]}>{item.judul}</Text>
                                 <Text style={[styles.tableCellMuted, styles.colXL]}>{item.deskripsi}</Text>
                                 <Text style={[styles.tableCellMuted, styles.colS]}>{formatBulanTahunPdf(item.bulan, item.tahun)}</Text>
-                                <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }, styles.colS]}>
-                                    <MedalPill medali={item.medali} />
-                                </View>
                             </View>
                         );
                     })}
