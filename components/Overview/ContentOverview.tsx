@@ -47,6 +47,19 @@ const SURFACE_CATEGORIES: string[] = [
     "Pipeline",
 ];
 
+function formatAngka(value: string | null | undefined): string {
+    if (value === null || value === undefined || value.trim() === '') return '-';
+
+    const clean = value.trim();
+    if (!/^-?\d+(\.\d+)?$/.test(clean)) return value;
+
+    const decimals = clean.includes('.') ? clean.split('.')[1].length : 0;
+    return Number(clean).toLocaleString('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+    });
+}
+
 type FacilityImage = {
     src: string;
     caption?: string;
@@ -624,8 +637,10 @@ const ContentOverview = () => {
             // Mbopd -> BOPD (dikali 1000, karena input admin dalam satuan ribuan)
             const totalBopd = Math.round(totalMinyakMbopd * 1000);
 
-            animateCountUp('statBopd', totalBopd, (n) => n.toLocaleString('en-EN'));
-            animateCountUp('statMmscfd', Math.round(totalGasMmscfd * 1000), (n) => (n / 1000).toFixed(3).replace('.', ','));
+            animateCountUp('statBopd', totalBopd, (n) => n.toLocaleString('en-US'));
+            animateCountUp('statMmscfd', Math.round(totalGasMmscfd * 1000), (n) =>
+                (n / 1000).toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 })
+            );
 
             const tanggalEl = document.getElementById('statTanggalProduksi');
             if (tanggalEl) {
@@ -718,8 +733,8 @@ const ContentOverview = () => {
 
             // Card 2: produksi saja
             produksiBody.innerHTML = `
-                ${row('Produksi Minyak', `${d.produksi_minyak ?? '-'} MBOPD`)}
-                ${row('Produksi Gas', `${d.produksi_gas ?? '-'} MMSCFD`)}
+                ${row('Produksi Minyak', `${formatAngka(d.produksi_minyak)} MBOPD`)}
+                ${row('Produksi Gas', `${formatAngka(d.produksi_gas)} MMSCFD`)}
                 ${row('Tanggal Produksi', d.tanggal_produksi)}
             `
         }
@@ -737,9 +752,9 @@ const ContentOverview = () => {
                     return `
                 <tr class="${rowClass}">
                     <td class="px-2 py-1">${kategori}</td>
-                    <td class="px-2 py-1 text-center">${item?.jumlah_active ?? '-'}</td>
-                    <td class="px-2 py-1 text-center">${item?.jumlah_non_active ?? '-'}</td>
-                    <td class="px-2 py-1 text-center">${item?.total ?? '-'}</td>
+                    <td class="px-2 py-1 text-center">${formatAngka(item?.jumlah_active)}</td>
+                    <td class="px-2 py-1 text-center">${formatAngka(item?.jumlah_non_active)}</td>
+                    <td class="px-2 py-1 text-center">${formatAngka(item?.total)}</td>
                 </tr>
             `;
                 })
