@@ -1997,8 +1997,6 @@ const AchievementTab = () => {
                                         </div>
                                     </div>
 
-                                    <p className="-mt-1 text-xs text-slate-400">Isi salah satu atau keduanya: Jumlah Minyak atau Jumlah Gas</p>
-
                                     <div className="flex flex-col gap-2">
                                         <button type="submit" disabled={rkLoading} className="w-full cursor-pointer rounded-lg bg-blue-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
                                             {rkLoading ? "Menyimpan..." : rkEditingId ? "Simpan Perubahan" : "Tambah"}
@@ -2098,17 +2096,14 @@ const AchievementTab = () => {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="mb-1.5 block text-sm font-semibold text-blue-900">Wilayah Kerja</label>
-                                                <select
+                                                <input
+                                                    placeholder="Masukkan Wilayah Kerja"
+                                                    type="text"
                                                     value={properForm.wilayah_kerja}
                                                     onChange={(e) => setProperForm({ ...properForm, wilayah_kerja: e.target.value })}
                                                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
                                                     required
-                                                >
-                                                    <option value="">Pilih Wilayah Kerja</option>
-                                                    {wilayahKerjaList.map((nama) => (
-                                                        <option key={nama} value={nama}>{nama}</option>
-                                                    ))}
-                                                </select>
+                                                />
                                             </div>
                                             <div>
                                                 <label className="mb-1.5 block text-sm font-semibold text-blue-900">Peringkat</label>
@@ -2526,6 +2521,7 @@ const AchievementTab = () => {
                                     <div>
                                         <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Inovasi</label>
                                         <input
+                                            placeholder="Contoh: Best Presentation"
                                             value={inovasiForm.nama_inovasi}
                                             onChange={(e) => setInovasiForm({ ...inovasiForm, nama_inovasi: e.target.value })}
                                             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
@@ -2535,6 +2531,7 @@ const AchievementTab = () => {
                                     <div>
                                         <label className="mb-1.5 block text-sm font-semibold text-blue-900">Nama Acara (Opsional)</label>
                                         <input
+                                            placeholder="Contoh: Inovasi Terbaik 2025"
                                             value={inovasiForm.nama_acara}
                                             onChange={(e) => setInovasiForm({ ...inovasiForm, nama_acara: e.target.value })}
                                             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
@@ -2822,32 +2819,30 @@ const AchievementTab = () => {
                                             required
                                         />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Bulan</label>
-                                            <select
-                                                value={kehumasanForm.bulan}
-                                                onChange={(e) => setKehumasanForm({ ...kehumasanForm, bulan: e.target.value })}
-                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                required
-                                            >
-                                                <option value="">Pilih Bulan</option>
-                                                {["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"].map((nama, i) => (
-                                                    <option key={i + 1} value={i + 1}>{nama}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tahun</label>
-                                            <input
-                                                type="number"
-                                                placeholder="Contoh: 2026"
-                                                value={kehumasanForm.tahun}
-                                                onChange={(e) => setKehumasanForm({ ...kehumasanForm, tahun: e.target.value })}
-                                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
-                                                required
-                                            />
-                                        </div>
+                                    <div>
+                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Bulan</label>
+                                        <select
+                                            value={kehumasanForm.bulan}
+                                            onChange={(e) => setKehumasanForm({ ...kehumasanForm, bulan: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            required
+                                        >
+                                            <option value="">Pilih Bulan</option>
+                                            {["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"].map((nama, i) => (
+                                                <option key={i + 1} value={i + 1}>{nama}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="mb-1.5 block text-sm font-semibold text-blue-900">Tahun</label>
+                                        <input
+                                            type="number"
+                                            placeholder="Contoh: 2026"
+                                            value={kehumasanForm.tahun}
+                                            onChange={(e) => setKehumasanForm({ ...kehumasanForm, tahun: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                                            required
+                                        />
                                     </div>
                                     <div className="col-span-2">
                                         <label className="mb-1.5 block text-sm font-semibold text-blue-900">Deskripsi</label>

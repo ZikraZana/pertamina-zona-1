@@ -624,7 +624,7 @@ const ContentOverview = () => {
             // Mbopd -> BOPD (dikali 1000, karena input admin dalam satuan ribuan)
             const totalBopd = Math.round(totalMinyakMbopd * 1000);
 
-            animateCountUp('statBopd', totalBopd, (n) => n.toLocaleString('id-ID'));
+            animateCountUp('statBopd', totalBopd, (n) => n.toLocaleString('en-EN'));
             animateCountUp('statMmscfd', Math.round(totalGasMmscfd * 1000), (n) => (n / 1000).toFixed(3).replace('.', ','));
 
             const tanggalEl = document.getElementById('statTanggalProduksi');
@@ -1287,11 +1287,11 @@ const ContentOverview = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-2 text-center">
-                                        <p id="statBopd" className="text-sm font-extrabold text-blue-900">19431</p>
+                                        <p id="statBopd" className="text-sm font-extrabold text-blue-900">000000</p>
                                         <p className="text-[9.5px] font-semibold text-blue-700">BOPD (Minyak)</p>
                                     </div>
                                     <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-2 text-center">
-                                        <p id="statMmscfd" className="text-sm font-extrabold text-blue-900">228.010</p>
+                                        <p id="statMmscfd" className="text-sm font-extrabold text-blue-900">000000</p>
                                         <p className="text-[9.5px] font-semibold text-blue-700">MMSCFD (Gas)</p>
                                     </div>
                                 </div>

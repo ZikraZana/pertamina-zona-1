@@ -55,11 +55,6 @@ function formatDateLong(dateStr: string) {
     return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 }
 
-function formatDateTime(dateStr: string) {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-}
-
 function getCategoryLabel(category: string) {
     return CATEGORY_TABS.find((tab) => tab.value === category)?.label ?? category;
 }
