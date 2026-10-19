@@ -100,6 +100,7 @@ const PerformanceContent = () => {
     const supabase = useMemo(() => createClient(), []);
 
     const [user, setUser] = useState<User | null>(null);
+    const [fullName, setFullName] = useState<string | null>(null);
     const [authLoading, setAuthLoading] = useState(true);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -132,6 +133,18 @@ const PerformanceContent = () => {
         async function checkLogin() {
             const { data } = await supabase.auth.getUser();
             setUser(data.user);
+
+            if (data.user) {
+                const { data: profile } = await supabase
+                    .from("profiles")
+                    .select("full_name")
+                    .eq("id", data.user.id)
+                    .single();
+                setFullName(profile?.full_name ?? null);
+            } else {
+                setFullName(null);
+            }
+
             setAuthLoading(false);
         }
         checkLogin();
@@ -420,7 +433,7 @@ const PerformanceContent = () => {
                     {/* User info bar */}
                     <div className="flex flex-col items-start justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center">
                         <div className="text-sm text-slate-600">
-                            Masuk sebagai <span className="font-semibold text-blue-900">{user.email}</span>
+                            Masuk sebagai <span className="font-semibold text-blue-900">{fullName}</span>
                         </div>
                         <button
                             onClick={handleLogout}

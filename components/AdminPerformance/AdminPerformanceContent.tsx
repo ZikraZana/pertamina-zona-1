@@ -157,7 +157,7 @@ const AdminPerformanceContent = () => {
                 <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
                     <div className="flex flex-col items-start justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center">
                         <div className="text-sm text-slate-600">
-                            Masuk sebagai <span className="font-semibold text-blue-900">{user.email}</span>
+                            Masuk sebagai <span className="font-semibold text-blue-900">{fullName}</span>
                             <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
                                 Admin
                             </span>

@@ -297,7 +297,7 @@ const OverviewTab = () => {
                                 onChange={(v) => updateField("jenis_wk", v)}
                                 options={JENIS_WK_OPTIONS}
                             />
-                            <TextInput label="Tahun Berdiri" value={form.tahun_berdiri} onChange={(v) => updateField("tahun_berdiri", v)} />
+                            <TextInput type="number" label="Tahun Berdiri" value={form.tahun_berdiri} onChange={(v) => updateField("tahun_berdiri", v)} />
                             <TextInput label="Luas Wilayah" value={form.luas_wilayah} onChange={(v) => updateField("luas_wilayah", v)} />
                             <TextInput label="Participating Interest" value={form.part_interest} onChange={(v) => updateField("part_interest", v)} />
                             <TextArea label="KKP / Komitmen Kerja Pasti" value={form.kkp} onChange={(v) => updateField("kkp", v)} />
@@ -374,13 +374,13 @@ function FieldSection({ title, children }: { title: string; children: React.Reac
 }
 
 function TextInput({
-    label, value, onChange, placeholder,
-}: { label: string; value: string | null; onChange: (v: string) => void; placeholder?: string }) {
+    label, value, onChange, placeholder, type = "text",
+}: { label: string; value: string | null; onChange: (v: string) => void; placeholder?: string; type?: "text" | "number" }) {
     return (
         <div>
             <label className="mb-1 block text-xs font-semibold text-slate-600">{label}</label>
             <input
-                type="text"
+                type={type}
                 value={value ?? ""}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
