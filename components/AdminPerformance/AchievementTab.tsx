@@ -2267,6 +2267,9 @@ const AchievementTab = () => {
                                                                     </p>
                                                                 </div>
                                                                 <div className="flex shrink-0 gap-1">
+                                                                    <button onClick={() => startEditSecurity(item)} title="Edit" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700">
+                                                                        <PencilIcon />
+                                                                    </button>
                                                                     <button onClick={() => handleDeleteSecurity(item.id)} title="Hapus" className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600">
                                                                         <TrashIcon />
                                                                     </button>
